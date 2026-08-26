@@ -1,0 +1,23 @@
+# Robots.txt for VendorSaathi (https://vendorsaathi.com)
+User-agent: *
+Allow: /
+Allow: /#home
+Allow: /#categories
+Allow: /#product-listing
+Allow: /#product-detail
+Allow: /#nearby-vendors
+Allow: /#offers
+Allow: /#voice-search
+
+# Disallow private user & vendor session routes
+Disallow: /#checkout
+Disallow: /#payment
+Disallow: /#order-confirmation
+Disallow: /#order-tracking
+Disallow: /#my-orders
+Disallow: /#profile
+Disallow: /#vendor-portal
+Disallow: /#vendor-chat
+Disallow: /api/
+
+Sitemap: https://vendorsaathi.com/sitemap.xml

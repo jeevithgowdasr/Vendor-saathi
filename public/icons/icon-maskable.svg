@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGradMask" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="50%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="goldGradMask" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Full Bleed Background for Maskable Icon -->
+  <rect width="512" height="512" fill="url(#bgGradMask)"/>
+
+  <!-- Centered Scaled Content within Safe Zone (80% box) -->
+  <g transform="translate(102, 102) scale(0.6)">
+    <!-- Shopping Basket Body -->
+    <path d="M58 138 H326 L300 294 C294 320 272 342 246 342 H138 C112 342 90 320 84 294 Z" fill="#ffffff"/>
+    
+    <!-- Basket Handle -->
+    <path d="M112 138 C112 58 272 58 272 138" fill="none" stroke="url(#goldGradMask)" stroke-width="26" stroke-linecap="round"/>
+    
+    <!-- Basket Grid Lines -->
+    <path d="M118 182 H266 M128 236 H256 M144 290 H240" stroke="#059669" stroke-width="10" stroke-linecap="round" stroke-opacity="0.4"/>
+
+    <!-- Fresh Sprout / Leaf on Basket -->
+    <path d="M192 42 C236 42 250 86 192 108 C144 86 160 42 192 42 Z" fill="#10b981"/>
+    <path d="M192 108 C192 70 214 54 230 48" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
+
+    <!-- Star Accent -->
+    <path d="M310 68 L320 90 L342 100 L320 110 L310 132 L300 110 L278 100 L300 90 Z" fill="url(#goldGradMask)"/>
+  </g>
+</svg>

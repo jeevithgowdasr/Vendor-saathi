@@ -1,0 +1,60 @@
+{
+  "name": "VendorSaathi - Rural Express & Daily Fresh",
+  "short_name": "VendorSaathi",
+  "description": "Order fresh vegetables, fruits, groceries and daily village essentials directly from local vendors with instant UPI payment and live GPS tracking.",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#064e3b",
+  "theme_color": "#059669",
+  "orientation": "portrait-primary",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": ["shopping", "food", "lifestyle", "business"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/logo.jpg",
+      "sizes": "192x192 512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/hero-vendor-emblem.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Browse Fresh Groceries",
+      "short_name": "Groceries",
+      "description": "Explore vegetables, fruits and dairy",
+      "url": "/?view=categories",
+      "icons": [{ "src": "/favicon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Nearby Local Vendors",
+      "short_name": "Vendors",
+      "description": "Find verified shops in your village",
+      "url": "/?view=nearby",
+      "icons": [{ "src": "/favicon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Track Active Orders",
+      "short_name": "Track Orders",
+      "description": "Live GPS delivery tracking",
+      "url": "/?view=orders",
+      "icons": [{ "src": "/favicon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "My Shopping Cart",
+      "short_name": "Cart",
+      "description": "View cart and checkout with UPI",
+      "url": "/?view=cart",
+      "icons": [{ "src": "/favicon.svg", "sizes": "96x96" }]
+    }
+  ]
+}

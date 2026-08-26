@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- Primary PWA & SEO Meta Tags -->
+  <title>🛒 VendorSaathi — Fresh Groceries Delivered in 20 Mins</title>
+  <meta name="description"
+    content="Order fresh vegetables, fruits, groceries and daily village essentials directly from local vendors with instant UPI payment and live GPS tracking." />
+  <meta name="keywords"
+    content="VendorSaathi, groceries, village fresh, vegetable delivery, kirana store, instant UPI, Moodbidri, farm direct" />
+  <meta name="author" content="VendorSaathi Team" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#059669" />
+  <link rel="canonical" href="https://vendorsaathi.com/" />
+
+  <!-- Open Graph / Facebook / WhatsApp Preview -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://vendorsaathi.com/" />
+  <meta property="og:title" content="VendorSaathi — Fresh Groceries Delivered in 20 Mins" />
+  <meta property="og:description"
+    content="Direct from village farms and local kirana stores. Order fresh vegetables, fruits and groceries with instant UPI." />
+  <meta property="og:image" content="/logo.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:site_name" content="VendorSaathi" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://vendorsaathi.com/" />
+  <meta name="twitter:title" content="VendorSaathi — Fresh Groceries Delivered in 20 Mins" />
+  <meta name="twitter:description" content="Direct from village farms and local kirana stores with instant UPI." />
+  <meta name="twitter:image" content="/logo.jpg" />
+
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- Favicon & Touch Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="alternate icon" type="image/jpeg" href="/logo.jpg" />
+  <link rel="apple-touch-icon" href="/logo.jpg" />
+
+  <!-- Apple iOS PWA Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="VendorSaathi" />
+
+  <!-- Android / Windows PWA -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="application-name" content="VendorSaathi" />
+
+  <!-- DNS Prefetch & Preconnect for External CDN & Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://images.unsplash.com" />
+  <link rel="dns-prefetch" href="https://js.stripe.com" />
+
+  <!-- Modern Typography Google Fonts with font-display: swap -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Instant Preloader Styles -->
+  <style>
+    @keyframes vsPreloaderSpin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .vs-initial-preloader {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #f0fdf4;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      color: #064e3b;
+    }
+
+    .vs-initial-logo-badge {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      box-shadow: 0 10px 25px rgba(5, 150, 105, 0.2);
+      margin-bottom: 16px;
+      border: 1.5px solid #a7f3d0;
+    }
+
+    .vs-initial-title {
+      font-weight: 900;
+      font-size: 19px;
+      color: #064e3b;
+      margin-bottom: 4px;
+    }
+
+    .vs-initial-subtitle {
+      font-size: 13px;
+      color: #059669;
+      font-weight: 600;
+      margin-bottom: 18px;
+    }
+
+    .vs-initial-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #bbf7d0;
+      border-top-color: #059669;
+      border-radius: 50%;
+      animation: vsPreloaderSpin 0.75s linear infinite;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- App Root with Instant Preloader to Prevent Cumulative Layout Shift (CLS) -->
+  <div id="root">
+    <div class="vs-initial-preloader">
+      <div class="vs-initial-logo-badge">🛒</div>
+      <div class="vs-initial-title">VendorSaathi</div>
+      <div class="vs-initial-subtitle">Loading Fresh Groceries...</div>
+      <div class="vs-initial-spinner"></div>
+    </div>
+  </div>
+
+  <!-- Noscript Fallback -->
+  <noscript>
+    <div style="padding: 24px; text-align: center; font-family: sans-serif; background: #fef2f2; color: #991b1b;">
+      <h2>JavaScript Required</h2>
+      <p>Please enable JavaScript in your browser to run VendorSaathi.</p>
+    </div>
+  </noscript>
+
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
+</html>
