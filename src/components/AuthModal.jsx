@@ -284,8 +284,11 @@ export const AuthModal = () => {
       } else if (popupErr.code === 'auth/popup-blocked') {
         setErrorMessage('Google popup was blocked by your browser. Please allow popups for this site.');
       } else if (popupErr.code === 'auth/unauthorized-domain') {
-        const host = typeof window !== 'undefined' ? window.location.hostname : 'customervendor.vercel.app';
-        setErrorMessage(`To enable Google 1-Click popup on ${host}, add "${host}" to Firebase Console > Authentication > Settings > Authorized domains.`);
+        const host = typeof window !== 'undefined' ? window.location.hostname : 'vendorcustomer.vercel.app';
+        setErrorMessage(`To enable Google 1-Click on ${host}, add "${host}" to Firebase Console > Authentication > Settings > Authorized domains.`);
+      } else if (popupErr.code === 'auth/internal-error' || popupErr.code === 'auth/operation-not-allowed' || popupErr.message?.includes('internal-error')) {
+        setErrorMessage('Google Sign-In is not enabled yet in your Firebase Console. Please type your Gmail below to continue instantly!');
+        setViewState('gmail-input');
       } else {
         setErrorMessage(popupErr.message || 'Google sign-in could not complete. Please try again.');
       }
