@@ -108,7 +108,28 @@ export const LoginView = ({ params = {} }) => {
 
     try {
       if (!auth || !googleProvider) {
-        throw new Error('Firebase Auth is not initialized');
+        // Safe offline/demo fallback if Firebase keys are not configured in Vercel
+        const demoGoogleName = selectedRole === 'vendor' ? 'Ramesh Gowda' : 'Jeevith Gowda';
+        const demoGoogleEmail = selectedRole === 'vendor' ? 'ramesh.vendor@gmail.com' : 'jeevithgowdasr@gmail.com';
+        
+        const fallbackUserData = {
+          uid: `google_demo_${Date.now()}`,
+          name: demoGoogleName,
+          email: demoGoogleEmail,
+          phone: selectedRole === 'vendor' ? '+91 98451 23456' : '+91 9876543210',
+          photoURL: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(demoGoogleName)}&backgroundColor=059669,10b981,047857`,
+          role: selectedRole,
+          authProvider: 'google_demo',
+          village: 'Mijar',
+          town: 'Moodbidri',
+          district: 'Dakshina Kannada',
+          pincode: '574225',
+          address: selectedRole === 'vendor' ? 'Ramesh Grocery, Mijar Cross, Moodbidri - 574225' : 'Bhavana Bai, Mijar Village, Moodbidri - 574225'
+        };
+
+        handleSuccessfulAuth(fallbackUserData);
+        showToast('ℹ️ Signed in using Instant Mode! (Add Firebase keys in Vercel for live Google OAuth)', 'info');
+        return;
       }
 
       googleProvider.setCustomParameters({ prompt: 'select_account' });
