@@ -693,7 +693,7 @@ export const AuthModal = () => {
             {errorMessage.includes('Authorized domains') && (
               <div style={{ marginTop: '8px' }}>
                 <a
-                  href={`https://console.firebase.google.com/project/${import.meta.env.VITE_FIREBASE_PROJECT_ID || 'blinklean-web'}/authentication/settings`}
+                  href={`https://console.firebase.google.com/project/${import.meta.env.VITE_FIREBASE_PROJECT_ID || 'vendorsaathi'}/authentication/settings`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
