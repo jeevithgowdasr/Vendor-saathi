@@ -6,9 +6,13 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node src/server.js"
+    "dev": "node src/server.js",
+    "migrate": "node src/scripts/seed-and-migrate.js",
+    "test:auth": "node test_backend_auth.js",
+    "test:products": "node test_backend_products.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",

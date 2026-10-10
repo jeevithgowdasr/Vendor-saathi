@@ -27,7 +27,8 @@ import {
   Activity,
   Sliders,
   ArrowRight,
-  Eye
+  Eye,
+  Calendar
 } from 'lucide-react';
 import { playOrderNotificationSound, playStatusUpdateSound, playPopSound } from '../utils/audio';
 import { FormField } from '../components/FormField';
@@ -42,6 +43,8 @@ import { AsyncButton } from '../components/AsyncButton';
 import { EmptyStateFallback } from '../components/EmptyStateFallback';
 import { ResponsiveTable } from '../components/ResponsiveTable';
 import { cacheManager, CACHE_KEYS } from '../utils/cacheManager';
+import { VendorProductsTab } from '../components/VendorProductsTab';
+import { VendorPlanVisitTab } from '../components/VendorPlanVisitTab';
 
 export const VendorPortalView = () => {
   const { 
@@ -56,7 +59,8 @@ export const VendorPortalView = () => {
     showToast,
     setIsVendorChatOpen,
     activeRiderLocation,
-    setActiveRiderLocation
+    setActiveRiderLocation,
+    user
   } = useApp();
 
   const { updateVendorOrderState, broadcastRiderLocation, broadcastStoreStatus } = useVendorSync();
@@ -578,6 +582,7 @@ export const VendorPortalView = () => {
         {[
           { id: 'orders', label: `📦 Live Orders (${vendorOrders.length})`, icon: Package },
           { id: 'inventory', label: `🥬 Produce & Stock Manager (${vendorProducts.length})`, icon: Sliders },
+          { id: 'schedule', label: `📅 Plan Visits & Schedules`, icon: Calendar },
           { id: 'gps', label: '🛵 Live Rider GPS Dispatch', icon: Navigation },
           { id: 'chat', label: '💬 Customer Live Chat', icon: MessageSquare }
         ].map(tab => (
@@ -826,159 +831,26 @@ export const VendorPortalView = () => {
           TAB 2: PRODUCE CATALOG & INVENTORY MANAGER
           ============================================================ */}
       {activeTab === 'inventory' && (
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
-            <div>
-              <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', margin: 0 }}>
-                Store Catalog & Stock Telemetry
-              </h2>
-              <span style={{ fontSize: '12.5px', color: '#64748b' }}>
-                Toggle in-stock/out-of-stock or edit prices. Reflects instantly on customer website!
-              </span>
-            </div>
-
-            <button
-              onClick={() => setIsAddProductOpen(true)}
-              className="btn-primary"
-              style={{ padding: '10px 18px', borderRadius: '14px', fontSize: '13.5px', display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
-              <Plus size={16} /> Add Fresh Harvest Item
-            </button>
-          </div>
-
-          {/* Add Product Modal */}
-          {isAddProductOpen && (
-            <div style={{
-              backgroundColor: '#f0fdf4',
-              border: '2px solid #a7f3d0',
-              borderRadius: '20px',
-              padding: '20px',
-              marginBottom: '20px'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <strong style={{ fontSize: '16px', color: '#064e3b' }}>Add New Farm Produce to {currentVendor.name}</strong>
-                <button onClick={() => setIsAddProductOpen(false)} style={{ color: '#64748b', background: 'none', border: 'none', cursor: 'pointer' }}>
-                  <X size={18} />
-                </button>
-              </div>
-
-              <form onSubmit={handleAddProduct} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-                  <FormField
-                    label="Item Name"
-                    name="new_prod_name"
-                    required
-                    placeholder="e.g. Fresh Organic Lady Finger"
-                    value={newProdName}
-                    onChange={(e) => {
-                      setNewProdName(e.target.value);
-                      if (fieldErrors.name) setFieldErrors(prev => ({ ...prev, name: null }));
-                    }}
-                    error={fieldErrors.name}
-                    maxLength={100}
-                  />
-
-                  <FormField
-                    label="Price"
-                    name="new_prod_price"
-                    type="currency"
-                    required
-                    placeholder="40.00"
-                    value={newProdPrice}
-                    onChange={(e) => {
-                      setNewProdPrice(e.target.value);
-                      if (fieldErrors.price) setFieldErrors(prev => ({ ...prev, price: null }));
-                    }}
-                    error={fieldErrors.price}
-                    maxLength={8}
-                  />
-
-                  <div>
-                    <label style={{ fontSize: '12px', fontWeight: '800', color: '#334155', display: 'block', marginBottom: '6px' }}>Unit</label>
-                    <select
-                      value={newProdUnit}
-                      onChange={(e) => setNewProdUnit(e.target.value)}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '14px', border: '1.5px solid #cbd5e1', fontSize: '13.5px', outline: 'none', backgroundColor: '#ffffff' }}
-                    >
-                      <option value="kg">kg</option>
-                      <option value="500 g">500 g</option>
-                      <option value="250 g">250 g</option>
-                      <option value="bunch">bunch</option>
-                      <option value="piece">piece</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label style={{ fontSize: '12px', fontWeight: '800', color: '#334155', display: 'block', marginBottom: '6px' }}>Category</label>
-                    <select
-                      value={newProdCategory}
-                      onChange={(e) => setNewProdCategory(e.target.value)}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '14px', border: '1.5px solid #cbd5e1', fontSize: '13.5px', outline: 'none', backgroundColor: '#ffffff' }}
-                    >
-                      <option value="vegetables">Vegetables</option>
-                      <option value="fruits">Fruits</option>
-                      <option value="grocery">Grocery & Staples</option>
-                      <option value="dairy">Dairy & Essentials</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Hardened Image Upload Section */}
-                <div style={{
-                  padding: '12px 16px',
-                  backgroundColor: '#ffffff',
-                  borderRadius: '14px',
-                  border: fieldErrors.image ? '1.5px solid #ef4444' : '1.5px solid #cbd5e1',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '16px',
-                  flexWrap: 'wrap'
-                }}>
-                  <img
-                    src={newProdImage}
-                    alt="Preview"
-                    style={{ width: '56px', height: '56px', borderRadius: '12px', objectFit: 'cover', border: '1px solid #e2e8f0' }}
-                  />
-                  <div style={{ flex: 1, minWidth: '200px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: '800', color: '#334155', display: 'block', marginBottom: '4px' }}>
-                      Produce Photo (JPG, PNG, WebP &le; 5MB)
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/png, image/jpeg, image/webp"
-                      onChange={handleProductImageUpload}
-                      style={{ fontSize: '12px', color: '#64748b' }}
-                    />
-                    {fieldErrors.image && (
-                      <span style={{ fontSize: '11px', color: '#dc2626', fontWeight: '700', display: 'block', marginTop: '2px' }}>
-                        {fieldErrors.image}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
-                  <button type="submit" className="btn-primary" style={{ padding: '12px 24px', borderRadius: '14px', fontSize: '14px', fontWeight: '800' }}>
-                    Publish to Store 🚀
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-
-          {/* Responsive Produce & Inventory Table/Card Component */}
-          <ResponsiveTable
-            columns={inventoryColumns}
-            data={vendorProducts}
-            keyField="id"
-            stickyHeader={true}
-            stickyFirstColumn={true}
-            mobileLayout="toggle"
-            caption="Live Store Produce Catalog"
-            emptyMessage={`No produce listed in ${currentVendor.name} yet. Click 'Add Fresh Harvest Item' above!`}
-          />
-        </div>
+        <VendorProductsTab
+          token={user?.authToken || (typeof window !== 'undefined' ? localStorage.getItem('vs_auth_token') : null)}
+          vendorName={currentVendor.name}
+          onToast={showToast}
+        />
       )}
+
+      {/* ============================================================
+          TAB: PLANNED VISITS & SCHEDULE MANAGEMENT
+          ============================================================ */}
+      {activeTab === 'schedule' && (
+        <VendorPlanVisitTab
+          vendorId={selectedVendorId}
+          vendorName={currentVendor.name}
+          vendorCategory={currentVendor.category || 'Produce & Groceries'}
+          vendorProducts={vendorProducts}
+          onToast={showToast}
+        />
+      )}
+
 
       {/* ============================================================
           TAB 3: LIVE RIDER GPS DISPATCH

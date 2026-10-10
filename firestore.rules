@@ -1,0 +1,123 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Checks role from custom claims or by reading the users collection document
+    function isVendor() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'vendor' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' ||
+        get(/databases/$(database)/documents/vendors/$(request.auth.uid)).data != null
+      );
+    }
+
+    // =========================================================================
+    // 1. SCHEDULES COLLECTION (Planned Visits & Route Telemetry)
+    // =========================================================================
+    match /schedules/{scheduleId} {
+      // Any authenticated user (customer, vendor, rider) can read planned visits
+      allow read: if isAuthenticated();
+
+      // Only authenticated vendors can create planned visits for themselves
+      allow create: if isAuthenticated() &&
+                    isVendor() &&
+                    request.resource.data.vendorId == request.auth.uid &&
+                    request.resource.data.status in ['scheduled', 'in_transit', 'arrived', 'completed', 'cancelled'] &&
+                    request.resource.data.expectedArrivalTime is timestamp &&
+                    request.resource.data.expectedDepartureTime is timestamp &&
+                    request.resource.data.expectedArrivalTime < request.resource.data.expectedDepartureTime;
+
+      // Only the vendor who owns this schedule can update or advance its status
+      allow update: if isAuthenticated() &&
+                    resource.data.vendorId == request.auth.uid &&
+                    request.resource.data.vendorId == request.auth.uid &&
+                    request.resource.data.status in ['scheduled', 'in_transit', 'arrived', 'completed', 'cancelled'];
+
+      // Only the owner vendor can delete or remove a schedule
+      allow delete: if isAuthenticated() &&
+                    resource.data.vendorId == request.auth.uid;
+    }
+
+    // =========================================================================
+    // 2. PRODUCTS COLLECTION
+    // =========================================================================
+    match /products/{productId} {
+      // Anyone authenticated can read catalog items
+      allow read: if isAuthenticated();
+
+      // Only the vendor who owns the product can create, update, or delete it
+      allow create: if isAuthenticated() &&
+                    isVendor() &&
+                    request.resource.data.vendor_id == request.auth.uid;
+
+      allow update, delete: if isAuthenticated() &&
+                            (resource.data.vendor_id == request.auth.uid || resource.data.vendorId == request.auth.uid);
+    }
+
+    // =========================================================================
+    // 3. USERS COLLECTION
+    // =========================================================================
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    // =========================================================================
+    // 4. VENDORS COLLECTION
+    // =========================================================================
+    match /vendors/{vendorId} {
+      allow read: if true;
+      allow write: if isOwner(vendorId);
+
+      match /chats/{messageId} {
+        allow read, write: if isAuthenticated();
+      }
+    }
+
+    // =========================================================================
+    // 5. ORDERS COLLECTION
+    // =========================================================================
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid ||
+        resource.data.vendorId == request.auth.uid
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid ||
+        resource.data.vendorId == request.auth.uid
+      );
+    }
+
+    // =========================================================================
+    // 6. REVIEWS COLLECTION
+    // =========================================================================
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // =========================================================================
+    // 7. CONFLICTS LOG COLLECTION
+    // =========================================================================
+    match /conflicts/{conflictId} {
+      // Authenticated users and Cloud Functions can read and log detected conflicts
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated() && isVendor();
+    }
+  }
+}
+

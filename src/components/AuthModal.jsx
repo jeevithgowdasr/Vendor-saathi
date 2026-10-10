@@ -906,6 +906,26 @@ export const AuthModal = () => {
                   🏪 Vendor (Ramesh)
                 </button>
               </div>
+
+              <div style={{ marginTop: '16px', textAlign: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAuthModalOpen(false);
+                    navigateTo('login', { mode: 'signin' });
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#059669',
+                    fontSize: '13px',
+                    fontWeight: '800',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Go to Dedicated Vendor & Customer Login / Register Page &rarr;
+                </button>
+              </div>
             </div>
           </div>
         )}

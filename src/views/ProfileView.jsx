@@ -27,8 +27,12 @@ import {
   Satellite,
   Crosshair,
   Radio,
-  Download
+  Download,
+  Truck,
+  Layers,
+  Plus
 } from 'lucide-react';
+import { updateProfileApi, updateOperatingAreasApi, updateCustomerLocationApi } from '../services/authApi';
 import { saveUserProfileToFirebase } from '../firebase';
 import { playSuccessChime, playPopSound } from '../utils/audio';
 import { getLiveGPSCoordinates, reverseGeocodeGPS } from '../utils/geolocation';
@@ -74,19 +78,35 @@ export const ProfileView = () => {
   const [isDetectingGPS, setIsDetectingGPS] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
 
+  const [editBusinessName, setEditBusinessName] = useState(user?.businessName || user?.name || '');
+  const [editVendorCategory, setEditVendorCategory] = useState(user?.vendorCategory || 'Vegetables');
+  const [editOperatingAreas, setEditOperatingAreas] = useState(user?.operatingAreas || ['Mijar', 'Moodbidri']);
+  const [newAreaInput, setNewAreaInput] = useState('');
+  const [editVehicleType, setEditVehicleType] = useState(user?.vehicleDetails?.vehicleType || 'None');
+  const [editVehicleRegNo, setEditVehicleRegNo] = useState(user?.vehicleDetails?.registrationNumber || '');
+  const [editPreferredAreas, setEditPreferredAreas] = useState(user?.preferredAreas || ['Mijar', 'Moodbidri']);
+  const [editPreferredCategories, setEditPreferredCategories] = useState(user?.preferredCategories || ['Vegetables', 'Fruits']);
+
   const clearFieldError = (field) => {
     setFieldErrors(prev => ({ ...prev, [field]: null }));
   };
 
   const handleOpenEdit = () => {
-    setEditName(user?.name || '');
+    setEditName(user?.name || user?.fullName || '');
+    setEditBusinessName(user?.businessName || user?.name || '');
+    setEditVendorCategory(user?.vendorCategory || 'Vegetables');
+    setEditOperatingAreas(Array.isArray(user?.operatingAreas) ? user.operatingAreas : ['Mijar', 'Moodbidri']);
+    setEditVehicleType(user?.vehicleDetails?.vehicleType || 'None');
+    setEditVehicleRegNo(user?.vehicleDetails?.registrationNumber || '');
+    setEditPreferredAreas(Array.isArray(user?.preferredAreas) ? user.preferredAreas : ['Mijar', 'Moodbidri']);
+    setEditPreferredCategories(Array.isArray(user?.preferredCategories) ? user.preferredCategories : ['Vegetables', 'Fruits']);
     setEditEmail(user?.email || '');
     setEditPhone(user?.phone || '');
     setEditVillage(user?.village || 'Mijar');
     setEditTown(user?.town || 'Moodbidri');
     setEditDistrict(user?.district || 'Dakshina Kannada');
     setEditPincode(user?.pincode || '574225');
-    setEditAddress(user?.address || '');
+    setEditAddress(user?.address || user?.streetAddress || '');
     setEditLandmark(user?.landmark || '');
     setEditRole(user?.role || 'customer');
     setEditLang(user?.preferredLanguage || 'en');
@@ -164,7 +184,17 @@ export const ProfileView = () => {
     const updatedUser = {
       ...user,
       isRegistered: true,
-      name: sanitizedData.name,
+      name: editRole === 'vendor' ? (editBusinessName || sanitizedData.name) : sanitizedData.name,
+      fullName: sanitizedData.name,
+      businessName: editBusinessName || sanitizedData.name,
+      vendorCategory: editVendorCategory,
+      operatingAreas: editOperatingAreas,
+      vehicleDetails: {
+        vehicleType: editVehicleType,
+        registrationNumber: editVehicleRegNo.trim()
+      },
+      preferredAreas: editPreferredAreas,
+      preferredCategories: editPreferredCategories,
       email: sanitizedData.email,
       phone: formattedPhone,
       streetAddress: sanitizedData.streetAddress,
@@ -175,6 +205,7 @@ export const ProfileView = () => {
       address: formattedAddr,
       landmark: editLandmark.trim(),
       role: editRole,
+      status: user?.status || 'active',
       preferredLanguage: editLang,
       gpsLocation: editGps || user?.gpsLocation || {
         lat: 13.0682,
@@ -187,6 +218,16 @@ export const ProfileView = () => {
     };
 
     updateUserProfile(updatedUser);
+    
+    // Sync to backend profile endpoint if token exists
+    if (user?.authToken) {
+      try {
+        await updateProfileApi(user.authToken, updatedUser);
+      } catch (apiErr) {
+        console.warn('Backend profile update sync notice:', apiErr.message);
+      }
+    }
+
     await saveUserProfileToFirebase(updatedUser.uid, updatedUser);
 
     // Update global app coordinates
@@ -203,7 +244,7 @@ export const ProfileView = () => {
 
     setIsEditModalOpen(false);
     playSuccessChime();
-    showToast('👤 Profile & GPS Location updated and saved to Cloud Firestore!');
+    showToast('👤 Profile & Operating details updated successfully!');
   };
 
   if (!user?.isLoggedIn) {
@@ -398,35 +439,88 @@ export const ProfileView = () => {
               fontSize: '13px'
             }}>
               <div>
-                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Delivery Village / Area</span>
+                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>
+                  {user.role === 'vendor' ? 'Business / Shop Name' : 'Full Name'}
+                </span>
                 <strong style={{ display: 'block', color: '#0f172a', fontSize: '14px', marginTop: '2px' }}>
-                  📍 {user.village || 'Mijar Village'}
+                  {user.role === 'vendor' ? (user.businessName || user.name) : (user.fullName || user.name)}
                 </strong>
               </div>
 
               <div>
-                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Town / District</span>
-                <strong style={{ display: 'block', color: '#0f172a', fontSize: '14px', marginTop: '2px' }}>
-                  {user.town || 'Moodbidri'}, {user.district || 'DK'}
-                </strong>
+                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Account Role & Status</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                  <strong style={{ color: user.role === 'vendor' ? '#2563eb' : '#059669', fontSize: '14px' }}>
+                    {user.role === 'vendor' ? '🏪 Vendor Partner' : '🛒 Customer'}
+                  </strong>
+                  <span className="badge badge-success" style={{ fontSize: '10px', padding: '2px 6px' }}>
+                    {user.status || 'Active'}
+                  </span>
+                </div>
               </div>
 
-              <div>
-                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Account Role</span>
-                <strong style={{ display: 'block', color: user.role === 'vendor' ? '#d97706' : '#059669', fontSize: '14px', marginTop: '2px' }}>
-                  {user.role === 'vendor' ? '🏪 Local Vendor Partner' : '🛒 Village Customer'}
-                </strong>
-              </div>
+              {user.role === 'vendor' ? (
+                <>
+                  <div>
+                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Vendor Category</span>
+                    <strong style={{ display: 'block', color: '#0f172a', fontSize: '14px', marginTop: '2px' }}>
+                      🏷️ {user.vendorCategory || 'Vegetables'}
+                    </strong>
+                  </div>
 
-              <div>
-                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Cloud Sync Status</span>
-                <strong style={{ display: 'block', color: '#0f172a', fontSize: '14px', marginTop: '2px' }}>
-                  🔥 Saved to Firestore
-                </strong>
-              </div>
+                  <div>
+                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Vehicle Details</span>
+                    <strong style={{ display: 'block', color: '#0f172a', fontSize: '14px', marginTop: '2px' }}>
+                      🚚 {user.vehicleDetails?.vehicleType || 'None'} {user.vehicleDetails?.registrationNumber ? `(${user.vehicleDetails.registrationNumber})` : ''}
+                    </strong>
+                  </div>
+
+                  <div style={{ gridColumn: '1 / -1', paddingTop: '8px', borderTop: '1px solid #e2e8f0' }}>
+                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Supported Operating Localities</span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
+                      {(Array.isArray(user.operatingAreas) && user.operatingAreas.length > 0 ? user.operatingAreas : ['Mijar', 'Moodbidri']).map(area => (
+                        <span key={area} style={{ backgroundColor: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe', padding: '3px 8px', borderRadius: '12px', fontSize: '11.5px', fontWeight: '700' }}>
+                          📍 {area}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Delivery Village / Area</span>
+                    <strong style={{ display: 'block', color: '#0f172a', fontSize: '14px', marginTop: '2px' }}>
+                      📍 {user.village || 'Mijar Village'}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Town / District</span>
+                    <strong style={{ display: 'block', color: '#0f172a', fontSize: '14px', marginTop: '2px' }}>
+                      {user.town || 'Moodbidri'}, {user.district || 'DK'}
+                    </strong>
+                  </div>
+
+                  {user.preferredAreas && user.preferredAreas.length > 0 && (
+                    <div style={{ gridColumn: '1 / -1', paddingTop: '8px', borderTop: '1px solid #e2e8f0' }}>
+                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Preferred Localities</span>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
+                        {user.preferredAreas.map(area => (
+                          <span key={area} style={{ backgroundColor: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '3px 8px', borderRadius: '12px', fontSize: '11.5px', fontWeight: '700' }}>
+                            📍 {area}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
 
               <div style={{ gridColumn: '1 / -1', paddingTop: '8px', borderTop: '1px solid #e2e8f0' }}>
-                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Registered Delivery Address</span>
+                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>
+                  {user.role === 'vendor' ? 'Store / Depot Address' : 'Registered Delivery Address'}
+                </span>
                 <strong style={{ display: 'block', color: '#334155', fontSize: '13.5px', marginTop: '2px', lineHeight: 1.4 }}>
                   {user.address || 'Near Alva’s Campus Entrance, Mijar Village, Moodbidri - 574225'}
                 </strong>
@@ -511,6 +605,35 @@ export const ProfileView = () => {
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px' }}>
+              {user.role === 'vendor' && (
+                <button
+                  onClick={() => navigateTo('vendor-portal')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '14px 16px',
+                    borderRadius: '14px',
+                    backgroundColor: '#eff6ff',
+                    border: '1.5px solid #93c5fd',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    textAlign: 'left',
+                    marginBottom: '6px'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#dbeafe'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Store size={20} color="#2563eb" />
+                    <div>
+                      <strong style={{ fontSize: '14px', color: '#1e40af', display: 'block' }}>Vendor Partner Dashboard</strong>
+                      <span style={{ fontSize: '12px', color: '#2563eb' }}>Manage inventory, pricing & operating areas</span>
+                    </div>
+                  </div>
+                  <ChevronRight size={16} color="#2563eb" />
+                </button>
+              )}
               <button
                 onClick={() => navigateTo('my-orders')}
                 style={{
@@ -871,6 +994,152 @@ export const ProfileView = () => {
                 maxLength={100}
                 icon={User}
               />
+
+              {editRole === 'vendor' && (
+                <div style={{
+                  backgroundColor: '#f8fafc',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '16px',
+                  padding: '14px',
+                  marginBottom: '14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}>
+                  <FormField
+                    label="Business / Shop Name"
+                    name="edit_bizName"
+                    required
+                    placeholder="e.g. Ramesh Grocery"
+                    value={editBusinessName}
+                    onChange={(e) => setEditBusinessName(e.target.value)}
+                    icon={Store}
+                  />
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '4px' }}>
+                      Vendor Category
+                    </label>
+                    <select
+                      value={editVendorCategory}
+                      onChange={(e) => setEditVendorCategory(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '9px 12px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #cbd5e1',
+                        fontSize: '13px',
+                        backgroundColor: '#ffffff'
+                      }}
+                    >
+                      <option value="Vegetables">Vegetables</option>
+                      <option value="Fruits">Fresh Fruits</option>
+                      <option value="Flowers">Pooja Flowers</option>
+                      <option value="Ice-cream">Ice Cream</option>
+                      <option value="Dairy">Dairy & Milk</option>
+                      <option value="Snacks">Street Snacks</option>
+                      <option value="Grocery">Daily Grocery</option>
+                      <option value="Bakery">Bakery & Sweets</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '4px' }}>
+                      Supported Operating Localities
+                    </label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
+                      {editOperatingAreas.map(area => (
+                        <span
+                          key={area}
+                          style={{
+                            backgroundColor: '#eff6ff',
+                            color: '#1e40af',
+                            border: '1px solid #bfdbfe',
+                            padding: '3px 8px',
+                            borderRadius: '12px',
+                            fontSize: '11.5px',
+                            fontWeight: '700',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          {area}
+                          <button
+                            type="button"
+                            onClick={() => setEditOperatingAreas(prev => prev.filter(a => a !== area))}
+                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 0 }}
+                          >
+                            &times;
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <input
+                        type="text"
+                        placeholder="Add locality..."
+                        value={newAreaInput}
+                        onChange={(e) => setNewAreaInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (newAreaInput.trim() && !editOperatingAreas.includes(newAreaInput.trim())) {
+                              setEditOperatingAreas(prev => [...prev, newAreaInput.trim()]);
+                              setNewAreaInput('');
+                            }
+                          }
+                        }}
+                        style={{ flex: 1, padding: '7px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (newAreaInput.trim() && !editOperatingAreas.includes(newAreaInput.trim())) {
+                            setEditOperatingAreas(prev => [...prev, newAreaInput.trim()]);
+                            setNewAreaInput('');
+                          }
+                        }}
+                        style={{ padding: '7px 12px', borderRadius: '8px', backgroundColor: '#2563eb', color: '#ffffff', border: 'none', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '4px' }}>
+                        Vehicle Type
+                      </label>
+                      <select
+                        value={editVehicleType}
+                        onChange={(e) => setEditVehicleType(e.target.value)}
+                        style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px' }}
+                      >
+                        <option value="None">None</option>
+                        <option value="Cart">Push Cart</option>
+                        <option value="Bicycle">Bicycle</option>
+                        <option value="Two-Wheeler">Two-Wheeler</option>
+                        <option value="Three-Wheeler / Auto">Three-Wheeler / Auto</option>
+                        <option value="Van / Small Truck">Van / Truck</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '4px' }}>
+                        Plate Number
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="KA-19-MB-4521"
+                        value={editVehicleRegNo}
+                        onChange={(e) => setEditVehicleRegNo(e.target.value)}
+                        style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <FormField

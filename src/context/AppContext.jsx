@@ -11,7 +11,9 @@ import {
   saveUserProfileToFirebase,
   getUserProfileFromFirebase,
   onAuthStateChanged,
-  signOut
+  signOut,
+  subscribeToAllProducts,
+  updateProductInFirebase
 } from '../firebase';
 import { 
   playSuccessChime, 
@@ -395,9 +397,19 @@ export const AppProvider = ({ children }) => {
       }
     });
 
+    // Listen to Firebase Firestore Products in real time
+    const unsubscribeProducts = subscribeToAllProducts((firebaseProducts) => {
+      if (firebaseProducts && firebaseProducts.length > 0) {
+        setProducts(firebaseProducts);
+        localStorage.setItem(STORAGE_KEYS.DYNAMIC_PRODUCTS, JSON.stringify(firebaseProducts));
+        cacheManager.invalidate(CACHE_KEYS.PRODUCTS, firebaseProducts);
+      }
+    });
+
     return () => {
       unsubscribeAuth();
       if (typeof unsubscribeOrders === 'function') unsubscribeOrders();
+      if (typeof unsubscribeProducts === 'function') unsubscribeProducts();
     };
   }, []);
 
@@ -516,6 +528,7 @@ export const AppProvider = ({ children }) => {
     });
     localStorage.setItem(STORAGE_KEYS.PRODUCT_SYNC, JSON.stringify({ productId, updates, timestamp: Date.now() }));
     window.dispatchEvent(new Event('storage'));
+    updateProductInFirebase(productId, updates).catch(() => {});
     showToast('📦 Product catalog updated in real-time!', 'info');
   };
 

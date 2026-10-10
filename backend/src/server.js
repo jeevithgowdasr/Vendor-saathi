@@ -12,6 +12,7 @@ import orderRoutes from './routes/orderRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import locationRoutes from './routes/locationRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import vendorProductRoutes from './routes/vendorProductRoutes.js';
 
 import { setupOrderSockets } from './sockets/orderSocket.js';
 import { parseKannadaVoiceQuery } from './ai/voiceParser.js';
@@ -62,6 +63,7 @@ app.post('/api/ai/parse-voice', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/vendors', vendorRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/vendor/products', vendorProductRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/locations', locationRoutes);
