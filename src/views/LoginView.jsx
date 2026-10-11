@@ -209,7 +209,10 @@ export const LoginView = ({ params = {} }) => {
     if (redirectInfo && redirectInfo.view) {
       navigateTo(redirectInfo.view, redirectInfo.params || {});
     } else {
-      if (resolvedRole === 'vendor') {
+      if (resolvedRole === 'admin') {
+        // Redirect platform administrator to Admin Dashboard
+        navigateTo('admin-panel');
+      } else if (resolvedRole === 'vendor') {
         // Redirect vendor to Vendor Dashboard
         navigateTo('vendor-portal');
       } else {
@@ -378,7 +381,11 @@ export const LoginView = ({ params = {} }) => {
     playPopSound();
     setIsLoading(true);
     try {
-      const identifier = role === 'vendor' ? 'ramesh.kirana@gmail.com' : 'bhavana.bai@gmail.com';
+      const identifier = role === 'admin'
+        ? 'admin@vendorsaathi.com'
+        : role === 'vendor'
+        ? 'ramesh.kirana@gmail.com'
+        : 'bhavana.bai@gmail.com';
       const res = await loginApi({
         identifier,
         password: 'password123',
@@ -509,20 +516,20 @@ export const LoginView = ({ params = {} }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
-              padding: '12px 14px',
+              gap: '6px',
+              padding: '12px 10px',
               borderRadius: '14px',
               border: 'none',
-              backgroundColor: isCustomer ? '#ffffff' : 'transparent',
-              color: isCustomer ? '#059669' : '#64748b',
+              backgroundColor: selectedRole === 'customer' ? '#ffffff' : 'transparent',
+              color: selectedRole === 'customer' ? '#059669' : '#64748b',
               fontWeight: '800',
-              fontSize: '14px',
+              fontSize: '13px',
               cursor: 'pointer',
-              boxShadow: isCustomer ? '0 4px 12px rgba(0,0,0,0.06)' : 'none',
+              boxShadow: selectedRole === 'customer' ? '0 4px 12px rgba(0,0,0,0.06)' : 'none',
               transition: 'all 0.25s ease'
             }}
           >
-            <ShoppingBag size={18} />
+            <ShoppingBag size={16} />
             <span>Customer</span>
           </button>
 
@@ -533,21 +540,45 @@ export const LoginView = ({ params = {} }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
-              padding: '12px 14px',
+              gap: '6px',
+              padding: '12px 10px',
               borderRadius: '14px',
               border: 'none',
-              backgroundColor: !isCustomer ? '#ffffff' : 'transparent',
-              color: !isCustomer ? '#2563eb' : '#64748b',
+              backgroundColor: selectedRole === 'vendor' ? '#ffffff' : 'transparent',
+              color: selectedRole === 'vendor' ? '#2563eb' : '#64748b',
               fontWeight: '800',
-              fontSize: '14px',
+              fontSize: '13px',
               cursor: 'pointer',
-              boxShadow: !isCustomer ? '0 4px 12px rgba(0,0,0,0.06)' : 'none',
+              boxShadow: selectedRole === 'vendor' ? '0 4px 12px rgba(0,0,0,0.06)' : 'none',
               transition: 'all 0.25s ease'
             }}
           >
-            <Store size={18} />
+            <Store size={16} />
             <span>Vendor Partner</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setSelectedRole('admin'); playPopSound(); clearFieldError('all'); }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              padding: '12px 10px',
+              borderRadius: '14px',
+              border: 'none',
+              backgroundColor: selectedRole === 'admin' ? '#ffffff' : 'transparent',
+              color: selectedRole === 'admin' ? '#0f172a' : '#64748b',
+              fontWeight: '800',
+              fontSize: '13px',
+              cursor: 'pointer',
+              boxShadow: selectedRole === 'admin' ? '0 4px 12px rgba(0,0,0,0.06)' : 'none',
+              transition: 'all 0.25s ease'
+            }}
+          >
+            <ShieldCheck size={16} />
+            <span>Admin</span>
           </button>
         </div>
 
@@ -877,6 +908,41 @@ export const LoginView = ({ params = {} }) => {
                     <span style={{ fontSize: '12px', color: '#2563eb' }}>ramesh.kirana@gmail.com &bull; Password: password123</span>
                   </div>
                   <ArrowRight size={18} color="#2563eb" />
+                </div>
+
+                <div
+                  onClick={() => handleQuickDemoLogin('admin')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '14px',
+                    padding: '16px',
+                    borderRadius: '20px',
+                    border: '1.5px solid #cbd5e1',
+                    backgroundColor: '#f8fafc',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#0f172a'}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = '#cbd5e1'}
+                >
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '50%',
+                    backgroundColor: '#0f172a',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <ShieldCheck size={24} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <strong style={{ fontSize: '14px', color: '#0f172a', display: 'block' }}>Principal Platform Admin (Admin Demo)</strong>
+                    <span style={{ fontSize: '12px', color: '#475569' }}>admin@vendorsaathi.com &bull; Password: password123</span>
+                  </div>
+                  <ArrowRight size={18} color="#0f172a" />
                 </div>
               </div>
             )}

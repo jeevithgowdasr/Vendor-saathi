@@ -252,7 +252,7 @@ export function useVendorSchedules({ vendorId = 'v1', vendorName = 'Ramesh Groce
     return Object.keys(errs).length === 0;
   };
 
-  // ─── 4. Create / Update Schedule ──────────────────────────────────────────
+  // ─── 4. Create / Update Schedule with Conflict Detection ─────────────────
   const handleSaveSchedule = async (e) => {
     e?.preventDefault();
     if (!validateForm()) return;
@@ -283,25 +283,73 @@ export function useVendorSchedules({ vendorId = 'v1', vendorName = 'Ramesh Groce
       status: editingSchedule ? editingSchedule.status : 'scheduled'
     };
 
+    setIsCheckingConflict(true);
+    try {
+      // Run Conflict Detection before committing
+      const conflictResult = await detectScheduleConflict({
+        ...schedulePayload,
+        scheduleId: editingSchedule ? (editingSchedule.id || editingSchedule.documentId) : null
+      });
+
+      if (conflictResult.hasConflict) {
+        setConflictData(conflictResult);
+        setPendingSchedulePayload(schedulePayload);
+        setIsConflictModalOpen(true);
+        onToast?.(`⚠️ Market overlap detected in ${schedulePayload.area.areaName}. Review conflict options.`, 'warning');
+        return;
+      }
+
+      // No conflict detected: persist directly
+      await persistSchedule(schedulePayload, null, 'none');
+    } catch (err) {
+      console.warn('Conflict check error:', err);
+      await persistSchedule(schedulePayload, null, 'none');
+    } finally {
+      setIsCheckingConflict(false);
+    }
+  };
+
+  const persistSchedule = async (schedulePayload, conflictInfo = null, resolution = 'none') => {
     setIsSaving(true);
     const tempId = editingSchedule ? (editingSchedule.id || editingSchedule.documentId) : `temp_${Date.now()}`;
 
+    const enrichedPayload = {
+      ...schedulePayload,
+      hasConflict: conflictInfo ? true : false,
+      conflictResolution: resolution,
+      conflictingVendorInfo: conflictInfo ? {
+        competingVendorName: conflictInfo.competingVendorName,
+        competingCategory: conflictInfo.competingCategory,
+        overlappingTimeWindow: conflictInfo.overlappingTimeWindow,
+        areaName: conflictInfo.areaName
+      } : null
+    };
+
     // Optimistic UI update
     if (editingSchedule) {
-      setSchedules(prev => prev.map(s => (s.id === tempId || s.documentId === tempId ? { ...s, ...schedulePayload, isOptimistic: true } : s)));
+      setSchedules(prev => prev.map(s => (s.id === tempId || s.documentId === tempId ? { ...s, ...enrichedPayload, isOptimistic: true } : s)));
     } else {
-      setSchedules(prev => [{ ...schedulePayload, id: tempId, documentId: tempId, isOptimistic: true }, ...prev]);
+      setSchedules(prev => [{ ...enrichedPayload, id: tempId, documentId: tempId, isOptimistic: true }, ...prev]);
     }
 
     try {
       if (editingSchedule) {
-        await updateVendorScheduleApi(tempId, schedulePayload);
+        await updateVendorScheduleApi(tempId, enrichedPayload);
         onToast?.(`✅ Planned visit to ${schedulePayload.area.areaName} updated!`, 'success');
       } else {
-        const result = await createVendorScheduleApi(schedulePayload);
+        const result = await createVendorScheduleWithConflictResolution(schedulePayload, conflictInfo, resolution);
         const created = result.schedule;
         setSchedules(prev => prev.map(s => (s.id === tempId || s.documentId === tempId ? (created || s) : s)));
-        onToast?.(`🎉 Planned visit to ${schedulePayload.area.areaName} scheduled for ${formData.date}!`, 'success');
+
+        if (conflictInfo) {
+          onToast?.(`⚠️ Planned visit saved with market competition warning.`, 'warning');
+        } else if (resolution === 'time_adjusted') {
+          onToast?.(`⏱️ Planned visit scheduled with adjusted time!`, 'success');
+        } else if (resolution === 'area_adjusted') {
+          onToast?.(`📍 Planned visit scheduled in recommended area!`, 'success');
+        } else {
+          onToast?.(`🎉 Planned visit to ${schedulePayload.area.areaName} scheduled for ${formData.date}!`, 'success');
+        }
       }
       closeModal();
       loadSchedules();
@@ -311,6 +359,45 @@ export function useVendorSchedules({ vendorId = 'v1', vendorName = 'Ramesh Groce
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // Choice 1: "Suggest Different Time" (adjacent open time slots)
+  const handleResolveWithTimeSlot = async (slot) => {
+    if (!pendingSchedulePayload) return;
+    const [arrH, arrM] = slot.arrivalTime.split(':').map(Number);
+    const [depH, depM] = slot.departureTime.split(':').map(Number);
+    const arrivalDate = new Date(`${pendingSchedulePayload.date}T${String(arrH).padStart(2, '0')}:${String(arrM).padStart(2, '0')}:00`);
+    const departureDate = new Date(`${pendingSchedulePayload.date}T${String(depH).padStart(2, '0')}:${String(depM).padStart(2, '0')}:00`);
+
+    const updated = {
+      ...pendingSchedulePayload,
+      expectedArrivalTime: arrivalDate,
+      expectedDepartureTime: departureDate
+    };
+    await persistSchedule(updated, null, 'time_adjusted');
+  };
+
+  // Choice 2: "Suggest Different Area" (alternative recommended neighborhood)
+  const handleResolveWithRecommendedArea = async (recArea) => {
+    if (!pendingSchedulePayload) return;
+    const updated = {
+      ...pendingSchedulePayload,
+      area: {
+        areaName: recArea.areaName,
+        coordinates: {
+          latitude: recArea.coordinates?.latitude || recArea.lat || 13.0682,
+          longitude: recArea.coordinates?.longitude || recArea.lng || 74.9961
+        },
+        serviceRadiusKm: Number(recArea.serviceRadiusKm || 2.0)
+      }
+    };
+    await persistSchedule(updated, null, 'area_adjusted');
+  };
+
+  // Choice 3: "Continue Anyway" (Non-blocking bypass)
+  const handleResolveContinueAnyway = async () => {
+    if (!pendingSchedulePayload) return;
+    await persistSchedule(pendingSchedulePayload, conflictData?.primaryConflict, 'ignored');
   };
 
   // ─── 5. Status Transition Pipeline ────────────────────────────────────────
@@ -436,7 +523,17 @@ export function useVendorSchedules({ vendorId = 'v1', vendorName = 'Ramesh Groce
     handleSaveSchedule,
     handleAdvanceStatus,
     handleCancelSchedule,
-    handleDeleteSchedule
+    handleDeleteSchedule,
+
+    // Conflict Detection & Resolution
+    isCheckingConflict,
+    conflictData,
+    isConflictModalOpen,
+    pendingSchedulePayload,
+    closeConflictModal,
+    handleResolveWithTimeSlot,
+    handleResolveWithRecommendedArea,
+    handleResolveContinueAnyway
   };
 }
 

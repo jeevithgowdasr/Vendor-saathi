@@ -45,6 +45,11 @@ import { ResponsiveTable } from '../components/ResponsiveTable';
 import { cacheManager, CACHE_KEYS } from '../utils/cacheManager';
 import { VendorProductsTab } from '../components/VendorProductsTab';
 import { VendorPlanVisitTab } from '../components/VendorPlanVisitTab';
+import {
+  respondToAdditionalItemInFirebase,
+  streamVendorLiveLocation,
+  stopVendorLiveLocationStream
+} from '../firebase';
 
 export const VendorPortalView = () => {
   const { 
@@ -72,6 +77,7 @@ export const VendorPortalView = () => {
   // GPS Telemetry Simulation state
   const [isSimulatingGps, setIsSimulatingGps] = useState(false);
   const [gpsProgress, setGpsProgress] = useState(0.5);
+  const [activeGpsWatchId, setActiveGpsWatchId] = useState(null);
 
   // New Product Modal state
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
@@ -82,6 +88,47 @@ export const VendorPortalView = () => {
   const [newProdImage, setNewProdImage] = useState('https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=500&q=80');
   const [newProdImageFile, setNewProdImageFile] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
+
+  // Handle responding to customer additional item requests
+  const handleRespondToAddon = async (orderId, productId, decision) => {
+    try {
+      const res = await respondToAdditionalItemInFirebase(orderId, productId, decision);
+      if (res.success) {
+        playPopSound();
+        showToast(decision === 'accepted' ? '✅ Accepted additional item! Order total updated.' : '❌ Declined additional item request.', decision === 'accepted' ? 'success' : 'info');
+      }
+    } catch (err) {
+      showToast(`Error updating add-on: ${err.message}`, 'danger');
+    }
+  };
+
+  // Toggle device GPS streaming for vendor schedule trip
+  const handleToggleHardwareGps = (scheduleId = 'sch_demo_01') => {
+    if (activeGpsWatchId) {
+      stopVendorLiveLocationStream(activeGpsWatchId);
+      setActiveGpsWatchId(null);
+      setIsSimulatingGps(false);
+      showToast('🛑 Device GPS live telemetry stopped.');
+    } else {
+      const watchId = streamVendorLiveLocation(
+        scheduleId,
+        (pos) => {
+          broadcastRiderLocation(selectedVendorId, {
+            lat: pos.latitude,
+            lng: pos.longitude,
+            progress: 0.75
+          });
+        },
+        (err) => {
+          showToast(`Device GPS note: ${err.message}. Using simulated telemetry.`, 'info');
+          setIsSimulatingGps(true);
+        }
+      );
+      setActiveGpsWatchId(watchId);
+      setIsSimulatingGps(true);
+      showToast('🛵 Live Trip Started! Streaming GPS telemetry to customer map 🛰️', 'success');
+    }
+  };
 
   // Vendor chat state
   const [chatMessages, setChatMessages] = useState([
@@ -692,6 +739,48 @@ export const VendorPortalView = () => {
                     </div>
                   </div>
 
+                  {/* Additional Items Request Banner */}
+                  {order.items?.some(i => i.isAdditionalRequest && i.requestStatus === 'pending') && (
+                    <div style={{
+                      backgroundColor: '#fffbeb',
+                      border: '2px solid #f59e0b',
+                      borderRadius: '16px',
+                      padding: '14px 18px',
+                      marginBottom: '16px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '18px' }}>⚠️</span>
+                        <strong style={{ fontSize: '14px', color: '#92400e' }}>
+                          Customer Requested Add-On Produce!
+                        </strong>
+                      </div>
+                      {order.items.filter(i => i.isAdditionalRequest && i.requestStatus === 'pending').map((addonItem, idx) => (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff', padding: '10px 14px', borderRadius: '12px', border: '1px solid #fde68a', marginTop: '6px', flexWrap: 'wrap', gap: '8px' }}>
+                          <div>
+                            <strong style={{ fontSize: '13.5px', color: '#0f172a' }}>{addonItem.name}</strong>
+                            <span style={{ fontSize: '12px', color: '#059669', display: 'block' }}>
+                              Quantity: {addonItem.quantity} {addonItem.unit} • +₹{addonItem.price * addonItem.quantity}
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={() => handleRespondToAddon(order.id, addonItem.productId || addonItem.id, 'accepted')}
+                              style={{ padding: '6px 12px', borderRadius: '8px', backgroundColor: '#10b981', color: '#fff', border: 'none', fontWeight: '800', fontSize: '12px', cursor: 'pointer' }}
+                            >
+                              ✓ Accept (+₹{addonItem.price * addonItem.quantity})
+                            </button>
+                            <button
+                              onClick={() => handleRespondToAddon(order.id, addonItem.productId || addonItem.id, 'rejected')}
+                              style={{ padding: '6px 12px', borderRadius: '8px', backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fecaca', fontWeight: '800', fontSize: '12px', cursor: 'pointer' }}
+                            >
+                              ✕ Reject
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Items List */}
                   <div style={{ marginBottom: '18px' }}>
                     <strong style={{ fontSize: '13px', color: '#475569', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
@@ -699,11 +788,11 @@ export const VendorPortalView = () => {
                     </strong>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '8px' }}>
                       {order.items.map((item, idx) => (
-                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '10px', backgroundColor: '#f1f5f9', fontSize: '13px' }}>
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '10px', backgroundColor: item.isAdditionalRequest ? '#ecfdf5' : '#f1f5f9', border: item.isAdditionalRequest ? '1px solid #a7f3d0' : 'none', fontSize: '13px' }}>
                           <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#10b981', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '800' }}>
                             {item.quantity}
                           </span>
-                          <span style={{ fontWeight: '700', color: '#1e293b', flex: 1 }}>{item.name}</span>
+                          <span style={{ fontWeight: '700', color: '#1e293b', flex: 1 }}>{item.name} {item.isAdditionalRequest ? '*(Add-on)*' : ''}</span>
                           <span style={{ color: '#059669', fontWeight: '800' }}>₹{item.price * item.quantity}</span>
                         </div>
                       ))}
@@ -867,30 +956,53 @@ export const VendorPortalView = () => {
               </span>
             </div>
 
-            <button
-              onClick={() => {
-                setIsSimulatingGps(!isSimulatingGps);
-                playPopSound();
-                showToast(isSimulatingGps ? 'GPS Telemetry Paused' : '🛵 Live Rider Ride Activated!');
-              }}
-              style={{
-                padding: '10px 20px',
-                borderRadius: '14px',
-                fontSize: '13.5px',
-                fontWeight: '800',
-                cursor: 'pointer',
-                backgroundColor: isSimulatingGps ? '#ef4444' : '#10b981',
-                color: '#ffffff',
-                border: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)'
-              }}
-            >
-              <Radio size={16} className={isSimulatingGps ? 'animate-pulse' : ''} />
-              <span>{isSimulatingGps ? 'Stop GPS Broadcast' : 'Start Live GPS Delivery Run'}</span>
-            </button>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => handleToggleHardwareGps()}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '14px',
+                  fontSize: '13.5px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  backgroundColor: activeGpsWatchId ? '#ef4444' : '#0284c7',
+                  color: '#ffffff',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.3)'
+                }}
+              >
+                <Navigation size={16} className={activeGpsWatchId ? 'animate-spin' : ''} />
+                <span>{activeGpsWatchId ? 'Stop Hardware GPS' : 'Start Trip & Stream Device GPS'}</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsSimulatingGps(!isSimulatingGps);
+                  playPopSound();
+                  showToast(isSimulatingGps ? 'GPS Telemetry Paused' : '🛵 Live Rider Ride Activated!');
+                }}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '14px',
+                  fontSize: '13.5px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  backgroundColor: isSimulatingGps ? '#ef4444' : '#10b981',
+                  color: '#ffffff',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)'
+                }}
+              >
+                <Radio size={16} className={isSimulatingGps ? 'animate-pulse' : ''} />
+                <span>{isSimulatingGps ? 'Stop Simulation' : 'Simulate Delivery Run'}</span>
+              </button>
+            </div>
           </div>
 
           {/* Interactive GPS Visualizer */}

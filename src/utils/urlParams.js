@@ -92,12 +92,24 @@ export const buildHashRoute = (viewName, params = {}) => {
  * @returns {{ view: string, params: Record<string, any> }}
  */
 export const parseHashRoute = (hash = '') => {
-  const clean = hash.replace('#', '').trim();
+  const clean = hash.replace(/^#\/?/, '').trim();
   if (!clean) return { view: 'home', params: {} };
 
   const [viewPart, queryPart] = clean.split('?');
-  const view = viewPart || 'home';
+  let rawView = (viewPart || 'home').toLowerCase().replace(/^\//, '');
+
+  // Normalize requested prompt aliases
+  let view = rawView;
+  if (rawView === 'vendor/dashboard' || rawView === 'vendor-dashboard' || rawView === 'vendor') {
+    view = 'vendor-portal';
+  } else if (rawView === 'customer/explore' || rawView === 'customer-explore' || rawView === 'explore') {
+    view = 'nearby-vendors';
+  } else if (rawView === 'admin/panel' || rawView === 'admin-panel' || rawView === 'admin') {
+    view = 'admin-panel';
+  }
+
   const params = queryPart ? decodeQueryParams(`?${queryPart}`) : {};
 
   return { view, params };
 };
+

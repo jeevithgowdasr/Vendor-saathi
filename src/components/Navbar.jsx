@@ -345,6 +345,31 @@ export const Navbar = () => {
             <span>Voice AI</span>
           </button>
 
+          {/* Admin Panel Direct Button (for Admin role) */}
+          {user?.role === 'admin' && (
+            <button
+              type="button"
+              onClick={() => navigateTo('admin-panel')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                borderRadius: '16px',
+                backgroundColor: '#0f172a',
+                color: '#ffffff',
+                fontSize: '12px',
+                fontWeight: '800',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(15, 23, 42, 0.25)'
+              }}
+            >
+              <ShieldCheck size={14} color="#34d399" />
+              <span>Admin Console</span>
+            </button>
+          )}
+
           {/* Wishlist Button */}
           <button
             type="button"
@@ -592,8 +617,8 @@ export const Navbar = () => {
                   {user?.isLoggedIn ? (user.name ? user.name.split(' ')[0] : 'Account') : 'Sign In with Google'}
                 </span>
                 {user?.isLoggedIn && (
-                  <span style={{ fontSize: '9px', color: '#059669', fontWeight: '800' }}>
-                    {user.role === 'vendor' ? '🏪 Vendor' : '🌾 Verified'}
+                  <span style={{ fontSize: '9px', color: user.role === 'admin' ? '#0f172a' : user.role === 'vendor' ? '#2563eb' : '#059669', fontWeight: '800' }}>
+                    {user.role === 'admin' ? '🛡️ Admin' : user.role === 'vendor' ? '🏪 Vendor' : '🌾 Verified'}
                   </span>
                 )}
               </div>
@@ -676,7 +701,16 @@ export const Navbar = () => {
                 </button>
 
                 {/* Role-Specific Shortcuts */}
-                {user.role === 'vendor' ? (
+                {user.role === 'admin' ? (
+                  <button
+                    onClick={() => { setIsProfileMenuOpen(false); navigateTo('admin-panel'); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '10px', fontSize: '13px', color: '#0f172a', fontWeight: '800', textAlign: 'left', border: '1px solid #cbd5e1', background: '#f8fafc', cursor: 'pointer' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                  >
+                    <ShieldCheck size={16} color="#059669" /> Admin Governance Console
+                  </button>
+                ) : user.role === 'vendor' ? (
                   <button
                     onClick={() => { setIsProfileMenuOpen(false); navigateTo('vendor-portal'); }}
                     style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '10px', fontSize: '13px', color: '#1e40af', fontWeight: '800', textAlign: 'left', border: '1px solid #bfdbfe', background: '#eff6ff', cursor: 'pointer' }}

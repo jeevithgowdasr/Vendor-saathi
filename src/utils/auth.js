@@ -105,14 +105,16 @@ export const isSessionExpired = (expiresAt) => {
 
 /**
  * RBAC Role Check: Verifies if user's role satisfies the route requirements
+ * Platform 'admin' role has elevated superuser access across all dashboards.
  */
 export const hasRoleAccess = (userRole, allowedRoles = []) => {
   if (!allowedRoles || allowedRoles.length === 0) return true; // Public route
   if (!userRole) return false;
 
   const normalizedUserRole = userRole.toLowerCase().trim();
-  const normalizedAllowed = allowedRoles.map(r => r.toLowerCase().trim());
+  if (normalizedUserRole === 'admin') return true; // Superuser privileges
 
+  const normalizedAllowed = allowedRoles.map(r => r.toLowerCase().trim());
   return normalizedAllowed.includes(normalizedUserRole);
 };
 

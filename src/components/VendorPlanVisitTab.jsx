@@ -31,6 +31,7 @@ import {
 } from '../hooks/useVendorSchedules';
 import { PRESET_AREAS } from '../services/scheduleApi';
 import { FormField } from './FormField';
+import { ConflictResolutionModal } from './ConflictResolutionModal';
 
 export const VendorPlanVisitTab = ({
   vendorId = 'v1',
@@ -67,7 +68,17 @@ export const VendorPlanVisitTab = ({
     handleSaveSchedule,
     handleAdvanceStatus,
     handleCancelSchedule,
-    handleDeleteSchedule
+    handleDeleteSchedule,
+
+    // Conflict Detection & Resolution
+    isCheckingConflict,
+    conflictData,
+    isConflictModalOpen,
+    pendingSchedulePayload,
+    closeConflictModal,
+    handleResolveWithTimeSlot,
+    handleResolveWithRecommendedArea,
+    handleResolveContinueAnyway
   } = useVendorSchedules({ vendorId, vendorName, vendorCategory, onToast });
 
   // Custom area input toggle state
@@ -644,6 +655,65 @@ export const VendorPlanVisitTab = ({
                           {schedule.status === 'completed' && '✅ Completed'}
                           {schedule.status === 'cancelled' && '❌ Cancelled'}
                         </span>
+
+                        {/* Conflict Status Badges */}
+                        {schedule.hasConflict && (
+                          <span
+                            style={{
+                              backgroundColor: '#fffbeb',
+                              color: '#b45309',
+                              border: '1px solid #fde68a',
+                              fontSize: '11.5px',
+                              fontWeight: '800',
+                              padding: '3px 9px',
+                              borderRadius: '999px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                            title="Competition detected in same area and time window"
+                          >
+                            ⚠️ Competition Active
+                          </span>
+                        )}
+
+                        {schedule.conflictResolution === 'time_adjusted' && (
+                          <span
+                            style={{
+                              backgroundColor: '#eff6ff',
+                              color: '#1d4ed8',
+                              border: '1px solid #bfdbfe',
+                              fontSize: '11px',
+                              fontWeight: '800',
+                              padding: '3px 8px',
+                              borderRadius: '999px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            ⏱️ Time Adjusted
+                          </span>
+                        )}
+
+                        {schedule.conflictResolution === 'area_adjusted' && (
+                          <span
+                            style={{
+                              backgroundColor: '#f0fdf4',
+                              color: '#15803d',
+                              border: '1px solid #bbf7d0',
+                              fontSize: '11px',
+                              fontWeight: '800',
+                              padding: '3px 8px',
+                              borderRadius: '999px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            📍 Alternative Area
+                          </span>
+                        )}
                       </div>
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '6px', fontSize: '13px', color: '#64748b', flexWrap: 'wrap' }}>
@@ -666,6 +736,29 @@ export const VendorPlanVisitTab = ({
                           <span><strong>{schedule.availableProductIds?.length || 0}</strong> products carrying</span>
                         </span>
                       </div>
+
+                      {/* Conflict Competing Info Alert Strip */}
+                      {schedule.hasConflict && schedule.conflictingVendorInfo && (
+                        <div
+                          style={{
+                            marginTop: '8px',
+                            backgroundColor: '#fffbeb',
+                            border: '1px dashed #fcd34d',
+                            borderRadius: '10px',
+                            padding: '6px 12px',
+                            fontSize: '12px',
+                            color: '#92400e',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <span>⚠️</span>
+                          <span>
+                            Concurrently visiting with <strong>{schedule.conflictingVendorInfo.competingVendorName}</strong> ({schedule.conflictingVendorInfo.competingCategory}) around {schedule.conflictingVendorInfo.overlappingTimeWindow}.
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1269,7 +1362,7 @@ export const VendorPlanVisitTab = ({
 
                 <button
                   type="submit"
-                  disabled={isSaving}
+                  disabled={isSaving || isCheckingConflict}
                   className="btn-primary"
                   style={{
                     padding: '12px 28px',
@@ -1279,10 +1372,15 @@ export const VendorPlanVisitTab = ({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    opacity: isSaving ? 0.7 : 1
+                    opacity: (isSaving || isCheckingConflict) ? 0.7 : 1
                   }}
                 >
-                  {isSaving ? (
+                  {isCheckingConflict ? (
+                    <>
+                      <RefreshCw size={16} className="animate-spin" />
+                      <span>Checking Market Conflicts...</span>
+                    </>
+                  ) : isSaving ? (
                     <>
                       <RefreshCw size={16} className="animate-spin" />
                       <span>Saving to Firestore...</span>
@@ -1304,6 +1402,18 @@ export const VendorPlanVisitTab = ({
           </div>
         </div>
       )}
+
+      {/* ─── 6. Vendor Schedule Conflict Resolution Modal ───────────────── */}
+      <ConflictResolutionModal
+        isOpen={isConflictModalOpen}
+        onClose={closeConflictModal}
+        conflictData={conflictData}
+        proposedSchedule={pendingSchedulePayload}
+        onSelectTimeSlot={handleResolveWithTimeSlot}
+        onSelectRecommendedArea={handleResolveWithRecommendedArea}
+        onContinueAnyway={handleResolveContinueAnyway}
+        isSaving={isSaving}
+      />
     </div>
   );
 };

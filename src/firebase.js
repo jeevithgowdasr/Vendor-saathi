@@ -27,6 +27,8 @@ import {
   GeoPoint,
   Timestamp
 } from "firebase/firestore";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
 const getEnvVar = (key) => {
   if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
@@ -52,6 +54,8 @@ export const firebaseConfig = {
 let app = null;
 let auth = null;
 let db = null;
+let storage = null;
+let messaging = null;
 let googleProvider = null;
 
 try {
@@ -62,6 +66,18 @@ try {
   }
   auth = getAuth(app);
   db = getFirestore(app);
+  try {
+    storage = getStorage(app);
+  } catch (sErr) {
+    console.warn("Firebase Storage init note (using local cache):", sErr.message);
+  }
+  try {
+    if (typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator) {
+      messaging = getMessaging(app);
+    }
+  } catch (mErr) {
+    console.warn("Firebase Messaging init note (using local notifications):", mErr.message);
+  }
   googleProvider = new GoogleAuthProvider();
   googleProvider.setCustomParameters({ prompt: 'select_account' });
 } catch (initErr) {
@@ -84,6 +100,8 @@ export {
   app,
   auth,
   db,
+  storage,
+  messaging,
   googleProvider,
   safeOnAuthStateChanged as onAuthStateChanged, 
   signOut, 
@@ -821,7 +839,420 @@ export const logConflictToFirebase = async (conflictData) => {
   }
 };
 
+// =============================================================================
+// MODULE 3: FIREBASE STORAGE — PRODUCT IMAGES
+// =============================================================================
+
+/**
+ * Upload product image to Firebase Storage with resilient fallback to base64 DataURL
+ */
+export const uploadProductImageToStorage = async (file, vendorId = 'v1') => {
+  try {
+    if (storage && file && file.name) {
+      const sanitizedName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+      const fileRef = storageRef(storage, `products/${vendorId}/${Date.now()}_${sanitizedName}`);
+      const snapshot = await uploadBytes(fileRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      return { success: true, url: downloadURL };
+    }
+  } catch (storageErr) {
+    console.warn("Firebase Storage upload note (using resilient client FileReader):", storageErr.message);
+  }
+
+  // Resilient fallback for local testing / offline storage
+  return new Promise((resolve) => {
+    if (!file) {
+      resolve({ success: false, url: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=500&q=80" });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => resolve({ success: true, url: e.target.result });
+    reader.onerror = () => resolve({ success: false, url: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=500&q=80" });
+    reader.readAsDataURL(file);
+  });
+};
+
+// =============================================================================
+// MODULE 5: FIREBASE CLOUD MESSAGING (FCM) CLIENT LISTENERS
+// =============================================================================
+
+/**
+ * Request notification permission and register FCM device token for user
+ */
+export const requestFCMNotificationPermission = async (userId) => {
+  if (typeof window === 'undefined' || !('Notification' in window)) {
+    return { success: false, reason: 'NOT_SUPPORTED' };
+  }
+
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      return { success: false, reason: 'PERMISSION_DENIED' };
+    }
+
+    if (messaging) {
+      const currentToken = await getToken(messaging, {
+        vapidKey: getEnvVar("VITE_FIREBASE_VAPID_KEY") || undefined
+      });
+
+      if (currentToken && userId) {
+        await setDoc(doc(db, "users", userId), {
+          fcmToken: currentToken,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        return { success: true, token: currentToken };
+      }
+    }
+    return { success: true, token: 'browser_notification_enabled' };
+  } catch (fcmErr) {
+    console.warn("FCM getToken note:", fcmErr.message);
+    return { success: false, error: fcmErr.message };
+  }
+};
+
+/**
+ * Real-time listener for incoming FCM foreground notifications
+ */
+export const onFCMMessageListener = (callback) => {
+  if (!messaging) return () => {};
+  try {
+    return onMessage(messaging, (payload) => {
+      callback(payload);
+    });
+  } catch (err) {
+    console.warn("onMessage listener error:", err.message);
+    return () => {};
+  }
+};
+
+// =============================================================================
+// MODULE 8: LIVE GEOLOCATION TELEMETRY & GEOFENCING
+// =============================================================================
+
+/**
+ * Stream vendor live GPS coordinates to Firestore schedules/{scheduleId}.liveCoordinates
+ */
+export const streamVendorLiveLocation = (scheduleId, onLocationUpdate, onError) => {
+  if (typeof navigator === 'undefined' || !navigator.geolocation) {
+    onError?.(new Error("Geolocation is not supported on this device."));
+    return null;
+  }
+
+  const watchId = navigator.geolocation.watchPosition(
+    async (position) => {
+      const { latitude, longitude, accuracy, speed, heading } = position.coords;
+      const geoPoint = new GeoPoint(latitude, longitude);
+
+      try {
+        if (scheduleId) {
+          const scheduleRef = doc(db, "schedules", scheduleId);
+          await updateDoc(scheduleRef, {
+            liveCoordinates: geoPoint,
+            lastTelemetryAt: serverTimestamp()
+          });
+        }
+      } catch (e) {
+        console.warn("Schedule telemetry update notice:", e.message);
+      }
+
+      onLocationUpdate?.({
+        latitude,
+        longitude,
+        accuracy,
+        speed,
+        heading,
+        timestamp: position.timestamp
+      });
+    },
+    (err) => {
+      console.warn("Geolocation watchPosition notice:", err.message);
+      onError?.(err);
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 2000,
+      timeout: 10000
+    }
+  );
+
+  return watchId;
+};
+
+/**
+ * Stop GPS telemetry stream
+ */
+export const stopVendorLiveLocationStream = (watchId) => {
+  if (watchId !== null && typeof navigator !== 'undefined' && navigator.geolocation) {
+    navigator.geolocation.clearWatch(watchId);
+  }
+};
+
+// =============================================================================
+// MODULE 7: ADDITIONAL ITEM REQUESTS LIFECYCLE
+// =============================================================================
+
+/**
+ * Customer requests an additional item while vendor is 'on_the_way' or 'nearby'
+ */
+export const requestAdditionalItemInFirebase = async (orderId, additionalItem) => {
+  try {
+    const orderRef = doc(db, "orders", orderId);
+    const orderSnap = await getDoc(orderRef);
+    if (!orderSnap.exists()) {
+      return { success: false, error: "Order not found" };
+    }
+
+    const currentOrder = orderSnap.data();
+    const currentItems = currentOrder.items || [];
+
+    const newItem = {
+      productId: additionalItem.id || additionalItem.productId || `addon_${Date.now()}`,
+      name: additionalItem.name,
+      price: Number(additionalItem.price),
+      unit: additionalItem.unit || 'unit',
+      quantity: Number(additionalItem.quantity || 1),
+      isAdditionalRequest: true,
+      requestStatus: 'pending',
+      requestedAt: new Date().toISOString()
+    };
+
+    const updatedItems = [...currentItems, newItem];
+
+    await updateDoc(orderRef, {
+      items: updatedItems,
+      hasPendingAddon: true,
+      updatedAt: serverTimestamp()
+    });
+
+    return { success: true, item: newItem };
+  } catch (err) {
+    console.warn("requestAdditionalItemInFirebase error:", err.message);
+    return { success: false, error: err.message };
+  }
+};
+
+/**
+ * Vendor accepts or rejects customer's additional item request
+ */
+export const respondToAdditionalItemInFirebase = async (orderId, productId, decision) => {
+  // decision: 'accepted' | 'rejected'
+  try {
+    const orderRef = doc(db, "orders", orderId);
+    const orderSnap = await getDoc(orderRef);
+    if (!orderSnap.exists()) return { success: false, error: "Order not found" };
+
+    const currentOrder = orderSnap.data();
+    let currentItems = currentOrder.items || [];
+    let priceDelta = 0;
+
+    currentItems = currentItems.map(item => {
+      if ((item.productId === productId || item.id === productId) && item.isAdditionalRequest) {
+        if (decision === 'accepted') {
+          priceDelta = Number(item.price) * Number(item.quantity || 1);
+        }
+        return { ...item, requestStatus: decision };
+      }
+      return item;
+    });
+
+    const newTotal = (currentOrder.totalAmount || currentOrder.total || 0) + priceDelta;
+    const hasRemainingPending = currentItems.some(i => i.isAdditionalRequest && i.requestStatus === 'pending');
+
+    await updateDoc(orderRef, {
+      items: currentItems,
+      totalAmount: newTotal,
+      total: newTotal,
+      hasPendingAddon: hasRemainingPending,
+      updatedAt: serverTimestamp()
+    });
+
+    return { success: true, decision, newTotal };
+  } catch (err) {
+    console.warn("respondToAdditionalItemInFirebase error:", err.message);
+    return { success: false, error: err.message };
+  }
+};
+
+// =============================================================================
+// MODULE 9: RATINGS & REVIEWS
+// =============================================================================
+
+/**
+ * Submit order rating and review to ratings collection
+ */
+export const submitOrderRatingToFirebase = async ({ orderId, vendorId, customerId, customerName, score, feedbackText }) => {
+  try {
+    const ratingsCol = collection(db, "ratings");
+    const payload = {
+      orderId,
+      vendorId,
+      customerId,
+      customerName: customerName || "Customer",
+      score: Number(score),
+      feedbackText: feedbackText || "",
+      createdAt: serverTimestamp()
+    };
+    const ratingDoc = await addDoc(ratingsCol, payload);
+
+    // Update order status marked as rated
+    if (orderId) {
+      const orderRef = doc(db, "orders", orderId);
+      await updateDoc(orderRef, {
+        isRated: true,
+        ratingScore: Number(score),
+        ratingId: ratingDoc.id
+      }).catch(e => console.warn("Order rating mark note:", e.message));
+    }
+
+    return { success: true, ratingId: ratingDoc.id };
+  } catch (err) {
+    console.warn("submitOrderRatingToFirebase warning:", err.message);
+    return { success: false, error: err.message };
+  }
+};
+
+/**
+ * Fetch ratings for vendor
+ */
+export const getVendorRatingsFromFirebase = async (vendorId) => {
+  try {
+    const ratingsCol = collection(db, "ratings");
+    const q = query(ratingsCol, where("vendorId", "==", vendorId), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    const ratings = [];
+    snap.forEach(d => ratings.push({ id: d.id, ...d.data() }));
+    return { success: true, ratings };
+  } catch (err) {
+    console.warn("getVendorRatingsFromFirebase notice:", err.message);
+    return { success: false, ratings: [] };
+  }
+};
+
+// =============================================================================
+// MODULE 10: ADMIN MANAGEMENT & CATEGORY CONTROLS
+// =============================================================================
+
+/**
+ * Fetch all registered users for Admin Panel
+ */
+export const getAllUsersFromFirebase = async () => {
+  try {
+    const usersCol = collection(db, "users");
+    const snap = await getDocs(usersCol);
+    const users = [];
+    snap.forEach(d => users.push({ uid: d.id, id: d.id, ...d.data() }));
+    return { success: true, users };
+  } catch (err) {
+    console.warn("getAllUsersFromFirebase notice:", err.message);
+    return { success: false, users: [] };
+  }
+};
+
+/**
+ * Update user status (active | blocked | pending) in Firebase Firestore
+ */
+export const updateUserStatusInFirebase = async (userId, newStatus) => {
+  try {
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, {
+      status: newStatus,
+      statusUpdatedAt: serverTimestamp()
+    });
+    return { success: true, userId, status: newStatus };
+  } catch (err) {
+    console.warn("updateUserStatusInFirebase warning:", err.message);
+    return { success: false, error: err.message };
+  }
+};
+
+/**
+ * Fetch all platform categories from Firestore
+ */
+export const getCategoriesFromFirebase = async () => {
+  try {
+    const catCol = collection(db, "categories");
+    const snap = await getDocs(catCol);
+    const categories = [];
+    snap.forEach(d => categories.push({ categoryId: d.id, id: d.id, ...d.data() }));
+    return { success: true, categories };
+  } catch (err) {
+    console.warn("getCategoriesFromFirebase notice:", err.message);
+    return { success: false, categories: [] };
+  }
+};
+
+/**
+ * Save or update category in Firestore
+ */
+export const saveCategoryToFirebase = async (categoryData) => {
+  try {
+    const catId = categoryData.categoryId || categoryData.id || `cat_${Date.now()}`;
+    const catRef = doc(db, "categories", catId);
+    const payload = {
+      categoryId: catId,
+      name: categoryData.name,
+      icon: categoryData.icon || "🛒",
+      isActive: categoryData.isActive !== undefined ? categoryData.isActive : true,
+      updatedAt: serverTimestamp()
+    };
+    await setDoc(catRef, payload, { merge: true });
+    return { success: true, category: payload };
+  } catch (err) {
+    console.warn("saveCategoryToFirebase warning:", err.message);
+    return { success: false, error: err.message };
+  }
+};
+
+/**
+ * Delete category from Firestore
+ */
+export const deleteCategoryFromFirebase = async (categoryId) => {
+  try {
+    const catRef = doc(db, "categories", categoryId);
+    await deleteDoc(catRef);
+    return { success: true, id: categoryId };
+  } catch (err) {
+    console.warn("deleteCategoryFromFirebase warning:", err.message);
+    return { success: false, error: err.message };
+  }
+};
+
+/**
+ * Fetch all complaints for Admin Panel
+ */
+export const getAllComplaintsFromFirebase = async () => {
+  try {
+    const compCol = collection(db, "complaints");
+    const snap = await getDocs(compCol);
+    const complaints = [];
+    snap.forEach(d => complaints.push({ complaintId: d.id, id: d.id, ...d.data() }));
+    return { success: true, complaints };
+  } catch (err) {
+    console.warn("getAllComplaintsFromFirebase notice:", err.message);
+    return { success: false, complaints: [] };
+  }
+};
+
+/**
+ * Resolve complaint in Firestore
+ */
+export const resolveComplaintInFirebase = async (complaintId, resolutionNote) => {
+  try {
+    const compRef = doc(db, "complaints", complaintId);
+    await updateDoc(compRef, {
+      status: 'resolved',
+      resolutionNote: resolutionNote || 'Resolved by Administrator',
+      resolvedAt: serverTimestamp()
+    });
+    return { success: true };
+  } catch (err) {
+    console.warn("resolveComplaintInFirebase warning:", err.message);
+    return { success: false, error: err.message };
+  }
+};
+
 export default app;
+
 
 
 

@@ -198,9 +198,21 @@ export const updateCustomerLocationApi = async (token, locationData) => {
  */
 function fallbackOfflineLogin({ identifier, role }) {
   const cleanId = (identifier || '').toLowerCase();
-  const isVendor = role === 'vendor' || cleanId.includes('ramesh') || cleanId.includes('vendor');
+  const isAdmin = role === 'admin' || cleanId.includes('admin');
+  const isVendor = !isAdmin && (role === 'vendor' || cleanId.includes('ramesh') || cleanId.includes('vendor'));
 
-  const user = isVendor
+  const user = isAdmin
+    ? {
+        id: 'adm_01',
+        _id: 'adm_01',
+        name: 'Platform Administrator',
+        fullName: 'Principal Platform Admin',
+        email: cleanId.includes('@') ? cleanId : 'admin@vendorsaathi.com',
+        phone: '+919900000001',
+        status: 'active',
+        role: 'admin'
+      }
+    : isVendor
     ? {
         id: 'v1',
         _id: 'v1',

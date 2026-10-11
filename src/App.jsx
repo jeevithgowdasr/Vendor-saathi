@@ -45,6 +45,7 @@ const VendorChatView = lazy(() => import('./views/VendorChatView').then(m => ({ 
 const VendorPortalView = lazy(() => import('./views/VendorPortalView').then(m => ({ default: m.VendorPortalView })));
 const UnauthorizedView = lazy(() => import('./views/UnauthorizedView').then(m => ({ default: m.UnauthorizedView })));
 const LoginView = lazy(() => import('./views/LoginView').then(m => ({ default: m.LoginView })));
+const AdminPanelView = lazy(() => import('./views/AdminPanelView').then(m => ({ default: m.AdminPanelView })));
 
 /**
  * Lightweight Loading Fallback for Suspense Code-Split Routes
@@ -163,14 +164,15 @@ const MainContent = () => {
 
       // 3. Vendor-Protected Routes (Requires role: 'vendor')
       case 'vendor-portal':
+      case 'vendor-dashboard':
         return (
-          <ProtectedRoute allowedRoles={['vendor']} viewName="vendor-portal" viewParams={currentViewParams}>
+          <ProtectedRoute allowedRoles={['vendor', 'admin']} viewName="vendor-portal" viewParams={currentViewParams}>
             <VendorPortalView />
           </ProtectedRoute>
         );
       case 'vendor-chat':
         return (
-          <ProtectedRoute allowedRoles={['vendor', 'customer']} viewName="vendor-chat" viewParams={currentViewParams}>
+          <ProtectedRoute allowedRoles={['vendor', 'customer', 'admin']} viewName="vendor-chat" viewParams={currentViewParams}>
             <VendorChatView />
           </ProtectedRoute>
         );
@@ -178,16 +180,28 @@ const MainContent = () => {
       // 4. Universal Protected Routes (Requires authenticated user with either role)
       case 'profile':
         return (
-          <ProtectedRoute allowedRoles={['customer', 'vendor']} viewName="profile" viewParams={currentViewParams}>
+          <ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']} viewName="profile" viewParams={currentViewParams}>
             <ProfileView />
           </ProtectedRoute>
         );
       case 'notifications':
         return (
-          <ProtectedRoute allowedRoles={['customer', 'vendor']} viewName="notifications" viewParams={currentViewParams}>
+          <ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']} viewName="notifications" viewParams={currentViewParams}>
             <NotificationsView />
           </ProtectedRoute>
         );
+
+      // 5. Admin-Protected Routes (Requires role: 'admin')
+      case 'admin-panel':
+      case 'admin':
+        return (
+          <ProtectedRoute allowedRoles={['admin']} viewName="admin-panel" viewParams={currentViewParams}>
+            <AdminPanelView />
+          </ProtectedRoute>
+        );
+
+      case 'customer-explore':
+        return <NearbyVendorsView />;
 
       default:
         return <HomeView />;

@@ -3,7 +3,9 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // =========================================================================
+    // HELPER SECURITY FUNCTIONS
+    // =========================================================================
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -12,7 +14,14 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Checks role from custom claims or by reading the users collection document
+    // Role-based verification via Custom Claims OR Firestore Users collection
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'admin' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+
     function isVendor() {
       return isAuthenticated() && (
         request.auth.token.role == 'vendor' ||
@@ -21,103 +30,208 @@ service cloud.firestore {
       );
     }
 
-    // =========================================================================
-    // 1. SCHEDULES COLLECTION (Planned Visits & Route Telemetry)
-    // =========================================================================
-    match /schedules/{scheduleId} {
-      // Any authenticated user (customer, vendor, rider) can read planned visits
-      allow read: if isAuthenticated();
-
-      // Only authenticated vendors can create planned visits for themselves
-      allow create: if isAuthenticated() &&
-                    isVendor() &&
-                    request.resource.data.vendorId == request.auth.uid &&
-                    request.resource.data.status in ['scheduled', 'in_transit', 'arrived', 'completed', 'cancelled'] &&
-                    request.resource.data.expectedArrivalTime is timestamp &&
-                    request.resource.data.expectedDepartureTime is timestamp &&
-                    request.resource.data.expectedArrivalTime < request.resource.data.expectedDepartureTime;
-
-      // Only the vendor who owns this schedule can update or advance its status
-      allow update: if isAuthenticated() &&
-                    resource.data.vendorId == request.auth.uid &&
-                    request.resource.data.vendorId == request.auth.uid &&
-                    request.resource.data.status in ['scheduled', 'in_transit', 'arrived', 'completed', 'cancelled'];
-
-      // Only the owner vendor can delete or remove a schedule
-      allow delete: if isAuthenticated() &&
-                    resource.data.vendorId == request.auth.uid;
+    function isCustomer() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'customer' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'customer'
+      );
     }
 
     // =========================================================================
-    // 2. PRODUCTS COLLECTION
+    // 1. USERS COLLECTION
+    // users/{userId}
+    // uid, role ('vendor' | 'customer' | 'admin'), name, email, phone, status ('active' | 'blocked' | 'pending')
+    // Vendor fields: businessName, category, operatingAreas, profileImageUrl, vehicleDetails
+    // Customer fields: primaryLocation, preferredCategories, preferredAreas, fcmToken
+    // =========================================================================
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      
+      // User can create/edit their own document, or Admin can manage all
+      allow create: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      
+      allow update: if isAuthenticated() && (
+        isAdmin() ||
+        (isOwner(userId) &&
+          // Normal users cannot elevate their own role or self-unblock
+          (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status']) || isAdmin())
+        )
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 2. PRODUCTS COLLECTION (or users/{vendorId}/products subcollection)
+    // productId, vendorId, name, category, price, unit, availableQuantity, isAvailable, imageUrl
     // =========================================================================
     match /products/{productId} {
       // Anyone authenticated can read catalog items
       allow read: if isAuthenticated();
 
-      // Only the vendor who owns the product can create, update, or delete it
-      allow create: if isAuthenticated() &&
-                    isVendor() &&
-                    request.resource.data.vendor_id == request.auth.uid;
+      // Only the vendor who owns the product or an Admin can create it
+      allow create: if isAuthenticated() && (
+        isAdmin() ||
+        (isVendor() && (
+          request.resource.data.vendor_id == request.auth.uid ||
+          request.resource.data.vendorId == request.auth.uid
+        ))
+      );
 
-      allow update, delete: if isAuthenticated() &&
-                            (resource.data.vendor_id == request.auth.uid || resource.data.vendorId == request.auth.uid);
+      // Only vendor owner or Admin can update or delete product
+      allow update, delete: if isAuthenticated() && (
+        isAdmin() ||
+        (resource.data.vendor_id == request.auth.uid || resource.data.vendorId == request.auth.uid)
+      );
     }
 
-    // =========================================================================
-    // 3. USERS COLLECTION
-    // =========================================================================
-    match /users/{userId} {
+    // Support subcollection catalog: users/{vendorId}/products/{productId}
+    match /users/{vendorId}/products/{productId} {
       allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
+      allow write: if isAuthenticated() && (isOwner(vendorId) || isAdmin());
     }
 
     // =========================================================================
-    // 4. VENDORS COLLECTION
+    // 3. SCHEDULES COLLECTION (Planned Visits & Route Telemetry)
+    // scheduleId, vendorId, vendorName, vendorCategory, date, areaName, areaLocation,
+    // expectedArrivalTime, expectedDepartureTime, availableProductIds, status, hasConflict, liveCoordinates
     // =========================================================================
-    match /vendors/{vendorId} {
-      allow read: if true;
-      allow write: if isOwner(vendorId);
+    match /schedules/{scheduleId} {
+      // Any authenticated user can read planned visits
+      allow read: if isAuthenticated();
 
-      match /chats/{messageId} {
-        allow read, write: if isAuthenticated();
-      }
+      // Only authenticated vendor creating for themselves, or an Admin
+      allow create: if isAuthenticated() && (
+        isAdmin() ||
+        (isVendor() &&
+          request.resource.data.vendorId == request.auth.uid &&
+          request.resource.data.status in ['scheduled', 'in_transit', 'nearby', 'arrived', 'completed', 'cancelled']
+        )
+      );
+
+      // Only the vendor owner or Admin can advance visit status or update telemetry
+      allow update: if isAuthenticated() && (
+        isAdmin() ||
+        (resource.data.vendorId == request.auth.uid &&
+          request.resource.data.status in ['scheduled', 'in_transit', 'nearby', 'arrived', 'completed', 'cancelled']
+        )
+      );
+
+      // Only the vendor owner or Admin can cancel/delete a schedule
+      allow delete: if isAuthenticated() && (
+        isAdmin() ||
+        resource.data.vendorId == request.auth.uid
+      );
     }
 
     // =========================================================================
-    // 5. ORDERS COLLECTION
+    // 4. ORDERS COLLECTION
+    // orderId, customerId, customerName, vendorId, scheduleId, items, totalAmount, status, orderDate, arrivalETA
+    // Statuses: 'placed', 'accepted', 'preparing', 'on_the_way', 'nearby', 'arrived', 'completed', 'cancelled'
     // =========================================================================
     match /orders/{orderId} {
+      // Visible to customer, vendor involved, or Admin
       allow read: if isAuthenticated() && (
+        isAdmin() ||
         resource.data.customerId == request.auth.uid ||
         resource.data.vendorId == request.auth.uid
       );
-      allow create: if isAuthenticated();
+
+      // Customer or Admin can place an order
+      allow create: if isAuthenticated() && (
+        isAdmin() ||
+        request.resource.data.customerId == request.auth.uid
+      );
+
+      // Both customer and vendor involved (or Admin) can update order state
+      // (e.g. vendor advances delivery step; customer requests additional item)
       allow update: if isAuthenticated() && (
+        isAdmin() ||
         resource.data.customerId == request.auth.uid ||
         resource.data.vendorId == request.auth.uid
       );
+
+      allow delete: if isAdmin();
     }
 
     // =========================================================================
-    // 6. REVIEWS COLLECTION
+    // 5. RATINGS COLLECTION
+    // ratingId, orderId, vendorId, customerId, score (1-5), feedbackText, createdAt
     // =========================================================================
+    match /ratings/{ratingId} {
+      // Anyone authenticated can read ratings
+      allow read: if true;
+
+      // Customer who made the order can submit a 1-5 star review
+      allow create: if isAuthenticated() && (
+        isAdmin() ||
+        (request.resource.data.customerId == request.auth.uid &&
+          request.resource.data.score >= 1 && request.resource.data.score <= 5)
+      );
+
+      // Only author customer or Admin can edit or delete their rating
+      allow update, delete: if isAuthenticated() && (
+        isAdmin() ||
+        resource.data.customerId == request.auth.uid
+      );
+    }
+
+    // Backward compatibility for reviews
     match /reviews/{reviewId} {
       allow read: if true;
       allow create: if isAuthenticated();
-      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && (isAdmin() || resource.data.userId == request.auth.uid);
+    }
+
+    // =========================================================================
+    // 6. CATEGORIES COLLECTION
+    // categoryId, name, icon, isActive
+    // =========================================================================
+    match /categories/{categoryId} {
+      // Anyone can read active product categories
+      allow read: if true;
+
+      // Only platform Admins can create, update, or remove categories
+      allow write: if isAdmin();
     }
 
     // =========================================================================
     // 7. CONFLICTS LOG COLLECTION
     // =========================================================================
     match /conflicts/{conflictId} {
-      // Authenticated users and Cloud Functions can read and log detected conflicts
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
       allow update: if isAuthenticated();
-      allow delete: if isAuthenticated() && isVendor();
+      allow delete: if isAdmin() || (isAuthenticated() && isVendor());
+    }
+
+    // =========================================================================
+    // 8. COMPLAINTS COLLECTION
+    // complaintId, customerId, vendorId, orderId, description, status, createdAt
+    // =========================================================================
+    match /complaints/{complaintId} {
+      allow read: if isAuthenticated() && (
+        isAdmin() ||
+        resource.data.customerId == request.auth.uid ||
+        resource.data.vendorId == request.auth.uid
+      );
+
+      allow create: if isAuthenticated();
+
+      // Only Admin can update status (investigating / resolved)
+      allow update, delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 9. VENDORS & CHATS COLLECTION
+    // =========================================================================
+    match /vendors/{vendorId} {
+      allow read: if true;
+      allow write: if isOwner(vendorId) || isAdmin();
+
+      match /chats/{messageId} {
+        allow read, write: if isAuthenticated();
+      }
     }
   }
 }
-
