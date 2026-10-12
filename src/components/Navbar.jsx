@@ -547,6 +547,92 @@ export const Navbar = () => {
             )}
           </button>
 
+          {/* Explicit Persistent Entry Points when Not Logged In */}
+          {!user?.isLoggedIn && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* Vendor Portal Entry Point */}
+              <button
+                type="button"
+                onClick={() => navigateTo('login', { role: 'vendor', mode: 'signin' })}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '7px 12px',
+                  borderRadius: '16px',
+                  backgroundColor: '#fffbeb',
+                  color: '#b45309',
+                  border: '1.5px solid #fde68a',
+                  fontSize: '12px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(245, 158, 11, 0.12)',
+                  transition: 'all 0.2s ease',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#fef3c7'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#fffbeb'; e.currentTarget.style.transform = 'translateY(0)'; }}
+              >
+                <Store size={14} color="#d97706" />
+                <span>Vendor Login / Register</span>
+              </button>
+
+              {/* Customer Login / Register Entry Point */}
+              <button
+                type="button"
+                onClick={() => navigateTo('login', { role: 'customer', mode: 'signin' })}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '7px 12px',
+                  borderRadius: '16px',
+                  backgroundColor: '#f0fdf4',
+                  color: '#047857',
+                  border: '1.5px solid #a7f3d0',
+                  fontSize: '12px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.12)',
+                  transition: 'all 0.2s ease',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#dcfce7'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f0fdf4'; e.currentTarget.style.transform = 'translateY(0)'; }}
+              >
+                <User size={14} color="#059669" />
+                <span>Customer Login</span>
+              </button>
+            </div>
+          )}
+
+          {/* Quick Access Action when Logged In as Vendor */}
+          {user?.isLoggedIn && user?.role === 'vendor' && (
+            <button
+              type="button"
+              onClick={() => navigateTo('vendor-portal')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 14px',
+                borderRadius: '16px',
+                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                color: '#ffffff',
+                border: 'none',
+                fontSize: '12px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+                transition: 'all 0.2s ease',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <Store size={14} color="#ffffff" />
+              <span>Vendor Dashboard</span>
+            </button>
+          )}
+
           {/* Google Profile Button & Dropdown Menu */}
           <div style={{ position: 'relative' }}>
             <button
@@ -554,8 +640,7 @@ export const Navbar = () => {
                 if (user?.isLoggedIn) {
                   setIsProfileMenuOpen(!isProfileMenuOpen);
                 } else {
-                  setAuthModalInitialTab('google');
-                  setIsAuthModalOpen(true);
+                  navigateTo('login', { role: 'customer', mode: 'signin' });
                 }
               }}
               style={{
@@ -563,14 +648,14 @@ export const Navbar = () => {
                 alignItems: 'center',
                 gap: '8px',
                 backgroundColor: '#ffffff',
-                border: user?.isLoggedIn ? '1.5px solid #cbd5e1' : '2px solid #4285F4',
-                padding: user?.isLoggedIn ? '5px 12px 5px 6px' : '7px 14px 7px 10px',
+                border: user?.isLoggedIn ? '1.5px solid #cbd5e1' : '1.5px solid #e2e8f0',
+                padding: user?.isLoggedIn ? '5px 12px 5px 6px' : '7px 12px',
                 borderRadius: '24px',
                 fontSize: '13px',
                 fontWeight: '800',
                 color: '#0f172a',
                 cursor: 'pointer',
-                boxShadow: user?.isLoggedIn ? '0 2px 6px rgba(0,0,0,0.04)' : '0 4px 14px rgba(66, 133, 244, 0.2)',
+                boxShadow: user?.isLoggedIn ? '0 2px 6px rgba(0,0,0,0.04)' : '0 2px 8px rgba(0, 0, 0, 0.05)',
                 transition: 'all 0.2s ease'
               }}
               onMouseEnter={(e) => {

@@ -65,14 +65,27 @@ export const VendorPortalView = () => {
     setIsVendorChatOpen,
     activeRiderLocation,
     setActiveRiderLocation,
-    user
+    user,
+    currentViewParams
   } = useApp();
 
   const { updateVendorOrderState, broadcastRiderLocation, broadcastStoreStatus } = useVendorSync();
 
-  // Active vendor selection (Defaults to Ramesh Grocery v1)
-  const [selectedVendorId, setSelectedVendorId] = useState('v1');
-  const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'inventory' | 'gps' | 'analytics' | 'chat'
+  // Active vendor selection (Defaults to authenticated user.uid)
+  const [selectedVendorId, setSelectedVendorId] = useState(user?.uid || 'v1');
+  const [activeTab, setActiveTab] = useState(currentViewParams?.tab === 'inventory' ? 'inventory' : 'orders'); // 'orders' | 'inventory' | 'schedule' | 'gps' | 'chat'
+
+  useEffect(() => {
+    if (user?.uid) {
+      setSelectedVendorId(user.uid);
+    }
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (currentViewParams?.tab) {
+      setActiveTab(currentViewParams.tab);
+    }
+  }, [currentViewParams?.tab]);
   
   // GPS Telemetry Simulation state
   const [isSimulatingGps, setIsSimulatingGps] = useState(false);
@@ -585,35 +598,67 @@ export const VendorPortalView = () => {
         </div>
       </div>
 
-      {/* Revenue & Operations Summary Stats */}
+      {/* Phase 3 Summary Cards: Today's Trip Status, Total Pre-Orders, Revenue Summary, Overall Rating */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
         gap: '16px',
         marginBottom: '28px'
       }}>
-        <div className="vs-card" style={{ padding: '20px', borderRadius: '18px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0' }}>
-          <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Gross Revenue Today</span>
-          <div style={{ fontSize: '26px', fontWeight: '900', color: '#059669', marginTop: '4px' }}>₹{totalRevenue}</div>
-          <span style={{ fontSize: '11.5px', color: '#10b981', fontWeight: '700' }}>↑ 100% direct village payout</span>
+        {/* Card 1: Today's Trip Status */}
+        <div className="vs-card" style={{ padding: '20px', borderRadius: '18px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0', boxShadow: '0 4px 12px rgba(15, 23, 42, 0.04)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Today's Trip Status</span>
+            <span style={{ fontSize: '18px' }}>🛵</span>
+          </div>
+          <div style={{ fontSize: '20px', fontWeight: '900', color: isSimulatingGps ? '#0284c7' : '#059669', marginTop: '6px' }}>
+            {isSimulatingGps ? '🛵 In Transit (Live GPS)' : currentVendor.isOpen ? '🟢 Ready for Route' : '🔴 Closed / Offline'}
+          </div>
+          <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '700', display: 'block', marginTop: '2px' }}>
+            {isSimulatingGps ? 'Coordinates broadcasting to buyers' : 'Scheduled visit ready to dispatch'}
+          </span>
         </div>
 
-        <div className="vs-card" style={{ padding: '20px', borderRadius: '18px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0' }}>
-          <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Active Pending Orders</span>
-          <div style={{ fontSize: '26px', fontWeight: '900', color: '#f59e0b', marginTop: '4px' }}>{pendingOrdersCount}</div>
-          <span style={{ fontSize: '11.5px', color: '#d97706', fontWeight: '700' }}>Requires packing / dispatch</span>
+        {/* Card 2: Total Pre-Orders */}
+        <div className="vs-card" style={{ padding: '20px', borderRadius: '18px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0', boxShadow: '0 4px 12px rgba(15, 23, 42, 0.04)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Total Pre-Orders</span>
+            <span style={{ fontSize: '18px' }}>📦</span>
+          </div>
+          <div style={{ fontSize: '24px', fontWeight: '900', color: '#f59e0b', marginTop: '6px' }}>
+            {vendorOrders.length} Pre-Orders
+          </div>
+          <span style={{ fontSize: '11.5px', color: '#d97706', fontWeight: '700', display: 'block', marginTop: '2px' }}>
+            {pendingOrdersCount} awaiting packing & dispatch
+          </span>
         </div>
 
-        <div className="vs-card" style={{ padding: '20px', borderRadius: '18px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0' }}>
-          <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Completed Deliveries</span>
-          <div style={{ fontSize: '26px', fontWeight: '900', color: '#0284c7', marginTop: '4px' }}>{deliveredOrdersCount}</div>
-          <span style={{ fontSize: '11.5px', color: '#0369a1', fontWeight: '700' }}>Fulfilled in Mijar / Moodbidri</span>
+        {/* Card 3: Revenue Summary */}
+        <div className="vs-card" style={{ padding: '20px', borderRadius: '18px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0', boxShadow: '0 4px 12px rgba(15, 23, 42, 0.04)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Revenue Summary</span>
+            <span style={{ fontSize: '18px' }}>💰</span>
+          </div>
+          <div style={{ fontSize: '24px', fontWeight: '900', color: '#059669', marginTop: '6px' }}>
+            ₹{totalRevenue}
+          </div>
+          <span style={{ fontSize: '11.5px', color: '#10b981', fontWeight: '700', display: 'block', marginTop: '2px' }}>
+            ↑ 100% direct instant payout
+          </span>
         </div>
 
-        <div className="vs-card" style={{ padding: '20px', borderRadius: '18px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0' }}>
-          <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Active Catalog Items</span>
-          <div style={{ fontSize: '26px', fontWeight: '900', color: '#8b5cf6', marginTop: '4px' }}>{vendorProducts.length} Items</div>
-          <span style={{ fontSize: '11.5px', color: '#7c3aed', fontWeight: '700' }}>Live in customer store</span>
+        {/* Card 4: Overall Rating */}
+        <div className="vs-card" style={{ padding: '20px', borderRadius: '18px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0', boxShadow: '0 4px 12px rgba(15, 23, 42, 0.04)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Overall Rating</span>
+            <span style={{ fontSize: '18px' }}>⭐</span>
+          </div>
+          <div style={{ fontSize: '24px', fontWeight: '900', color: '#8b5cf6', marginTop: '6px' }}>
+            {currentVendor.rating ? currentVendor.rating.toFixed(1) : '5.0'} / 5.0
+          </div>
+          <span style={{ fontSize: '11.5px', color: '#7c3aed', fontWeight: '700', display: 'block', marginTop: '2px' }}>
+            Based on {currentVendor.reviewCount || 0} customer reviews
+          </span>
         </div>
       </div>
 

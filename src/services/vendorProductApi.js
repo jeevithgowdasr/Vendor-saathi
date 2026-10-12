@@ -15,130 +15,20 @@ import {
 
 const LOCAL_STORAGE_KEY = 'vs_firebase_products_cache';
 
-const INITIAL_FALLBACK_PRODUCTS = [
-  {
-    id: 'prod_tomato_01',
-    _id: 'prod_tomato_01',
-    vendor_id: 'v1',
-    vendorId: 'v1',
-    vendorName: 'Ramesh Grocery',
-    name: 'Fresh Farm Red Tomatoes',
-    shortName: 'Tomato',
-    category: 'Vegetable',
-    price: 25,
-    unit: 'kg',
-    available_quantity: 18,
-    availableStock: 18,
-    is_available: true,
-    stockStatus: 'in-stock',
-    image_url: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=500&q=80',
-    image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=500&q=80',
-    description: 'Fresh and juicy farm tomatoes sourced directly from local Moodbidri farms.',
-    rating: 4.8,
-    reviewCount: 16
-  },
-  {
-    id: 'prod_potato_02',
-    _id: 'prod_potato_02',
-    vendor_id: 'v1',
-    vendorId: 'v1',
-    vendorName: 'Ramesh Grocery',
-    name: 'Fresh Local Potatoes',
-    shortName: 'Potato',
-    category: 'Vegetable',
-    price: 30,
-    unit: 'kg',
-    available_quantity: 12,
-    availableStock: 12,
-    is_available: true,
-    stockStatus: 'in-stock',
-    image_url: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=500&q=80',
-    image: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=500&q=80',
-    description: 'Clean medium-sized local cooking potatoes.',
-    rating: 4.7,
-    reviewCount: 9
-  },
-  {
-    id: 'prod_rose_03',
-    _id: 'prod_rose_03',
-    vendor_id: 'v1',
-    vendorId: 'v1',
-    vendorName: 'Ramesh Grocery',
-    name: 'Pooja Red Roses',
-    shortName: 'Rose',
-    category: 'Flower',
-    price: 60,
-    unit: 'bunch',
-    available_quantity: 15,
-    availableStock: 15,
-    is_available: true,
-    stockStatus: 'in-stock',
-    image_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=500&q=80',
-    image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=500&q=80',
-    description: 'Fresh fragrant red roses for temple worship and pooja ceremonies.',
-    rating: 4.9,
-    reviewCount: 22
-  },
-  {
-    id: 'prod_milk_04',
-    _id: 'prod_milk_04',
-    vendor_id: 'v1',
-    vendorId: 'v1',
-    vendorName: 'Ramesh Grocery',
-    name: 'Fresh Dairy Milk',
-    shortName: 'Milk',
-    category: 'Dairy',
-    price: 28,
-    unit: 'litre',
-    available_quantity: 25,
-    availableStock: 25,
-    is_available: true,
-    stockStatus: 'in-stock',
-    image_url: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=500&q=80',
-    image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=500&q=80',
-    description: 'Pure pasture cow milk packaged fresh every morning.',
-    rating: 4.9,
-    reviewCount: 30
-  },
-  {
-    id: 'prod_chips_05',
-    _id: 'prod_chips_05',
-    vendor_id: 'v1',
-    vendorId: 'v1',
-    vendorName: 'Ramesh Grocery',
-    name: 'Crispy Banana Chips',
-    shortName: 'Snacks',
-    category: 'Snacks',
-    price: 50,
-    unit: 'packet',
-    available_quantity: 0,
-    availableStock: 0,
-    is_available: false,
-    stockStatus: 'out-of-stock',
-    image_url: 'https://images.unsplash.com/photo-1621447504864-d8686e12698c?auto=format&fit=crop&w=500&q=80',
-    image: 'https://images.unsplash.com/photo-1621447504864-d8686e12698c?auto=format&fit=crop&w=500&q=80',
-    description: 'Traditional South Canara coconut-oil fried crisp banana chips.',
-    rating: 4.6,
-    reviewCount: 14
-  }
-];
+const INITIAL_FALLBACK_PRODUCTS = [];
 
 function getStoredFallbackProducts() {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(INITIAL_FALLBACK_PRODUCTS));
-      return INITIAL_FALLBACK_PRODUCTS;
-    }
-    return JSON.parse(raw);
+    return raw ? JSON.parse(raw) : [];
   } catch {
-    return INITIAL_FALLBACK_PRODUCTS;
+    return [];
   }
 }
 
 function saveStoredFallbackProducts(list) {
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list));
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list || []));
   } catch (err) {
     console.warn('Could not cache products to localStorage', err);
   }

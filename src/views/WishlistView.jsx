@@ -1,12 +1,11 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { PRODUCTS } from '../data/products';
 import { Heart, ShoppingBag, ArrowLeft, Trash2, Plus } from 'lucide-react';
 
 export const WishlistView = () => {
-  const { wishlist, toggleWishlist, addToCart, navigateTo, showToast } = useApp();
+  const { wishlist = [], products = [], toggleWishlist, addToCart, navigateTo, showToast } = useApp();
 
-  const wishlistProducts = PRODUCTS.filter(p => wishlist.includes(p.id));
+  const wishlistProducts = products.filter(p => wishlist.includes(p.id));
 
   const handleMoveAllToCart = () => {
     wishlistProducts.forEach(p => addToCart(p, 1));

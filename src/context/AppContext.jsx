@@ -13,6 +13,7 @@ import {
   onAuthStateChanged,
   signOut,
   subscribeToAllProducts,
+  subscribeToVendors,
   updateProductInFirebase
 } from '../firebase';
 import { 
@@ -83,78 +84,10 @@ const DEFAULT_USER = {
   addresses: []
 };
 
-// Initial cart from single vendor (Ramesh Grocery)
-const INITIAL_CART = [
-  { product: INITIAL_PRODUCTS_DATA[0], quantity: 2 }, // Tomato 2kg (₹50)
-  { product: INITIAL_PRODUCTS_DATA[1], quantity: 1 }, // Potato 1kg (₹30)
-  { product: INITIAL_PRODUCTS_DATA[3], quantity: 1 }  // Green Chilli 250g (₹40)
-];
-
-const INITIAL_ORDERS = [
-  {
-    id: 'VS10245',
-    date: '12 May 2026, 10:30 AM',
-    vendorId: 'v1',
-    vendorName: 'Ramesh Grocery',
-    vendorPhone: '+91 98451 23456',
-    vendorDistance: '1.8 km',
-    items: [
-      { id: 'p1', name: 'Fresh Farm Red Tomatoes', price: 25, unit: 'kg', quantity: 2, image: INITIAL_PRODUCTS_DATA[0].image },
-      { id: 'p2', name: 'Fresh Local Potatoes', price: 30, unit: 'kg', quantity: 1, image: INITIAL_PRODUCTS_DATA[1].image },
-      { id: 'p4', name: 'Spicy Green Chillies', price: 40, unit: '250 g', quantity: 1, image: INITIAL_PRODUCTS_DATA[3].image }
-    ],
-    subtotal: 120,
-    deliveryFee: 20,
-    discount: 0,
-    total: 140,
-    paymentMethod: 'Cash on Delivery',
-    status: 'Out for Delivery',
-    deliveryAddress: 'Bhavana Bai, Mijar Village, Moodbidri, Karnataka - 574225',
-    deliveryContact: '+91 9876543210',
-    estimatedDelivery: '20–30 min',
-    riderLocation: { lat: 13.0100, lng: 74.9820, progress: 0.65 },
-    timeline: [
-      { status: 'Placed', label: 'Order Placed', time: '10:30 AM', completed: true },
-      { status: 'Accepted', label: 'Vendor Accepted', time: '10:35 AM', completed: true },
-      { status: 'Preparing', label: 'Preparing Fresh Produce', time: '10:45 AM', completed: true },
-      { status: 'Out for Delivery', label: 'Out for Delivery with Rider', time: '11:00 AM', completed: true },
-      { status: 'Delivered', label: 'Delivered to Doorstep', time: 'Expected by 11:30 AM', completed: false }
-    ]
-  },
-  {
-    id: 'VS10215',
-    date: '10 May 2026, 09:45 AM',
-    vendorId: 'v2',
-    vendorName: 'Suresh Provision Store',
-    vendorPhone: '+91 98452 34567',
-    vendorDistance: '3.4 km',
-    items: [
-      { id: 'p5', name: 'Byadgi Dry Red Chilli', price: 180, unit: 'kg', quantity: 1, image: INITIAL_PRODUCTS_DATA[4].image }
-    ],
-    subtotal: 180,
-    deliveryFee: 20,
-    discount: 0,
-    total: 200,
-    paymentMethod: 'UPI',
-    status: 'Delivered',
-    deliveryAddress: 'Bhavana Bai, Mijar - 574225',
-    deliveryContact: '+91 9876543210',
-    estimatedDelivery: 'Delivered',
-    riderLocation: { lat: 13.0125, lng: 74.9850, progress: 1.0 },
-    timeline: [
-      { status: 'Placed', label: 'Order Placed', time: '09:45 AM', completed: true },
-      { status: 'Accepted', label: 'Vendor Accepted', time: '09:48 AM', completed: true },
-      { status: 'Preparing', label: 'Preparing Fresh Produce', time: '09:55 AM', completed: true },
-      { status: 'Out for Delivery', label: 'Out for Delivery with Rider', time: '10:05 AM', completed: true },
-      { status: 'Delivered', label: 'Delivered to Doorstep', time: '10:25 AM', completed: true }
-    ]
-  }
-];
-
-const INITIAL_NOTIFICATIONS = [
-  { id: 'n1', title: '🚚 Order Out for Delivery', body: 'Your order #VS10245 is out for delivery with Ramesh Grocery.', time: '5 mins ago', read: false },
-  { id: 'n2', title: '🎉 Special Offer', body: 'Get 10% OFF on all local organic vegetables today with coupon FRESH10!', time: '2 hours ago', read: false }
-];
+// Initial states: Completely clean and dynamic; strictly connected to live Cloud Firestore
+const INITIAL_CART = [];
+const INITIAL_ORDERS = [];
+const INITIAL_NOTIFICATIONS = [];
 
 export const AppProvider = ({ children }) => {
   // Read initial route from URL hash if present
@@ -174,22 +107,22 @@ export const AppProvider = ({ children }) => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState(initialRoute.params.search || initialRoute.params.query || '');
   
-  // Dynamic Products and Vendors catalog
+  // Live dynamic Products and Vendors catalog from Cloud Firestore
   const [products, setProducts] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.DYNAMIC_PRODUCTS);
-      return saved ? JSON.parse(saved) : INITIAL_PRODUCTS_DATA;
+      return saved ? JSON.parse(saved) : [];
     } catch (e) {
-      return INITIAL_PRODUCTS_DATA;
+      return [];
     }
   });
 
   const [vendors, setVendors] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.DYNAMIC_VENDORS);
-      return saved ? JSON.parse(saved) : INITIAL_VENDORS_DATA;
+      return saved ? JSON.parse(saved) : [];
     } catch (e) {
-      return INITIAL_VENDORS_DATA;
+      return [];
     }
   });
 
@@ -216,20 +149,20 @@ export const AppProvider = ({ children }) => {
     return DEFAULT_USER;
   });
 
-  const [cart, setCart] = useState(INITIAL_CART);
-  const [wishlist, setWishlist] = useState(['p1', 'p5']);
+  const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
   
   const [orders, setOrders] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.SYNC_ORDERS);
-      return saved ? JSON.parse(saved) : INITIAL_ORDERS;
+      return saved ? JSON.parse(saved) : [];
     } catch (e) {
-      return INITIAL_ORDERS;
+      return [];
     }
   });
 
-  const [activeOrderId, setActiveOrderId] = useState('VS10245');
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const [activeOrderId, setActiveOrderId] = useState(null);
+  const [notifications, setNotifications] = useState([]);
   
   // Modals & Drawers state
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
@@ -383,33 +316,31 @@ export const AppProvider = ({ children }) => {
 
     // Listen to Firebase Firestore Orders in real time
     const unsubscribeOrders = subscribeToOrders((firebaseOrders) => {
-      if (firebaseOrders && firebaseOrders.length > 0) {
-        setOrders(prev => {
-          const merged = [...firebaseOrders];
-          prev.forEach(localOrder => {
-            if (!merged.some(o => o.id === localOrder.id)) {
-              merged.push(localOrder);
-            }
-          });
-          localStorage.setItem(STORAGE_KEYS.SYNC_ORDERS, JSON.stringify(merged));
-          return merged;
-        });
-      }
+      const safeOrders = firebaseOrders || [];
+      setOrders(safeOrders);
+      localStorage.setItem(STORAGE_KEYS.SYNC_ORDERS, JSON.stringify(safeOrders));
     });
 
     // Listen to Firebase Firestore Products in real time
     const unsubscribeProducts = subscribeToAllProducts((firebaseProducts) => {
-      if (firebaseProducts && firebaseProducts.length > 0) {
-        setProducts(firebaseProducts);
-        localStorage.setItem(STORAGE_KEYS.DYNAMIC_PRODUCTS, JSON.stringify(firebaseProducts));
-        cacheManager.invalidate(CACHE_KEYS.PRODUCTS, firebaseProducts);
-      }
+      const safeProducts = firebaseProducts || [];
+      setProducts(safeProducts);
+      localStorage.setItem(STORAGE_KEYS.DYNAMIC_PRODUCTS, JSON.stringify(safeProducts));
+      cacheManager.invalidate(CACHE_KEYS.PRODUCTS, safeProducts);
+    });
+
+    // Listen to live registered Vendors from Cloud Firestore
+    const unsubscribeVendors = subscribeToVendors((firebaseVendors) => {
+      const safeVendors = firebaseVendors || [];
+      setVendors(safeVendors);
+      localStorage.setItem(STORAGE_KEYS.DYNAMIC_VENDORS, JSON.stringify(safeVendors));
     });
 
     return () => {
       unsubscribeAuth();
       if (typeof unsubscribeOrders === 'function') unsubscribeOrders();
       if (typeof unsubscribeProducts === 'function') unsubscribeProducts();
+      if (typeof unsubscribeVendors === 'function') unsubscribeVendors();
     };
   }, []);
 

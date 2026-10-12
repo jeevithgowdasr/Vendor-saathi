@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { PRODUCTS } from '../data/products';
-import { VENDORS } from '../data/vendors';
 import { 
   Star, 
   MapPin, 
@@ -24,6 +22,8 @@ import confetti from 'canvas-confetti';
 export const ProductDetailView = () => {
   const { 
     selectedProduct, 
+    products = [],
+    vendors = [],
     navigateTo, 
     addToCart, 
     cart, 
@@ -34,10 +34,49 @@ export const ProductDetailView = () => {
     setIsVendorChatOpen
   } = useApp();
 
-  const product = selectedProduct || PRODUCTS[0];
-  const vendor = VENDORS.find(v => v.id === product.vendorId) || VENDORS[0];
+  const product = selectedProduct || products[0];
   const [quantity, setQuantity] = useState(1);
 
+  if (!product) {
+    return (
+      <div className="container animate-fade-in" style={{ padding: '80px 20px', textAlign: 'center', maxWidth: '520px', margin: '0 auto' }}>
+        <div style={{
+          width: '76px',
+          height: '76px',
+          borderRadius: '24px',
+          backgroundColor: '#f1f5f9',
+          color: '#64748b',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 20px auto'
+        }}>
+          <ShoppingBag size={36} />
+        </div>
+        <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a' }}>No Product Selected</h2>
+        <p style={{ color: '#64748b', fontSize: '14px', marginTop: '6px', marginBottom: '24px' }}>
+          Please select a product from our live catalog or explore available vendors.
+        </p>
+        <button
+          onClick={() => navigateTo('product-listing')}
+          style={{
+            backgroundColor: '#059669',
+            color: '#ffffff',
+            padding: '12px 24px',
+            borderRadius: '14px',
+            border: 'none',
+            fontWeight: '700',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}
+        >
+          Browse Products
+        </button>
+      </div>
+    );
+  }
+
+  const vendor = vendors.find(v => v.id === product.vendorId) || null;
   const cartItem = cart.find(item => item.product.id === product.id);
   const isWish = wishlist.includes(product.id);
 
@@ -57,7 +96,7 @@ export const ProductDetailView = () => {
     navigateTo('checkout');
   };
 
-  const relatedProducts = PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
+  const relatedProducts = (products || []).filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
 
   return (
     <div className="container animate-fade-in" style={{ padding: '32px 0 60px 0', width: '100%' }}>
@@ -216,17 +255,17 @@ export const ProductDetailView = () => {
               gap: '12px'
             }}>
               <div 
-                onClick={() => navigateTo('product-listing', { vendor })}
+                onClick={() => vendor && navigateTo('product-listing', { vendor })}
                 style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
               >
                 <img
-                  src={vendor.avatar}
-                  alt={vendor.name}
+                  src={vendor?.avatar || vendor?.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=120&q=80'}
+                  alt={vendor?.name || product.vendorName || 'Vendor'}
                   style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid #a7f3d0' }}
                 />
                 <div>
-                  <strong style={{ fontSize: '14.5px', color: '#064e3b', display: 'block' }}>{vendor.name}</strong>
-                  <span style={{ fontSize: '12px', color: '#059669' }}>📍 {vendor.distance} away • ⭐ {vendor.rating} ({vendor.reviewCount})</span>
+                  <strong style={{ fontSize: '14.5px', color: '#064e3b', display: 'block' }}>{vendor?.name || product.vendorName || 'Verified Local Vendor'}</strong>
+                  <span style={{ fontSize: '12px', color: '#059669' }}>📍 {vendor?.distance || 'Local area'} • ⭐ {vendor?.rating || '4.8'} ({vendor?.reviewCount || '0'} reviews)</span>
                 </div>
               </div>
 

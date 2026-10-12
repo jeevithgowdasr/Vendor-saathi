@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { VENDORS } from '../data/vendors';
 import { Package, Clock, CheckCircle2, ChevronRight, MessageSquare, Star, ArrowLeft, RefreshCw, XCircle, ShieldAlert, Sparkles, Navigation, ChevronLeft } from 'lucide-react';
 import { usePagination } from '../hooks/usePagination';
 import { useAsyncMutation } from '../hooks/useAsyncMutation';
@@ -10,7 +9,7 @@ import { AsyncButton } from '../components/AsyncButton';
 import { cacheManager, CACHE_KEYS } from '../utils/cacheManager';
 
 export const MyOrdersView = () => {
-  const { orders, navigateTo, setActiveOrderId, cancelOrder, setIsReviewModalOpen, setReviewOrder } = useApp();
+  const { orders = [], vendors = [], navigateTo, setActiveOrderId, cancelOrder, setIsReviewModalOpen, setReviewOrder } = useApp();
   const [tab, setTab] = useState('active'); // all | active | past | cancelled
   const [cancellingOrderId, setCancellingOrderId] = useState(null);
 
@@ -108,7 +107,10 @@ export const MyOrdersView = () => {
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '24px' }}>
             {paginatedItems.map(order => {
-              const vendor = VENDORS.find(v => v.id === order.vendorId) || VENDORS[0];
+              const vendor = vendors.find(v => v.id === order.vendorId) || {
+                name: order.vendorName || 'Verified Vendor Partner',
+                avatar: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=120&q=80'
+              };
               const isDelivered = order.status === 'Delivered';
               const isCancelled = order.status === 'Cancelled';
 

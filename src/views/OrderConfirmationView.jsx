@@ -1,17 +1,21 @@
 import React, { useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { VENDORS } from '../data/vendors';
 import { CheckCircle2, MapPin, Clock, ArrowRight, Store, CreditCard, ShieldCheck, Sparkles, Copy, Check, Navigation, ShoppingBag } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export const OrderConfirmationView = () => {
-  const { orders, activeOrderId, navigateTo, setSelectedVendor, showToast } = useApp();
+  const { orders = [], activeOrderId, navigateTo, setSelectedVendor, showToast, vendors = [] } = useApp();
   const [copied, setCopied] = React.useState(false);
 
   const order = orders.find(o => o.id === activeOrderId) || orders[0];
-  const vendor = VENDORS.find(v => v.id === order?.vendorId) || VENDORS[0];
+  const vendor = vendors.find(v => v.id === order?.vendorId) || { 
+    name: order?.vendorName || 'Verified Vendor Partner', 
+    avatar: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=120&q=80', 
+    phone: '+91 98451 23456' 
+  };
 
   useEffect(() => {
+    if (!order) return;
     try {
       const count = 200;
       const defaults = { origin: { y: 0.7 } };
@@ -30,7 +34,7 @@ export const OrderConfirmationView = () => {
       fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
       fire(0.1, { spread: 120, startVelocity: 45 });
     } catch (err) {}
-  }, []);
+  }, [order]);
 
   const handleCopyId = () => {
     if (order?.id) {
@@ -41,7 +45,44 @@ export const OrderConfirmationView = () => {
     }
   };
 
-  if (!order) return null;
+  if (!order) {
+    return (
+      <div className="container animate-fade-in" style={{ padding: '80px 20px', textAlign: 'center', maxWidth: '520px', margin: '0 auto' }}>
+        <div style={{
+          width: '76px',
+          height: '76px',
+          borderRadius: '24px',
+          backgroundColor: '#f1f5f9',
+          color: '#64748b',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 20px auto'
+        }}>
+          <ShoppingBag size={36} />
+        </div>
+        <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a' }}>No Recent Order Found</h2>
+        <p style={{ color: '#64748b', fontSize: '14px', marginTop: '6px', marginBottom: '24px' }}>
+          You don't have an active order session. Explore fresh produce from local mobile vendors to place an order.
+        </p>
+        <button
+          onClick={() => navigateTo('home')}
+          style={{
+            backgroundColor: '#059669',
+            color: '#ffffff',
+            padding: '12px 24px',
+            borderRadius: '14px',
+            border: 'none',
+            fontWeight: '700',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}
+        >
+          Explore Fresh Produce
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="container animate-fade-in" style={{ padding: '36px 0 60px 0', width: '100%' }}>

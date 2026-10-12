@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { CATEGORIES } from '../data/categories';
-import { VENDORS as INITIAL_VENDORS } from '../data/vendors';
-import { PRODUCTS as INITIAL_PRODUCTS } from '../data/products';
 import { 
   ShoppingBag, 
   MapPin, 
@@ -25,7 +23,8 @@ import {
   Layers,
   Radio,
   Sliders,
-  Smartphone
+  Smartphone,
+  Package
 } from 'lucide-react';
 
 export const HomeView = () => {
@@ -60,8 +59,8 @@ export const HomeView = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const activeProducts = products || INITIAL_PRODUCTS;
-  const activeVendors = vendors || INITIAL_VENDORS;
+  const activeProducts = products || [];
+  const activeVendors = vendors || [];
   const popularProducts = activeProducts.filter(p => p.isPopular);
 
   return (
@@ -472,10 +471,34 @@ export const HomeView = () => {
           </div>
 
           {/* Flash Products Grid */}
-          <div className="product-grid">
-            {popularProducts.slice(0, 4).map(prod => {
-              const inCart = cart.find(item => item.product.id === prod.id);
-              const isWish = wishlist.includes(prod.id);
+          {activeProducts.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px', backgroundColor: '#f8fafc', borderRadius: '20px', border: '1.5px dashed #cbd5e1' }}>
+              <Package size={40} color="#059669" style={{ margin: '0 auto 10px auto' }} />
+              <strong style={{ fontSize: '16px', color: '#1e293b', display: 'block' }}>Fresh Produce Arriving Soon</strong>
+              <p style={{ fontSize: '13px', color: '#64748b', maxWidth: '400px', margin: '6px auto 16px auto' }}>
+                Local mobile vendors are updating their catalogs for upcoming village delivery routes. Check upcoming schedules!
+              </p>
+              <button
+                onClick={() => navigateTo('nearby-vendors')}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '12px',
+                  backgroundColor: '#059669',
+                  color: '#ffffff',
+                  border: 'none',
+                  fontSize: '13px',
+                  fontWeight: '800',
+                  cursor: 'pointer'
+                }}
+              >
+                📅 View Upcoming Scheduled Visits
+              </button>
+            </div>
+          ) : (
+            <div className="product-grid">
+              {(popularProducts.length > 0 ? popularProducts : activeProducts).slice(0, 4).map(prod => {
+                const inCart = cart.find(item => item.product.id === prod.id);
+                const isWish = wishlist.includes(prod.id);
 
               return (
                 <div
@@ -619,6 +642,7 @@ export const HomeView = () => {
               );
             })}
           </div>
+        )}
         </section>
 
         {/* Smart Voice AI Shopping Assistant Callout Banner */}
@@ -748,12 +772,53 @@ export const HomeView = () => {
             </button>
           </div>
 
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '20px'
-          }}>
-            {activeVendors.map(v => (
+          {activeVendors.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px', backgroundColor: '#f8fafc', borderRadius: '20px', border: '1.5px dashed #cbd5e1' }}>
+              <Store size={40} color="#2563eb" style={{ margin: '0 auto 10px auto' }} />
+              <strong style={{ fontSize: '16px', color: '#1e293b', display: 'block' }}>No Live Mobile Vendors in Area Right Now</strong>
+              <p style={{ fontSize: '13px', color: '#64748b', maxWidth: '440px', margin: '6px auto 16px auto' }}>
+                Mobile street cart vendors announce advance visit schedules. Discover when mobile vegetable & fruit vendors will visit your neighborhood!
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => navigateTo('nearby-vendors')}
+                  style={{
+                    padding: '10px 18px',
+                    borderRadius: '12px',
+                    backgroundColor: '#059669',
+                    color: '#ffffff',
+                    border: 'none',
+                    fontSize: '13px',
+                    fontWeight: '800',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📅 Explore Upcoming Visits
+                </button>
+                <button
+                  onClick={() => navigateTo('login', { role: 'vendor', mode: 'register' })}
+                  style={{
+                    padding: '10px 18px',
+                    borderRadius: '12px',
+                    backgroundColor: '#eff6ff',
+                    color: '#2563eb',
+                    border: '1.5px solid #bfdbfe',
+                    fontSize: '13px',
+                    fontWeight: '800',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🏪 Become a Vendor Partner
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '20px'
+            }}>
+              {activeVendors.map(v => (
               <div
                 key={v.id}
                 className="vs-card vs-card-interactive"
@@ -863,6 +928,7 @@ export const HomeView = () => {
               </div>
             ))}
           </div>
+        )}
         </section>
       </div>
     </div>

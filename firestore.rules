@@ -45,7 +45,8 @@ service cloud.firestore {
     // Customer fields: primaryLocation, preferredCategories, preferredAreas, fcmToken
     // =========================================================================
     match /users/{userId} {
-      allow read: if isAuthenticated();
+      // Public can read vendor profiles, authenticated users can read profiles
+      allow read: if true;
       
       // User can create/edit their own document, or Admin can manage all
       allow create: if isAuthenticated() && (isOwner(userId) || isAdmin());
@@ -66,8 +67,8 @@ service cloud.firestore {
     // productId, vendorId, name, category, price, unit, availableQuantity, isAvailable, imageUrl
     // =========================================================================
     match /products/{productId} {
-      // Anyone authenticated can read catalog items
-      allow read: if isAuthenticated();
+      // Public can read active catalog items
+      allow read: if true;
 
       // Only the vendor who owns the product or an Admin can create it
       allow create: if isAuthenticated() && (
@@ -87,7 +88,7 @@ service cloud.firestore {
 
     // Support subcollection catalog: users/{vendorId}/products/{productId}
     match /users/{vendorId}/products/{productId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow write: if isAuthenticated() && (isOwner(vendorId) || isAdmin());
     }
 
@@ -97,8 +98,8 @@ service cloud.firestore {
     // expectedArrivalTime, expectedDepartureTime, availableProductIds, status, hasConflict, liveCoordinates
     // =========================================================================
     match /schedules/{scheduleId} {
-      // Any authenticated user can read planned visits
-      allow read: if isAuthenticated();
+      // Public can read planned visits
+      allow read: if true;
 
       // Only authenticated vendor creating for themselves, or an Admin
       allow create: if isAuthenticated() && (

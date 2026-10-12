@@ -10,7 +10,7 @@ const KANNADA_VOICE_SAMPLES = [
 ];
 
 export const VoiceSearchModal = () => {
-  const { isVoiceSearchOpen, setIsVoiceSearchOpen, setSearchQuery, navigateTo, addToCart, PRODUCTS, showToast } = useApp();
+  const { isVoiceSearchOpen, setIsVoiceSearchOpen, setSearchQuery, navigateTo, addToCart, products = [], showToast } = useApp();
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [detectedItem, setDetectedItem] = useState(null);
@@ -37,10 +37,10 @@ export const VoiceSearchModal = () => {
     if (lower.includes('3')) quantity = 3;
 
     // Parse Kannada / English keywords
-    if (lower.includes('tomato')) foundProduct = PRODUCTS.find(p => p.shortName.toLowerCase() === 'tomato');
-    else if (lower.includes('potato') || lower.includes('alugadde')) foundProduct = PRODUCTS.find(p => p.shortName.toLowerCase() === 'potato');
-    else if (lower.includes('onion') || lower.includes('erulli')) foundProduct = PRODUCTS.find(p => p.shortName.toLowerCase() === 'onion');
-    else if (lower.includes('chilli') || lower.includes('mensinakayi') || lower.includes('byadgi')) foundProduct = PRODUCTS.find(p => p.shortName.toLowerCase().includes('chilli') || p.name.toLowerCase().includes('chilli'));
+    if (lower.includes('tomato')) foundProduct = products.find(p => (p.shortName || p.name || '').toLowerCase().includes('tomato'));
+    else if (lower.includes('potato') || lower.includes('alugadde')) foundProduct = products.find(p => (p.shortName || p.name || '').toLowerCase().includes('potato'));
+    else if (lower.includes('onion') || lower.includes('erulli')) foundProduct = products.find(p => (p.shortName || p.name || '').toLowerCase().includes('onion'));
+    else if (lower.includes('chilli') || lower.includes('mensinakayi') || lower.includes('byadgi')) foundProduct = products.find(p => (p.shortName || p.name || '').toLowerCase().includes('chilli'));
 
     if (foundProduct) {
       setDetectedItem({ product: foundProduct, qty: quantity });

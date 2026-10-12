@@ -29,6 +29,7 @@ import {
 } from "firebase/firestore";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 const getEnvVar = (key) => {
   if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
@@ -56,6 +57,7 @@ let auth = null;
 let db = null;
 let storage = null;
 let messaging = null;
+let functions = null;
 let googleProvider = null;
 
 try {
@@ -70,6 +72,11 @@ try {
     storage = getStorage(app);
   } catch (sErr) {
     console.warn("Firebase Storage init note (using local cache):", sErr.message);
+  }
+  try {
+    functions = getFunctions(app);
+  } catch (fErr) {
+    console.warn("Firebase Functions init note:", fErr.message);
   }
   try {
     if (typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator) {
@@ -102,6 +109,8 @@ export {
   db,
   storage,
   messaging,
+  functions,
+  httpsCallable,
   googleProvider,
   safeOnAuthStateChanged as onAuthStateChanged, 
   signOut, 
@@ -1248,6 +1257,333 @@ export const resolveComplaintInFirebase = async (complaintId, resolutionNote) =>
   } catch (err) {
     console.warn("resolveComplaintInFirebase warning:", err.message);
     return { success: false, error: err.message };
+  }
+};
+
+/**
+ * Upload profile avatar image to Firebase Storage with resilient DataURL fallback
+ */
+export const uploadProfileImageToStorage = async (file, userId = 'user') => {
+  try {
+    if (storage && file && file.name) {
+      const sanitized = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+      const fileRef = storageRef(storage, `profiles/${userId}/${Date.now()}_${sanitized}`);
+      const snapshot = await uploadBytes(fileRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      return { success: true, url: downloadURL };
+    }
+  } catch (storageErr) {
+    console.warn("Storage profile upload note (using client fallback):", storageErr.message);
+  }
+
+  return new Promise((resolve) => {
+    if (!file) {
+      resolve({ success: false, url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(userId)}&backgroundColor=059669` });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => resolve({ success: true, url: e.target.result });
+    reader.onerror = () => resolve({ success: false, url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(userId)}&backgroundColor=059669` });
+    reader.readAsDataURL(file);
+  });
+};
+
+/**
+ * Real-time listener for live vendors from Firestore users collection
+ */
+export const subscribeToVendors = (callback) => {
+  try {
+    const usersCol = collection(db, "users");
+    const q = query(usersCol, where("role", "==", "vendor"));
+    return onSnapshot(q, (snapshot) => {
+      const vendors = [];
+      snapshot.forEach((d) => {
+        const data = d.data();
+        vendors.push({
+          id: d.id,
+          uid: d.id,
+          name: data.businessName || data.name || "Local Vendor",
+          owner: data.name || "Vendor Partner",
+          status: data.status === 'blocked' ? 'offline' : 'online',
+          statusLabel: data.status === 'blocked' ? '🔴 Blocked' : '🟢 Open Now',
+          distance: 'Nearby',
+          distanceKm: 1.5,
+          location: Array.isArray(data.operatingAreas) && data.operatingAreas.length > 0 ? data.operatingAreas.join(', ') : 'Moodbidri Local',
+          rating: data.rating || 4.8,
+          reviewCount: data.ratingCount || 12,
+          deliveryTime: '20–30 min delivery',
+          isOpen: data.status !== 'blocked',
+          phone: data.phone || '',
+          verified: data.status === 'active',
+          badge: data.category || 'Local Partner',
+          categories: Array.isArray(data.categories) ? data.categories : [data.category || 'Produce'],
+          image: data.profileImageUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(data.businessName || data.name || 'Vendor')}&backgroundColor=059669`,
+          avatar: data.profileImageUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(data.businessName || data.name || 'Vendor')}&backgroundColor=059669`,
+          address: Array.isArray(data.operatingAreas) && data.operatingAreas.length > 0 ? data.operatingAreas.join(', ') : 'Moodbidri',
+          operatingAreas: data.operatingAreas || [],
+          vehicleDetails: data.vehicleDetails || {}
+        });
+      });
+      callback(vendors);
+    }, (err) => {
+      console.warn("subscribeToVendors snapshot warning:", err.message);
+    });
+  } catch (error) {
+    console.warn("subscribeToVendors init error:", error.message);
+    return () => {};
+  }
+};
+
+/**
+ * Dedicated Vendor Registration directly via Firebase Auth & Firestore
+ */
+export const firebaseRegisterVendor = async ({
+  fullName,
+  phone,
+  email,
+  password,
+  businessName,
+  vendorCategory,
+  operatingAreas = [],
+  vehicleType = 'None',
+  vehicleRegNo = '',
+  profileImageFile = null
+}) => {
+  const cleanEmail = email && email.includes('@') 
+    ? email.trim().toLowerCase() 
+    : `${(phone || 'vendor').replace(/\D/g, '') || Date.now()}@vendorsaathi.in`;
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+    const authUser = userCredential.user;
+
+    // Upload profile image to Firebase Storage if provided
+    let profileImageUrl = '';
+    if (profileImageFile) {
+      const uploadRes = await uploadProfileImageToStorage(profileImageFile, authUser.uid);
+      if (uploadRes?.success) {
+        profileImageUrl = uploadRes.url;
+      }
+    }
+
+    if (!profileImageUrl) {
+      profileImageUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(businessName || fullName)}&backgroundColor=059669,10b981`;
+    }
+
+    // Update Firebase Auth user display name & photo
+    await updateProfile(authUser, {
+      displayName: businessName || fullName,
+      photoURL: profileImageUrl
+    }).catch(e => console.warn("updateProfile note:", e));
+
+    const vendorProfile = {
+      uid: authUser.uid,
+      id: authUser.uid,
+      role: 'vendor',
+      name: fullName,
+      email: cleanEmail,
+      phone: phone || '',
+      status: 'active',
+      businessName: businessName || fullName,
+      category: vendorCategory || 'Vegetable',
+      categories: [vendorCategory || 'Vegetable'],
+      operatingAreas: operatingAreas,
+      vehicleDetails: {
+        vehicleType: vehicleType || 'None',
+        vehicleNumber: vehicleRegNo || ''
+      },
+      profileImageUrl: profileImageUrl,
+      rating: 5.0,
+      ratingCount: 0,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+
+    // Save to Firestore users collection
+    await setDoc(doc(db, "users", authUser.uid), vendorProfile, { merge: true });
+
+    // Also mirror to vendors collection for fast discovery
+    await setDoc(doc(db, "vendors", authUser.uid), {
+      id: authUser.uid,
+      uid: authUser.uid,
+      name: businessName || fullName,
+      owner: fullName,
+      phone: phone || '',
+      category: vendorCategory || 'Vegetable',
+      categories: [vendorCategory || 'Vegetable'],
+      operatingAreas: operatingAreas,
+      status: 'online',
+      statusLabel: '🟢 Open Now',
+      isOpen: true,
+      rating: 5.0,
+      reviewCount: 0,
+      image: profileImageUrl,
+      avatar: profileImageUrl,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+
+    // Call Cloud Function to assign Custom User Claims if available
+    try {
+      if (functions) {
+        const setClaimsFn = httpsCallable(functions, 'setCustomUserClaims');
+        await setClaimsFn({ uid: authUser.uid, role: 'vendor' });
+      }
+    } catch (claimErr) {
+      console.warn("setCustomUserClaims call notice:", claimErr.message);
+    }
+
+    return {
+      success: true,
+      user: vendorProfile,
+      token: `vs_live_${authUser.uid}_${Date.now()}`
+    };
+  } catch (error) {
+    console.error("firebaseRegisterVendor error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Dedicated Vendor Login via Firebase Auth & Firestore role verification
+ */
+export const firebaseLoginVendor = async ({ identifier, password }) => {
+  const cleanEmail = identifier.includes('@')
+    ? identifier.trim().toLowerCase()
+    : `${identifier.replace(/\D/g, '')}@vendorsaathi.in`;
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
+    const authUser = userCredential.user;
+
+    // Verify role in Firestore users collection
+    const userDocRef = doc(db, "users", authUser.uid);
+    const userSnap = await getDoc(userDocRef);
+
+    if (userSnap.exists()) {
+      const data = userSnap.data();
+      // RBAC Security Check: Reject non-vendor accounts
+      if (data.role !== 'vendor' && data.role !== 'admin') {
+        await signOut(auth);
+        throw new Error("Account is not registered as a vendor.");
+      }
+      return {
+        success: true,
+        user: { ...data, uid: authUser.uid },
+        token: `vs_live_${authUser.uid}_${Date.now()}`
+      };
+    } else {
+      // User has Auth credentials but no vendor record in Firestore
+      await signOut(auth);
+      throw new Error("Account is not registered as a vendor.");
+    }
+  } catch (error) {
+    console.error("firebaseLoginVendor error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Dedicated Customer Registration directly via Firebase Auth & Firestore
+ */
+export const firebaseRegisterCustomer = async ({
+  fullName,
+  phone,
+  email,
+  password,
+  primaryAddress = '',
+  coordinates = { lat: 13.0682, lng: 74.9961 },
+  preferredAreas = [],
+  preferredCategories = []
+}) => {
+  const cleanEmail = email && email.includes('@')
+    ? email.trim().toLowerCase()
+    : `${(phone || 'customer').replace(/\D/g, '') || Date.now()}@vendorsaathi.in`;
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+    const authUser = userCredential.user;
+
+    const avatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(fullName)}&backgroundColor=059669`;
+
+    await updateProfile(authUser, {
+      displayName: fullName,
+      photoURL: avatarUrl
+    }).catch(e => console.warn("updateProfile note:", e));
+
+    const customerProfile = {
+      uid: authUser.uid,
+      id: authUser.uid,
+      role: 'customer',
+      name: fullName,
+      email: cleanEmail,
+      phone: phone || '',
+      status: 'active',
+      primaryLocation: {
+        address: primaryAddress || 'Moodbidri',
+        geopoint: new GeoPoint(Number(coordinates.lat || 13.0682), Number(coordinates.lng || 74.9961))
+      },
+      preferredAreas: preferredAreas,
+      preferredCategories: preferredCategories,
+      photoURL: avatarUrl,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+
+    await setDoc(doc(db, "users", authUser.uid), customerProfile, { merge: true });
+
+    return {
+      success: true,
+      user: customerProfile,
+      token: `vs_live_${authUser.uid}_${Date.now()}`
+    };
+  } catch (error) {
+    console.error("firebaseRegisterCustomer error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Dedicated Customer Login via Firebase Auth & Firestore profile loading
+ */
+export const firebaseLoginCustomer = async ({ identifier, password }) => {
+  const cleanEmail = identifier.includes('@')
+    ? identifier.trim().toLowerCase()
+    : `${identifier.replace(/\D/g, '')}@vendorsaathi.in`;
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
+    const authUser = userCredential.user;
+
+    const userDocRef = doc(db, "users", authUser.uid);
+    const userSnap = await getDoc(userDocRef);
+
+    if (userSnap.exists()) {
+      const data = userSnap.data();
+      return {
+        success: true,
+        user: { ...data, uid: authUser.uid },
+        token: `vs_live_${authUser.uid}_${Date.now()}`
+      };
+    } else {
+      const newCustomerProfile = {
+        uid: authUser.uid,
+        id: authUser.uid,
+        role: 'customer',
+        name: authUser.displayName || 'Customer',
+        email: cleanEmail,
+        status: 'active',
+        createdAt: serverTimestamp()
+      };
+      await setDoc(userDocRef, newCustomerProfile, { merge: true });
+      return {
+        success: true,
+        user: newCustomerProfile,
+        token: `vs_live_${authUser.uid}_${Date.now()}`
+      };
+    }
+  } catch (error) {
+    console.error("firebaseLoginCustomer error:", error);
+    throw error;
   }
 };
 

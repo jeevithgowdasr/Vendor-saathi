@@ -98,17 +98,36 @@ export const parseHashRoute = (hash = '') => {
   const [viewPart, queryPart] = clean.split('?');
   let rawView = (viewPart || 'home').toLowerCase().replace(/^\//, '');
 
+  const params = queryPart ? decodeQueryParams(`?${queryPart}`) : {};
+
   // Normalize requested prompt aliases
   let view = rawView;
   if (rawView === 'vendor/dashboard' || rawView === 'vendor-dashboard' || rawView === 'vendor') {
     view = 'vendor-portal';
+  } else if (rawView === 'vendor/products' || rawView === 'vendor-products') {
+    view = 'vendor-portal';
+    params.tab = 'inventory';
+  } else if (rawView === 'vendor/register' || rawView === 'vendor-register') {
+    view = 'login';
+    params.role = 'vendor';
+    params.mode = 'register';
+  } else if (rawView === 'vendor/login' || rawView === 'vendor-login') {
+    view = 'login';
+    params.role = 'vendor';
+    params.mode = 'signin';
+  } else if (rawView === 'customer/register' || rawView === 'customer-register' || rawView === 'register') {
+    view = 'login';
+    params.role = 'customer';
+    params.mode = 'register';
+  } else if (rawView === 'customer/login' || rawView === 'customer-login' || rawView === 'login') {
+    view = 'login';
+    params.role = 'customer';
+    params.mode = 'signin';
   } else if (rawView === 'customer/explore' || rawView === 'customer-explore' || rawView === 'explore') {
     view = 'nearby-vendors';
   } else if (rawView === 'admin/panel' || rawView === 'admin-panel' || rawView === 'admin') {
     view = 'admin-panel';
   }
-
-  const params = queryPart ? decodeQueryParams(`?${queryPart}`) : {};
 
   return { view, params };
 };

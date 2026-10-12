@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { VENDORS } from '../data/vendors';
 import { Send, Phone, ArrowLeft, CheckCheck, Paperclip, Store, Sparkles, Mic } from 'lucide-react';
 
 export const VendorChatView = () => {
-  const { navigateTo, selectedVendor, vendors, orders } = useApp();
-  const vendor = selectedVendor || (vendors && vendors[0]) || VENDORS[0];
+  const { navigateTo, selectedVendor, vendors = [], orders } = useApp();
+  const vendor = selectedVendor || (vendors && vendors[0]) || {
+    name: 'Verified Vendor Partner',
+    avatar: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=120&q=80',
+    phone: '+91 98451 23456'
+  };
 
   const [messages, setMessages] = useState([
     { sender: 'customer', text: 'Hello Ramesh Gowda, is fresh tomato available today?', time: '10:20 AM' },

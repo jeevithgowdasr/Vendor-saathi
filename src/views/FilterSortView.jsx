@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { PRODUCTS } from '../data/products';
 import { CATEGORIES } from '../data/categories';
 import { ArrowLeft, Filter, SlidersHorizontal, Plus, Minus, Star, Heart } from 'lucide-react';
 
 export const FilterSortView = () => {
-  const { navigateTo, addToCart, cart, updateCartQuantity, wishlist, toggleWishlist } = useApp();
+  const { products = [], navigateTo, addToCart, cart, updateCartQuantity, wishlist, toggleWishlist } = useApp();
   
   const [selectedCatId, setSelectedCatId] = useState('vegetables');
   const [maxPrice, setMaxPrice] = useState(200);
   const [inStockOnly, setInStockOnly] = useState(true);
   const [sortBy, setSortBy] = useState('popular');
 
-  const filteredProducts = PRODUCTS.filter(p => {
+  const filteredProducts = products.filter(p => {
     if (selectedCatId && p.category !== selectedCatId) return false;
     if (p.price > maxPrice) return false;
     if (inStockOnly && p.availableStock <= 0) return false;

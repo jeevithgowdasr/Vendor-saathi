@@ -79,10 +79,13 @@ export const LoginView = ({ params = {} }) => {
 
   // Mode: 'signin' | 'register'
   const [authMode, setAuthMode] = useState(params?.mode === 'register' ? 'register' : 'signin');
-  // Role: 'customer' | 'vendor'
+  // Role: 'customer' | 'vendor' | 'admin'
   const [selectedRole, setSelectedRole] = useState(params?.role || 'customer');
-  // Login Sub-tabs: 'password' | 'otp' | 'demo'
-  const [loginMethod, setLoginMethod] = useState('password');
+
+  useEffect(() => {
+    if (params?.role) setSelectedRole(params.role);
+    if (params?.mode) setAuthMode(params.mode);
+  }, [params?.role, params?.mode]);
 
   // Common Form Fields
   const [identifier, setIdentifier] = useState('');
@@ -100,6 +103,8 @@ export const LoginView = ({ params = {} }) => {
   const [vehicleType, setVehicleType] = useState('None');
   const [vehicleRegNo, setVehicleRegNo] = useState('');
   const [profileImage, setProfileImage] = useState('');
+  const [profileImageFile, setProfileImageFile] = useState(null);
+  const [profilePreview, setProfilePreview] = useState('');
 
   // Customer-Specific Fields
   const [primaryAddress, setPrimaryAddress] = useState('Mijar Village, Moodbidri');
@@ -107,10 +112,6 @@ export const LoginView = ({ params = {} }) => {
   const [preferredAreas, setPreferredAreas] = useState(['Mijar', 'Moodbidri Town']);
   const [preferredCategories, setPreferredCategories] = useState(['Vegetables', 'Fruits']);
   const [isLocatingGPS, setIsLocatingGPS] = useState(false);
-
-  // OTP Login State
-  const [otpCode, setOtpCode] = useState('');
-  const [isOtpSent, setIsOtpSent] = useState(false);
 
   // UI & Feedback State
   const [isLoading, setIsLoading] = useState(false);
@@ -331,7 +332,8 @@ export const LoginView = ({ params = {} }) => {
           vendorCategory,
           categories: [vendorCategory, 'Daily Essentials'],
           operatingAreas,
-          profileImage: profileImage.trim() || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+          profileImageFile: profileImageFile || undefined,
+          profileImage: profileImage.trim() || undefined,
           vehicleDetails: {
             vehicleType,
             registrationNumber: vehicleRegNo.trim()
@@ -359,7 +361,7 @@ export const LoginView = ({ params = {} }) => {
           },
           preferredAreas,
           preferredCategories,
-          profileImage: profileImage.trim() || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80',
+          profileImage: profileImage.trim() || undefined,
           status: 'active'
         };
 
@@ -374,67 +376,6 @@ export const LoginView = ({ params = {} }) => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Quick 1-Click Demo Login
-  const handleQuickDemoLogin = async (role) => {
-    playPopSound();
-    setIsLoading(true);
-    try {
-      const identifier = role === 'admin'
-        ? 'admin@vendorsaathi.com'
-        : role === 'vendor'
-        ? 'ramesh.kirana@gmail.com'
-        : 'bhavana.bai@gmail.com';
-      const res = await loginApi({
-        identifier,
-        password: 'password123',
-        role
-      });
-      if (res?.user && res?.token) {
-        handleSuccessfulAuth(res.user, res.token);
-      }
-    } catch (err) {
-      setErrorMessage(err.message || 'Demo sign-in failed.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Mobile OTP Demo Flow
-  const handleSendOtp = (e) => {
-    e.preventDefault();
-    const pErr = validatePhone(phone, true);
-    if (pErr) {
-      setFieldErrors({ phone: pErr });
-      setErrorMessage(pErr);
-      playPopSound();
-      return;
-    }
-    setFieldErrors({});
-    setIsOtpSent(true);
-    showToast(`OTP Code sent to +91 ${phone.replace(/\D/g, '').slice(-10)}. (Demo OTP: 123456)`, 'info');
-  };
-
-  const handleVerifyOtp = (e) => {
-    e.preventDefault();
-    if (!otpCode || otpCode.trim() !== '123456') {
-      setFieldErrors({ otp: 'Invalid OTP code. Please use demo OTP: 123456' });
-      setErrorMessage('Invalid OTP code. Please use demo OTP: 123456');
-      playPopSound();
-      return;
-    }
-    setFieldErrors({});
-    const cleanDigits = phone.replace(/\D/g, '').slice(-10);
-    const demoUser = {
-      id: `usr_otp_${Date.now()}`,
-      name: selectedRole === 'vendor' ? 'Ramesh Gowda' : 'Bhavana Bai',
-      phone: `+91 ${cleanDigits}`,
-      email: selectedRole === 'vendor' ? 'ramesh.kirana@gmail.com' : 'bhavana.bai@gmail.com',
-      role: selectedRole,
-      status: 'active'
-    };
-    handleSuccessfulAuth(demoUser, `jwt_otp_${Date.now()}`);
   };
 
   const isCustomer = selectedRole === 'customer';
@@ -502,7 +443,7 @@ export const LoginView = ({ params = {} }) => {
         {/* 1. Clean Role Selector Toggle */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
+          gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '8px',
           backgroundColor: '#f1f5f9',
           padding: '6px',
@@ -650,303 +591,96 @@ export const LoginView = ({ params = {} }) => {
 
         {/* -------------------- SIGN IN MODE -------------------- */}
         {authMode === 'signin' && (
-          <div>
-            {/* Login Method Sub-Tabs */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-              {[
-                { id: 'password', label: 'Password Login' },
-                { id: 'otp', label: 'Phone OTP' },
-                { id: 'demo', label: '⚡ 1-Click Demo' }
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => { setLoginMethod(tab.id); setErrorMessage(''); }}
+          <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <FormField
+              label="Mobile Number or Email Address"
+              name="login_identifier"
+              type="text"
+              required
+              placeholder={isCustomer ? 'your.email@gmail.com or 9876543210' : 'store.vendor@gmail.com or 9845123456'}
+              value={identifier}
+              onChange={(e) => {
+                setIdentifier(e.target.value);
+                clearFieldError('identifier');
+              }}
+              error={fieldErrors.identifier}
+              icon={isCustomer ? Mail : Store}
+            />
+
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                Password <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
+                  <Lock size={18} />
+                </div>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter account password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    clearFieldError('password');
+                  }}
                   style={{
-                    padding: '6px 12px',
-                    borderRadius: '10px',
-                    border: '1px solid',
-                    borderColor: loginMethod === tab.id ? roleColor : '#e2e8f0',
-                    backgroundColor: loginMethod === tab.id ? roleBg : '#f8fafc',
-                    color: loginMethod === tab.id ? roleColor : '#64748b',
-                    fontSize: '12.5px',
-                    fontWeight: '700',
+                    width: '100%',
+                    padding: '13px 44px 13px 42px',
+                    borderRadius: '14px',
+                    border: '1.5px solid #cbd5e1',
+                    fontSize: '14.5px',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '14px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: '#94a3b8',
                     cursor: 'pointer'
                   }}
                 >
-                  {tab.label}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
-              ))}
+              </div>
+              {fieldErrors.password && (
+                <span style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px', display: 'block' }}>
+                  {fieldErrors.password}
+                </span>
+              )}
             </div>
 
-            {/* Standard Password Login Form */}
-            {loginMethod === 'password' && (
-              <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <FormField
-                  label="Mobile Number or Email Address"
-                  name="login_identifier"
-                  type="text"
-                  required
-                  placeholder={isCustomer ? 'bhavana.bai@gmail.com or 9876543210' : 'ramesh.kirana@gmail.com or 9845123456'}
-                  value={identifier}
-                  onChange={(e) => {
-                    setIdentifier(e.target.value);
-                    clearFieldError('identifier');
-                  }}
-                  error={fieldErrors.identifier}
-                  icon={isCustomer ? Mail : Store}
-                />
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
-                    Password <span style={{ color: '#ef4444' }}>*</span>
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
-                      <Lock size={18} />
-                    </div>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Enter account password"
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        clearFieldError('password');
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '13px 44px 13px 42px',
-                        borderRadius: '14px',
-                        border: '1.5px solid #cbd5e1',
-                        fontSize: '14.5px',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      style={{
-                        position: 'absolute',
-                        right: '14px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        background: 'none',
-                        border: 'none',
-                        color: '#94a3b8',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                  {fieldErrors.password && (
-                    <span style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px', display: 'block' }}>
-                      {fieldErrors.password}
-                    </span>
-                  )}
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  style={{
-                    backgroundColor: roleColor,
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '14px',
-                    borderRadius: '16px',
-                    fontSize: '15px',
-                    fontWeight: '800',
-                    cursor: 'pointer',
-                    boxShadow: `0 8px 20px -4px ${isCustomer ? 'rgba(16, 185, 129, 0.4)' : 'rgba(37, 99, 235, 0.4)'}`,
-                    marginTop: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  {isLoading ? 'Signing in...' : `Sign in as ${isCustomer ? 'Customer' : 'Vendor Partner'}`}
-                  <ArrowRight size={18} />
-                </button>
-              </form>
-            )}
-
-            {/* Mobile OTP Login Form */}
-            {loginMethod === 'otp' && (
-              <div>
-                {!isOtpSent ? (
-                  <form onSubmit={handleSendOtp} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <FormField
-                      label="Mobile Phone Number"
-                      name="otp_phone"
-                      type="tel"
-                      required
-                      placeholder="e.g. 9876543210"
-                      value={phone}
-                      onChange={(e) => {
-                        setPhone(e.target.value);
-                        clearFieldError('phone');
-                      }}
-                      error={fieldErrors.phone}
-                      icon={Smartphone}
-                    />
-                    <button
-                      type="submit"
-                      style={{
-                        backgroundColor: roleColor,
-                        color: '#ffffff',
-                        border: 'none',
-                        padding: '14px',
-                        borderRadius: '16px',
-                        fontSize: '15px',
-                        fontWeight: '800',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Send OTP Code <ArrowRight size={18} style={{ verticalAlign: 'middle' }} />
-                    </button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <FormField
-                      label="Enter 6-Digit OTP Code (Demo: 123456)"
-                      name="otp_code"
-                      type="text"
-                      required
-                      placeholder="123456"
-                      value={otpCode}
-                      onChange={(e) => {
-                        setOtpCode(e.target.value);
-                        clearFieldError('otp');
-                      }}
-                      error={fieldErrors.otp}
-                      icon={KeyRound}
-                    />
-                    <button
-                      type="submit"
-                      style={{
-                        backgroundColor: roleColor,
-                        color: '#ffffff',
-                        border: 'none',
-                        padding: '14px',
-                        borderRadius: '16px',
-                        fontSize: '15px',
-                        fontWeight: '800',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Verify & Access Dashboard
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsOtpSent(false)}
-                      style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '13px', cursor: 'pointer' }}
-                    >
-                      &larr; Change mobile number
-                    </button>
-                  </form>
-                )}
-              </div>
-            )}
-
-            {/* ⚡ 1-Click Fast Demo Login */}
-            {loginMethod === 'demo' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div
-                  onClick={() => handleQuickDemoLogin('customer')}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '14px',
-                    padding: '16px',
-                    borderRadius: '20px',
-                    border: '1.5px solid #a7f3d0',
-                    backgroundColor: '#f0fdf4',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#10b981'}
-                  onMouseLeave={(e) => e.currentTarget.style.borderColor = '#a7f3d0'}
-                >
-                  <img
-                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80"
-                    alt="Bhavana Bai"
-                    style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <strong style={{ fontSize: '14px', color: '#064e3b', display: 'block' }}>Bhavana Bai (Customer Demo)</strong>
-                    <span style={{ fontSize: '12px', color: '#059669' }}>bhavana.bai@gmail.com &bull; Password: password123</span>
-                  </div>
-                  <ArrowRight size={18} color="#059669" />
-                </div>
-
-                <div
-                  onClick={() => handleQuickDemoLogin('vendor')}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '14px',
-                    padding: '16px',
-                    borderRadius: '20px',
-                    border: '1.5px solid #bfdbfe',
-                    backgroundColor: '#eff6ff',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
-                  onMouseLeave={(e) => e.currentTarget.style.borderColor = '#bfdbfe'}
-                >
-                  <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80"
-                    alt="Ramesh Gowda"
-                    style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <strong style={{ fontSize: '14px', color: '#1e3a8a', display: 'block' }}>Ramesh Grocery (Vendor Partner Demo)</strong>
-                    <span style={{ fontSize: '12px', color: '#2563eb' }}>ramesh.kirana@gmail.com &bull; Password: password123</span>
-                  </div>
-                  <ArrowRight size={18} color="#2563eb" />
-                </div>
-
-                <div
-                  onClick={() => handleQuickDemoLogin('admin')}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '14px',
-                    padding: '16px',
-                    borderRadius: '20px',
-                    border: '1.5px solid #cbd5e1',
-                    backgroundColor: '#f8fafc',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#0f172a'}
-                  onMouseLeave={(e) => e.currentTarget.style.borderColor = '#cbd5e1'}
-                >
-                  <div style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '50%',
-                    backgroundColor: '#0f172a',
-                    color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <ShieldCheck size={24} />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <strong style={{ fontSize: '14px', color: '#0f172a', display: 'block' }}>Principal Platform Admin (Admin Demo)</strong>
-                    <span style={{ fontSize: '12px', color: '#475569' }}>admin@vendorsaathi.com &bull; Password: password123</span>
-                  </div>
-                  <ArrowRight size={18} color="#0f172a" />
-                </div>
-              </div>
-            )}
-          </div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              style={{
+                backgroundColor: roleColor,
+                color: '#ffffff',
+                border: 'none',
+                padding: '14px',
+                borderRadius: '16px',
+                fontSize: '15px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                boxShadow: `0 8px 20px -4px ${isCustomer ? 'rgba(16, 185, 129, 0.4)' : 'rgba(37, 99, 235, 0.4)'}`,
+                marginTop: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              {isLoading ? 'Signing in...' : `Sign in as ${selectedRole === 'vendor' ? 'Vendor Partner' : selectedRole === 'admin' ? 'Administrator' : 'Customer'}`}
+              <ArrowRight size={18} />
+            </button>
+          </form>
         )}
 
         {/* -------------------- REGISTRATION MODE -------------------- */}
@@ -1267,6 +1001,73 @@ export const LoginView = ({ params = {} }) => {
                           boxSizing: 'border-box'
                         }}
                       />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Profile Image Upload (Integrated with Firebase Storage) */}
+                <div style={{
+                  borderTop: '1px solid #e2e8f0',
+                  paddingTop: '14px'
+                }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#334155', marginBottom: '8px' }}>
+                    Profile Image / Storefront Photo (Firebase Storage)
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{
+                      width: '64px',
+                      height: '64px',
+                      borderRadius: '16px',
+                      backgroundColor: '#f1f5f9',
+                      border: '2px dashed #cbd5e1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      overflow: 'hidden',
+                      flexShrink: 0
+                    }}>
+                      {profilePreview ? (
+                        <img src={profilePreview} alt="Vendor Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <Store size={26} color="#94a3b8" />
+                      )}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <input
+                        type="file"
+                        id="vendorProfileImageFile"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setProfileImageFile(file);
+                            setProfilePreview(URL.createObjectURL(file));
+                            playPopSound();
+                          }
+                        }}
+                        style={{ display: 'none' }}
+                      />
+                      <label
+                        htmlFor="vendorProfileImageFile"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '8px 16px',
+                          borderRadius: '12px',
+                          backgroundColor: '#eff6ff',
+                          color: '#2563eb',
+                          fontSize: '12.5px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          border: '1px solid #bfdbfe'
+                        }}
+                      >
+                        📷 Upload Photo to Firebase
+                      </label>
+                      <p style={{ margin: '4px 0 0 0', fontSize: '11.5px', color: '#64748b' }}>
+                        {profileImageFile ? `Selected: ${profileImageFile.name}` : 'Upload photo of storefront, pushcart, or personal profile'}
+                      </p>
                     </div>
                   </div>
                 </div>

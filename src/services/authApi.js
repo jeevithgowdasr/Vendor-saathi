@@ -1,276 +1,126 @@
 /**
  * VendorSaathi Authentication & Profile API Service
- * Connects frontend clients with backend REST endpoints for Vendor & Customer RBAC.
+ * Powered directly by Firebase Authentication & Cloud Firestore RBAC.
  */
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+import {
+  firebaseLoginVendor,
+  firebaseLoginCustomer,
+  firebaseRegisterVendor,
+  firebaseRegisterCustomer,
+  saveUserProfileToFirebase,
+  getUserProfileFromFirebase,
+  auth,
+  signInWithEmailAndPassword
+} from '../firebase';
 
 /**
- * Universal Login API
+ * Universal Login API backed directly by Firebase Auth & Firestore role verification
  * @param {Object} credentials - { identifier, password, role }
  */
-export const loginApi = async ({ identifier, password, role }) => {
-  try {
-    const res = await fetch(`${API_BASE}/api/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
+export const loginApi = async ({ identifier, password, role = 'customer' }) => {
+  const normalizedRole = (role || 'customer').toLowerCase().trim();
+
+  if (normalizedRole === 'vendor') {
+    return await firebaseLoginVendor({ identifier, password });
+  } else if (normalizedRole === 'admin') {
+    // Admin login via Firebase Auth with Firestore verification
+    const cleanEmail = identifier.includes('@')
+      ? identifier.trim().toLowerCase()
+      : `${identifier.replace(/\D/g, '')}@vendorsaathi.in`;
+
+    const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
+    const profile = await getUserProfileFromFirebase(userCredential.user.uid);
+    const userRole = profile?.data?.role || 'admin';
+    return {
+      success: true,
+      user: {
+        uid: userCredential.user.uid,
+        id: userCredential.user.uid,
+        name: profile?.data?.name || userCredential.user.displayName || 'Administrator',
+        email: cleanEmail,
+        role: userRole,
+        ...(profile?.data || {})
       },
-      body: JSON.stringify({ identifier, password, role })
-    });
-
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.message || 'Login failed. Please check your credentials.');
-    }
-
-    return data;
-  } catch (error) {
-    // If backend is unreachable (e.g., frontend-only standalone run), fallback to demo accounts
-    if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
-      console.warn('Backend API unreachable, using local fallback credentials...');
-      return fallbackOfflineLogin({ identifier, password, role });
-    }
-    throw error;
+      token: `vs_live_${userCredential.user.uid}_${Date.now()}`
+    };
+  } else {
+    // Customer login
+    return await firebaseLoginCustomer({ identifier, password });
   }
 };
 
 /**
- * Register Customer API
+ * Register Customer API backed directly by Firebase Auth & Firestore
  * @param {Object} customerData
  */
 export const registerCustomerApi = async (customerData) => {
-  try {
-    const res = await fetch(`${API_BASE}/api/auth/register/customer`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(customerData)
-    });
-
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.message || 'Customer registration failed.');
-    }
-
-    return data;
-  } catch (error) {
-    if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
-      console.warn('Backend API unreachable, falling back to client-side session generation...');
-      return fallbackOfflineRegister(customerData, 'customer');
-    }
-    throw error;
-  }
+  return await firebaseRegisterCustomer({
+    fullName: customerData.fullName || customerData.name,
+    phone: customerData.phone,
+    email: customerData.email,
+    password: customerData.password,
+    primaryAddress: customerData.primaryAddress || customerData.address,
+    coordinates: customerData.coordinates || customerData.gpsLocation,
+    preferredAreas: customerData.preferredAreas,
+    preferredCategories: customerData.preferredCategories
+  });
 };
 
 /**
- * Register Vendor API
+ * Register Vendor API backed directly by Firebase Auth & Firestore & Firebase Storage
  * @param {Object} vendorData
  */
 export const registerVendorApi = async (vendorData) => {
-  try {
-    const res = await fetch(`${API_BASE}/api/auth/register/vendor`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(vendorData)
-    });
-
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.message || 'Vendor registration failed.');
-    }
-
-    return data;
-  } catch (error) {
-    if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
-      console.warn('Backend API unreachable, falling back to client-side session generation...');
-      return fallbackOfflineRegister(vendorData, 'vendor');
-    }
-    throw error;
-  }
+  return await firebaseRegisterVendor({
+    fullName: vendorData.fullName || vendorData.name,
+    phone: vendorData.phone,
+    email: vendorData.email,
+    password: vendorData.password,
+    businessName: vendorData.businessName,
+    vendorCategory: vendorData.vendorCategory || vendorData.category,
+    operatingAreas: vendorData.operatingAreas,
+    vehicleType: vendorData.vehicleType || vendorData.vehicleDetails?.vehicleType,
+    vehicleRegNo: vendorData.vehicleRegNo || vendorData.vehicleDetails?.registrationNumber,
+    profileImageFile: vendorData.profileImageFile
+  });
 };
 
 /**
- * Fetch Current Authenticated Profile
- * @param {string} token
+ * Fetch Current Authenticated Profile from Firestore
+ * @param {string} uid
  */
-export const getProfileApi = async (token) => {
-  try {
-    const res = await fetch(`${API_BASE}/api/auth/profile`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.message || 'Failed to fetch user profile.');
-    }
-
-    return data;
-  } catch (error) {
-    console.warn('Error fetching profile from API:', error.message);
-    throw error;
-  }
+export const getProfileApi = async (uid) => {
+  if (!uid) return { success: false, data: null };
+  return await getUserProfileFromFirebase(uid);
 };
 
 /**
- * Update Profile API
- * @param {string} token
+ * Update Profile in Firestore
+ * @param {string} uid
  * @param {Object} updates
  */
-export const updateProfileApi = async (token, updates) => {
-  try {
-    const res = await fetch(`${API_BASE}/api/auth/profile`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(updates)
-    });
-
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.message || 'Failed to update profile.');
-    }
-
-    return data;
-  } catch (error) {
-    if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
-      return { success: true, user: updates };
-    }
-    throw error;
-  }
+export const updateProfileApi = async (uid, updates) => {
+  if (!uid) return { success: false };
+  return await saveUserProfileToFirebase(uid, updates);
 };
 
 /**
- * Update Vendor Operating Areas
- * @param {string} token
+ * Update Vendor Operating Areas in Firestore
+ * @param {string} uid
  * @param {Array<string>} operatingAreas
  */
-export const updateOperatingAreasApi = async (token, operatingAreas) => {
-  const res = await fetch(`${API_BASE}/api/auth/profile/operating-areas`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({ operatingAreas })
-  });
-
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || 'Failed to update operating areas.');
-  }
-  return data;
+export const updateOperatingAreasApi = async (uid, operatingAreas) => {
+  if (!uid) return { success: false };
+  return await saveUserProfileToFirebase(uid, { operatingAreas });
 };
 
 /**
- * Update Customer Saved Location
- * @param {string} token
+ * Update Customer Saved Location in Firestore
+ * @param {string} uid
  * @param {Object} locationData
  */
-export const updateCustomerLocationApi = async (token, locationData) => {
-  const res = await fetch(`${API_BASE}/api/auth/profile/location`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(locationData)
-  });
-
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || 'Failed to update location.');
-  }
-  return data;
+export const updateCustomerLocationApi = async (uid, locationData) => {
+  if (!uid) return { success: false };
+  return await saveUserProfileToFirebase(uid, { primaryLocation: locationData });
 };
-
-/**
- * Client-Side Resilient Fallback for Offline / Standalone Environments
- */
-function fallbackOfflineLogin({ identifier, role }) {
-  const cleanId = (identifier || '').toLowerCase();
-  const isAdmin = role === 'admin' || cleanId.includes('admin');
-  const isVendor = !isAdmin && (role === 'vendor' || cleanId.includes('ramesh') || cleanId.includes('vendor'));
-
-  const user = isAdmin
-    ? {
-        id: 'adm_01',
-        _id: 'adm_01',
-        name: 'Platform Administrator',
-        fullName: 'Principal Platform Admin',
-        email: cleanId.includes('@') ? cleanId : 'admin@vendorsaathi.com',
-        phone: '+919900000001',
-        status: 'active',
-        role: 'admin'
-      }
-    : isVendor
-    ? {
-        id: 'v1',
-        _id: 'v1',
-        name: 'Ramesh Grocery',
-        fullName: 'Ramesh Gowda',
-        businessName: 'Ramesh Grocery',
-        email: cleanId.includes('@') ? cleanId : 'ramesh.kirana@gmail.com',
-        phone: '+919845123456',
-        vendorCategory: 'Vegetables',
-        categories: ['Vegetables', 'Fruits', 'Spices', 'Daily Essentials'],
-        operatingAreas: ['Mijar', 'Moodbidri', 'Kallamundkur', 'Alva’s Campus'],
-        profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
-        vehicleDetails: { vehicleType: 'Three-Wheeler / Auto', registrationNumber: 'KA-19-MB-4521' },
-        status: 'active',
-        role: 'vendor'
-      }
-    : {
-        id: 'cust_bhavana_01',
-        _id: 'cust_bhavana_01',
-        name: 'Bhavana Bai',
-        fullName: 'Bhavana Bai',
-        email: cleanId.includes('@') ? cleanId : 'bhavana.bai@gmail.com',
-        phone: '+919876543210',
-        primaryLocation: {
-          address: 'Bhavana Bai, Near Alva’s College Campus, Mijar, Moodbidri - 574225',
-          coordinates: { lat: 13.0682, lng: 74.9961 },
-          village: 'Mijar',
-          town: 'Moodbidri',
-          district: 'Dakshina Kannada',
-          pincode: '574225'
-        },
-        preferredAreas: ['Mijar', 'Moodbidri', 'Alva’s Campus'],
-        preferredCategories: ['Vegetables', 'Fruits', 'Dairy'],
-        profileImage: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80',
-        status: 'active',
-        role: 'customer'
-      };
-
-  return {
-    success: true,
-    token: `vs_offline_token_${Date.now()}.${Math.random().toString(36).slice(2)}`,
-    user
-  };
-}
-
-function fallbackOfflineRegister(data, role) {
-  const id = `${role === 'vendor' ? 'v_' : 'cust_'}${Date.now()}`;
-  const user = {
-    ...data,
-    id,
-    _id: id,
-    role,
-    status: 'active'
-  };
-
-  return {
-    success: true,
-    token: `vs_offline_token_${Date.now()}.${Math.random().toString(36).slice(2)}`,
-    user
-  };
-}

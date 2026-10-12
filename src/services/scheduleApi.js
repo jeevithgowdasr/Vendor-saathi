@@ -36,74 +36,21 @@ export const getTomorrowDateString = () => {
   return d.toISOString().split('T')[0];
 };
 
-// Initial schedules for demo / offline fallback
-const getInitialFallbackSchedules = () => {
-  const tomorrow = getTomorrowDateString();
-  const dayAfter = new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0];
-
-  return [
-    {
-      id: 'sch_demo_01',
-      documentId: 'sch_demo_01',
-      vendorId: 'v2', // Competing vendor in Vijayanagar on tomorrow
-      vendorName: 'Basappa Fresh Veggies',
-      vendorCategory: 'Vegetable & Produce',
-      date: tomorrow,
-      area: {
-        areaName: 'Vijayanagar, Moodbidri',
-        coordinates: { latitude: 13.0720, longitude: 74.9980 },
-        serviceRadiusKm: 2.0
-      },
-      expectedArrivalTime: `${tomorrow}T09:30:00.000Z`,
-      expectedDepartureTime: `${tomorrow}T11:00:00.000Z`,
-      availableProductIds: ['prod_tomato_01', 'prod_potato_02'],
-      status: 'scheduled',
-      hasConflict: false,
-      conflictResolution: 'none',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: 'sch_demo_02',
-      documentId: 'sch_demo_02',
-      vendorId: 'v1',
-      vendorName: 'Ramesh Grocery',
-      vendorCategory: 'Vegetable & Groceries',
-      date: dayAfter,
-      area: {
-        areaName: 'Alva’s Campus Gate, Moodbidri',
-        coordinates: { latitude: 13.0690, longitude: 74.9940 },
-        serviceRadiusKm: 1.5
-      },
-      expectedArrivalTime: `${dayAfter}T16:00:00.000Z`,
-      expectedDepartureTime: `${dayAfter}T18:00:00.000Z`,
-      availableProductIds: ['prod_tomato_01', 'prod_rose_03', 'prod_chips_05'],
-      status: 'scheduled',
-      hasConflict: false,
-      conflictResolution: 'none',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  ];
-};
+// Fallback schedules empty - live data strictly from Firestore
+const getInitialFallbackSchedules = () => [];
 
 function getStoredFallbackSchedules() {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (!raw) {
-      const initial = getInitialFallbackSchedules();
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(initial));
-      return initial;
-    }
-    return JSON.parse(raw);
+    return raw ? JSON.parse(raw) : [];
   } catch {
-    return getInitialFallbackSchedules();
+    return [];
   }
 }
 
 function saveStoredFallbackSchedules(list) {
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list));
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list || []));
   } catch (err) {
     console.warn('Could not cache schedules to localStorage', err);
   }
