@@ -46,7 +46,7 @@ export const UpiPaymentModal = ({
 
   const [activeTab, setActiveTab] = useState(isMobile ? 'apps' : 'qr'); // 'qr' | 'apps' | 'vpa'
   const [selectedApp, setSelectedApp] = useState(UPI_APPS[0]);
-  const [customerVpa, setCustomerVpa] = useState(user?.email ? `${user.email.split('@')[0]}@okaxis` : 'bhavana@okhdfcbank');
+  const [customerVpa, setCustomerVpa] = useState(user?.email ? `${user.email.split('@')[0]}@okaxis` : (user?.phone ? `${user.phone}@okaxis` : 'customer@okhdfcbank'));
   const [copiedVpa, setCopiedVpa] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes countdown
   const [isVerifying, setIsVerifying] = useState(false);
@@ -113,11 +113,11 @@ export const UpiPaymentModal = ({
       const stripeUpiResult = await processStripeUpiPayment({
         amount,
         vpa: customerVpa || merchantVpa,
-        customerName: user?.name || 'Bhavana Bai',
+        customerName: user?.name || user?.fullName || 'Customer',
         customerEmail: user?.email || 'customer@vendorsaathi.com',
         orderId,
         itemsSummary: orderDetails.itemsSummary || 'Fresh Groceries',
-        vendorName: orderDetails.vendorName || 'Ramesh Grocery',
+        vendorName: orderDetails.vendorName || 'Local Vendor Store',
         upiApp: selectedApp?.name || sourceType
       });
 
@@ -675,7 +675,7 @@ export const UpiPaymentModal = ({
                       type="button"
                       onClick={() => {
                         const username = customerVpa.includes('@') ? customerVpa.split('@')[0] : customerVpa;
-                        setCustomerVpa(`${username || 'bhavana'}${handle}`);
+                        setCustomerVpa(`${username || (user?.name?.toLowerCase().replace(/\s+/g, '') || 'customer')}${handle}`);
                       }}
                       style={{
                         padding: '4px 10px',

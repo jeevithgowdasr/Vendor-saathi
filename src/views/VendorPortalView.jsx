@@ -145,8 +145,8 @@ export const VendorPortalView = () => {
 
   // Vendor chat state
   const [chatMessages, setChatMessages] = useState([
-    { sender: 'customer', text: 'Namaste Ramesh Gowda, please pack fresh crisp tomatoes.', time: '10:38 AM' },
-    { sender: 'vendor', text: 'Namaste Bhavana! Handpicked fresh batch from Moodbidri farms. Rider dispatched.', time: '10:40 AM' }
+    { sender: 'customer', text: 'Namaste! Please pack fresh crisp produce for delivery.', time: '10:38 AM' },
+    { sender: 'vendor', text: 'Namaste! Handpicked fresh batch from Moodbidri farms. Dispatched and on the way.', time: '10:40 AM' }
   ]);
   const [vendorReplyInput, setVendorReplyInput] = useState('');
 
@@ -770,8 +770,8 @@ export const VendorPortalView = () => {
                   }}>
                     <div>
                       <strong style={{ color: '#0f172a', display: 'block' }}>👤 Customer Details:</strong>
-                      <span>{order.deliveryAddress?.split(',')[0] || 'Bhavana Bai'}</span><br />
-                      <span>📞 {order.deliveryContact || '+91 9876543210'}</span>
+                      <span>{order.customerName || order.deliveryAddress?.split(',')[0] || 'Registered Customer'}</span><br />
+                      <span>📞 {order.deliveryContact || order.phone || '+91 9876543210'}</span>
                     </div>
                     <div>
                       <strong style={{ color: '#0f172a', display: 'block' }}>📍 Delivery Address & GPS Coordinates:</strong>
@@ -1138,11 +1138,11 @@ export const VendorPortalView = () => {
         <div className="vs-card" style={{ padding: '24px', borderRadius: '24px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0', maxWidth: '640px', margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '16px', borderBottom: '1px solid #e2e8f0', marginBottom: '16px' }}>
             <div style={{ width: '42px', height: '42px', borderRadius: '50%', backgroundColor: '#10b981', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900' }}>
-              B
+              C
             </div>
             <div>
-              <strong style={{ fontSize: '16px', color: '#0f172a', display: 'block' }}>Bhavana Bai (Customer)</strong>
-              <span style={{ fontSize: '12px', color: '#059669' }}>📍 Mijar Village • Active Order #VS10245</span>
+              <strong style={{ fontSize: '16px', color: '#0f172a', display: 'block' }}>Direct Customer Chat</strong>
+              <span style={{ fontSize: '12px', color: '#059669' }}>📍 Mijar Village • Active Orders</span>
             </div>
           </div>
 

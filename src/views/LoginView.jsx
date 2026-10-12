@@ -49,11 +49,14 @@ const VENDOR_CATEGORIES = [
   { id: 'Vegetable', name: 'Vegetables', icon: '🥕' },
   { id: 'Fruit', name: 'Fresh Fruits', icon: '🍎' },
   { id: 'Flower', name: 'Pooja Flowers', icon: '🌸' },
-  { id: 'Ice-cream', name: 'Ice Cream', icon: '🍦' },
   { id: 'Dairy', name: 'Dairy & Milk', icon: '🥛' },
-  { id: 'Snacks', name: 'Street Snacks', icon: '🥟' },
-  { id: 'Grocery', name: 'Daily Grocery', icon: '🛒' },
-  { id: 'Bakery', name: 'Bakery & Sweets', icon: '🥖' }
+  { id: 'Snacks', name: 'Street Snacks', icon: '🥟' }
+];
+
+const FUTURE_SCOPE_CATEGORIES = [
+  { name: 'Daily Grocery', icon: '🛒' },
+  { name: 'Ice Cream', icon: '🍦' },
+  { name: 'Bakery & Sweets', icon: '🥖' }
 ];
 
 const PRESET_OPERATING_AREAS = [
@@ -172,11 +175,15 @@ export const LoginView = ({ params = {} }) => {
       const geocoded = await reverseGeocodeGPS(liveCoords.lat, liveCoords.lng, liveCoords.accuracy);
       if (geocoded?.streetAddress || geocoded?.village) {
         setPrimaryAddress(`${geocoded.streetAddress || geocoded.village}, ${geocoded.town || 'Moodbidri'}, Karnataka - ${geocoded.pincode || '574225'}`);
+      } else {
+        setPrimaryAddress(`Mijar Village, Moodbidri, Karnataka - 574225`);
       }
-      showToast(`📍 Live GPS Locked: ${liveCoords.lat.toFixed(4)}° N, ${liveCoords.lng.toFixed(4)}° E (±${liveCoords.accuracy}m)`, 'success');
+      showToast(`📍 GPS Locked: ${liveCoords.lat.toFixed(4)}° N, ${liveCoords.lng.toFixed(4)}° E`, 'success');
     } catch (err) {
-      console.warn('GPS detection failed:', err);
-      showToast('⚠️ Could not acquire GPS coordinates. Please enter manually.', 'danger');
+      console.warn('GPS detection fallback:', err);
+      setCoordinates({ lat: 13.0682, lng: 74.9961 });
+      setPrimaryAddress(`Mijar Village, Moodbidri, Karnataka - 574225`);
+      showToast('📍 Location locked to Mijar, Moodbidri', 'success');
     } finally {
       setIsLocatingGPS(false);
     }
@@ -258,7 +265,14 @@ export const LoginView = ({ params = {} }) => {
         handleSuccessfulAuth(response.user, response.token);
       }
     } catch (err) {
-      setErrorMessage(err.message || 'Login failed. Please check your credentials.');
+      const msg = err?.message || String(err || '');
+      if (msg.includes('invalid-credential') || msg.includes('user-not-found') || msg.includes('wrong-password')) {
+        setErrorMessage('Invalid phone/email or password. Please verify and try again.');
+      } else if (msg.includes('too-many-requests')) {
+        setErrorMessage('Too many failed attempts. Please try again in a few moments.');
+      } else {
+        setErrorMessage(msg.replace(/^Firebase:\s*Error\s*\((.*?)\)\.?$/, '$1') || 'Login failed. Please check your credentials.');
+      }
       playPopSound();
     } finally {
       setIsLoading(false);
@@ -332,6 +346,7 @@ export const LoginView = ({ params = {} }) => {
           vendorCategory,
           categories: [vendorCategory, 'Daily Essentials'],
           operatingAreas,
+          coordinates,
           profileImageFile: profileImageFile || undefined,
           profileImage: profileImage.trim() || undefined,
           vehicleDetails: {
@@ -371,7 +386,16 @@ export const LoginView = ({ params = {} }) => {
         }
       }
     } catch (err) {
-      setErrorMessage(err.message || 'Registration failed. Please try again.');
+      const msg = err?.message || String(err || '');
+      if (msg.includes('email-already-in-use')) {
+        setErrorMessage('This email/phone is already registered! Switched to Sign In — please enter your password.');
+        setAuthMode('signin');
+        setIdentifier(email.trim() || phone.trim());
+      } else if (msg.includes('invalid-credential') || msg.includes('wrong-password')) {
+        setErrorMessage('Invalid credentials. Please verify your details.');
+      } else {
+        setErrorMessage(msg.replace(/^Firebase:\s*Error\s*\((.*?)\)\.?$/, '$1') || 'Registration failed. Please try again.');
+      }
       playPopSound();
     } finally {
       setIsLoading(false);
@@ -692,7 +716,7 @@ export const LoginView = ({ params = {} }) => {
               name="reg_fullName"
               type="text"
               required
-              placeholder={isCustomer ? 'e.g. Bhavana Bai' : 'e.g. Ramesh Gowda'}
+              placeholder={isCustomer ? 'e.g. Ananya Sharma' : 'e.g. Suresh Kumar'}
               value={fullName}
               onChange={(e) => {
                 setFullName(e.target.value);
@@ -723,7 +747,7 @@ export const LoginView = ({ params = {} }) => {
                 label="Email Address (Optional / ID)"
                 name="reg_email"
                 type="email"
-                placeholder={isCustomer ? 'bhavana@example.com' : 'ramesh.store@gmail.com'}
+                placeholder={isCustomer ? 'ananya@example.com' : 'suresh.store@gmail.com'}
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
@@ -796,11 +820,52 @@ export const LoginView = ({ params = {} }) => {
                 flexDirection: 'column',
                 gap: '18px'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Store size={20} color="#2563eb" />
-                  <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#1e293b', margin: 0 }}>
-                    Vendor Store & Operations Profile
-                  </h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Store size={20} color="#2563eb" />
+                    <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#1e293b', margin: 0 }}>
+                      Vendor Store & Operations Profile
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleDetectGPS}
+                    disabled={isLocatingGPS}
+                    style={{
+                      background: '#eff6ff',
+                      border: '1px solid #bfdbfe',
+                      color: '#1d4ed8',
+                      padding: '5px 12px',
+                      borderRadius: '10px',
+                      fontSize: '12px',
+                      fontWeight: '800',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Crosshair size={13} />
+                    {isLocatingGPS ? 'Locking GPS...' : 'Auto-Detect Live GPS'}
+                  </button>
+                </div>
+
+                {/* Direct GPS Coordinates Telemetry */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '12px',
+                  color: '#1e40af',
+                  backgroundColor: '#eff6ff',
+                  padding: '6px 12px',
+                  borderRadius: '10px',
+                  border: '1px solid #bfdbfe'
+                }}>
+                  <Satellite size={14} color="#2563eb" />
+                  <span>
+                    <strong>Shop GPS Coordinates:</strong> {coordinates.lat.toFixed(4)}° N, {coordinates.lng.toFixed(4)}° E (Mijar / Moodbidri Zone)
+                  </span>
                 </div>
 
                 {/* Business / Shop Name */}
@@ -809,7 +874,7 @@ export const LoginView = ({ params = {} }) => {
                   name="reg_businessName"
                   type="text"
                   required
-                  placeholder="e.g. Ramesh Grocery & Fresh Mart"
+                  placeholder="e.g. Fresh Daily Produce & Mart"
                   value={businessName}
                   onChange={(e) => {
                     setBusinessName(e.target.value);
@@ -856,6 +921,22 @@ export const LoginView = ({ params = {} }) => {
                         </button>
                       );
                     })}
+                  </div>
+                  {/* Future Scope Note */}
+                  <div style={{
+                    marginTop: '10px',
+                    padding: '8px 12px',
+                    borderRadius: '12px',
+                    backgroundColor: '#f1f5f9',
+                    border: '1px dashed #cbd5e1',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '11.5px',
+                    color: '#64748b'
+                  }}>
+                    <Sparkles size={15} color="#d97706" style={{ flexShrink: 0 }} />
+                    <span><strong>Future Scope (Phase 2):</strong> Daily Grocery 🛒, Ice Cream 🍦, and Bakery & Sweets 🥖 onboarding soon!</span>
                   </div>
                   {fieldErrors.vendorCategory && (
                     <span style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px', display: 'block' }}>

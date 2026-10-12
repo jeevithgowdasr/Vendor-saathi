@@ -11,7 +11,7 @@ export const VendorChatView = () => {
   };
 
   const [messages, setMessages] = useState([
-    { sender: 'customer', text: 'Hello Ramesh Gowda, is fresh tomato available today?', time: '10:20 AM' },
+    { sender: 'customer', text: 'Hello, is fresh produce available today?', time: '10:20 AM' },
     { sender: 'vendor', text: 'Namaste! Yes, farm-fresh tomatoes just arrived from local Belvai farms.', time: '10:21 AM' },
     { sender: 'customer', text: 'Great! Please add ripe tomatoes to my order.', time: '10:22 AM' },
     { sender: 'vendor', text: 'Sure! Handpicked and packed. Delivery rider is starting now.', time: '10:22 AM' },

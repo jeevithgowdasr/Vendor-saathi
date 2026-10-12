@@ -47,7 +47,7 @@ export const DEFAULT_SCHEDULE_FORM = {
   availableProductIds: []
 };
 
-export function useVendorSchedules({ vendorId = 'v1', vendorName = 'Ramesh Grocery', vendorCategory = 'Produce & Groceries', onToast } = {}) {
+export function useVendorSchedules({ vendorId = 'v1', vendorName = 'Local Fresh Store', vendorCategory = 'Produce & Groceries', onToast } = {}) {
   const [schedules, setSchedules] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);

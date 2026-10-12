@@ -35,7 +35,7 @@ import { ConflictResolutionModal } from './ConflictResolutionModal';
 
 export const VendorPlanVisitTab = ({
   vendorId = 'v1',
-  vendorName = 'Ramesh Grocery',
+  vendorName = 'Local Fresh Store',
   vendorCategory = 'Vegetables & Produce',
   vendorProducts = [],
   onToast

@@ -46,6 +46,7 @@ export const Navbar = () => {
     changeLanguage,
     setIsVoiceAssistanceOpen,
     secureLogout,
+    updateUserProfile,
     showToast
   } = useApp();
 
@@ -607,31 +608,51 @@ export const Navbar = () => {
           )}
 
           {/* Quick Access Action when Logged In as Vendor */}
-          {user?.isLoggedIn && user?.role === 'vendor' && (
-            <button
-              type="button"
-              onClick={() => navigateTo('vendor-portal')}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '7px 14px',
-                borderRadius: '16px',
-                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                color: '#ffffff',
-                border: 'none',
-                fontSize: '12px',
-                fontWeight: '800',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
-                transition: 'all 0.2s ease',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              <Store size={14} color="#ffffff" />
-              <span>Vendor Dashboard</span>
-            </button>
-          )}
+          {/* Always accessible Vendor Portal / Mode Switcher */}
+          <button
+            type="button"
+            onClick={() => {
+              if (user?.isLoggedIn) {
+                if (user.role !== 'vendor') {
+                  if (typeof updateUserProfile === 'function') {
+                    updateUserProfile({
+                      ...user,
+                      role: 'vendor',
+                      businessName: user.businessName || user.name || 'Local Vendor Partner Store',
+                      vendorCategory: user.vendorCategory || 'Vegetables'
+                    });
+                  }
+                  if (typeof showToast === 'function') {
+                    showToast('🏪 Switched to Vendor Partner Mode! Welcome.', 'success');
+                  }
+                }
+                navigateTo('vendor-portal');
+              } else {
+                navigateTo('login', { role: 'vendor', mode: 'signin' });
+              }
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '7px 14px',
+              borderRadius: '16px',
+              background: user?.role === 'vendor' 
+                ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' 
+                : 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+              color: '#ffffff',
+              border: 'none',
+              fontSize: '12px',
+              fontWeight: '800',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(5, 150, 105, 0.25)',
+              transition: 'all 0.2s ease',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <Store size={14} color="#ffffff" />
+            <span>{user?.role === 'vendor' ? 'Vendor Portal' : '🏪 Vendor Portal'}</span>
+          </button>
 
           {/* Google Profile Button & Dropdown Menu */}
           <div style={{ position: 'relative' }}>
@@ -785,7 +806,7 @@ export const Navbar = () => {
                   <span>Switch / Sign In Google</span>
                 </button>
 
-                {/* Role-Specific Shortcuts */}
+                {/* Role-Specific Shortcuts & Role Switcher */}
                 {user.role === 'admin' ? (
                   <button
                     onClick={() => { setIsProfileMenuOpen(false); navigateTo('admin-panel'); }}
@@ -796,23 +817,66 @@ export const Navbar = () => {
                     <ShieldCheck size={16} color="#059669" /> Admin Governance Console
                   </button>
                 ) : user.role === 'vendor' ? (
-                  <button
-                    onClick={() => { setIsProfileMenuOpen(false); navigateTo('vendor-portal'); }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '10px', fontSize: '13px', color: '#1e40af', fontWeight: '800', textAlign: 'left', border: '1px solid #bfdbfe', background: '#eff6ff', cursor: 'pointer' }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dbeafe'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#eff6ff'}
-                  >
-                    <Store size={16} color="#2563eb" /> Vendor Partner Portal
-                  </button>
+                  <>
+                    <button
+                      onClick={() => { setIsProfileMenuOpen(false); navigateTo('vendor-portal'); }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '10px', fontSize: '13px', color: '#1e40af', fontWeight: '800', textAlign: 'left', border: '1px solid #bfdbfe', background: '#eff6ff', cursor: 'pointer' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dbeafe'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#eff6ff'}
+                    >
+                      <Store size={16} color="#2563eb" /> Vendor Partner Portal
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        if (typeof updateUserProfile === 'function') {
+                          updateUserProfile({ ...user, role: 'customer' });
+                        }
+                        if (typeof showToast === 'function') {
+                          showToast('🛒 Switched to Customer Shopping Mode!', 'success');
+                        }
+                        navigateTo('home');
+                      }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '10px', fontSize: '13px', color: '#047857', fontWeight: '700', textAlign: 'left', border: '1px solid #a7f3d0', background: '#ecfdf5', cursor: 'pointer' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#d1fae5'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ecfdf5'}
+                    >
+                      <ShoppingBag size={16} color="#059669" /> Switch to Customer View
+                    </button>
+                  </>
                 ) : (
-                  <button
-                    onClick={() => { setIsProfileMenuOpen(false); navigateTo('my-orders'); }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '10px', fontSize: '13px', color: '#334155', fontWeight: '700', textAlign: 'left', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                  >
-                    <Package size={16} color="#059669" /> My Orders & Live Tracking
-                  </button>
+                  <>
+                    <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        if (typeof updateUserProfile === 'function') {
+                          updateUserProfile({
+                            ...user,
+                            role: 'vendor',
+                            businessName: user.businessName || user.name || 'Local Vendor Partner Store',
+                            vendorCategory: user.vendorCategory || 'Vegetables'
+                          });
+                        }
+                        if (typeof showToast === 'function') {
+                          showToast('🏪 Switched to Vendor Partner Mode! Welcome.', 'success');
+                        }
+                        navigateTo('vendor-portal');
+                      }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '10px', fontSize: '13px', color: '#1e40af', fontWeight: '800', textAlign: 'left', border: '1px solid #bfdbfe', background: '#eff6ff', cursor: 'pointer' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dbeafe'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#eff6ff'}
+                    >
+                      <Store size={16} color="#2563eb" /> Switch to Vendor View (Portal)
+                    </button>
+                    <button
+                      onClick={() => { setIsProfileMenuOpen(false); navigateTo('my-orders'); }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '10px', fontSize: '13px', color: '#334155', fontWeight: '700', textAlign: 'left', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <Package size={16} color="#059669" /> My Orders & Live Tracking
+                    </button>
+                  </>
                 )}
 
                 <button

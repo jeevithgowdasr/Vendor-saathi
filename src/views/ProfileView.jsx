@@ -342,17 +342,17 @@ export const ProfileView = () => {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <h2 style={{ fontSize: '22px', fontWeight: '900', color: '#0f172a', letterSpacing: '-0.02em', margin: 0 }}>
-                      {user.name || 'Bhavana Bai'}
+                      {user.name || user.fullName || 'User Profile'}
                     </h2>
                     <span className="badge badge-success" style={{ fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                       <CheckCircle2 size={12} /> Google Verified
                     </span>
                   </div>
                   <span style={{ fontSize: '13.5px', color: '#64748b', display: 'block', marginTop: '3px' }}>
-                    {user.email || 'customer@vendorsaathi.com'}
+                    {user.email || (user.phone ? `${user.phone}@vendorsaathi.com` : 'No email linked')}
                   </span>
                   <span style={{ fontSize: '13.5px', color: '#059669', fontWeight: '800', display: 'block', marginTop: '2px' }}>
-                    📞 {user.phone || '+91 9876543210'}
+                    📞 {user.phone || 'No phone registered'}
                   </span>
                 </div>
               </div>
@@ -984,7 +984,7 @@ export const ProfileView = () => {
                 label="Full Name"
                 name="edit_name"
                 required
-                placeholder="e.g. Bhavana Bai"
+                placeholder="e.g. Ananya Sharma"
                 value={editName}
                 onChange={(e) => {
                   setEditName(e.target.value);
@@ -1010,7 +1010,7 @@ export const ProfileView = () => {
                     label="Business / Shop Name"
                     name="edit_bizName"
                     required
-                    placeholder="e.g. Ramesh Grocery"
+                    placeholder="e.g. Green Fresh Mart"
                     value={editBusinessName}
                     onChange={(e) => setEditBusinessName(e.target.value)}
                     icon={Store}

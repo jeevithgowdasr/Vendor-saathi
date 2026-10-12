@@ -10,7 +10,7 @@ export const ReviewModal = () => {
   const [productRating, setProductRating] = useState(5);
   const [vendorRating, setVendorRating] = useState(5);
   const [deliveryRating, setDeliveryRating] = useState(5);
-  const [reviewText, setReviewText] = useState('Fresh tomatoes, crisp vegetables and super fast 20-min delivery! Very satisfied with Ramesh Grocery.');
+  const [reviewText, setReviewText] = useState('Fresh quality produce and super fast doorstep delivery! Highly recommended.');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState(null);
 
@@ -30,12 +30,12 @@ export const ReviewModal = () => {
     saveReviewToFirebase({
       orderId: reviewOrder.id,
       vendorId: reviewOrder.vendorId || 'v1',
-      vendorName: reviewOrder.vendorName,
+      vendorName: reviewOrder.vendorName || 'Local Vendor',
       productRating,
       vendorRating,
       deliveryRating,
       reviewText: reviewText.trim(),
-      author: 'Bhavana Bai'
+      author: user?.name || user?.fullName || 'Verified Customer'
     });
 
     setTimeout(() => {

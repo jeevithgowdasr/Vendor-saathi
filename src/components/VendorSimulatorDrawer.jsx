@@ -106,7 +106,7 @@ export const VendorSimulatorDrawer = () => {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Store size={18} color="#fbbf24" />
-              <strong style={{ fontSize: '15px', letterSpacing: '-0.01em' }}>Ramesh Kirana Store</strong>
+              <strong style={{ fontSize: '15px', letterSpacing: '-0.01em' }}>{user?.businessName || user?.name || 'Local Partner Store'}</strong>
             </div>
             <span style={{ fontSize: '11px', color: '#a7f3d0', display: 'block', marginTop: '1px' }}>
               📍 Mijar Village • Partner Portal v2.4
@@ -217,7 +217,7 @@ export const VendorSimulatorDrawer = () => {
                   margin: '8px 0',
                   lineHeight: 1.5
                 }}>
-                  <strong>Customer:</strong> {currentOrder.deliveryAddress?.split(',')[0] || 'Bhavana Bai'}<br />
+                  <strong>Customer:</strong> {currentOrder.customerName || currentOrder.deliveryAddress?.split(',')[0] || 'Registered Customer'}<br />
                   <strong>Phone:</strong> {currentOrder.deliveryContact || '+91 9876543210'}<br />
                   <strong>Address:</strong> {currentOrder.deliveryAddress}
                 </div>

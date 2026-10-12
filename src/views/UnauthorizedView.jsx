@@ -16,6 +16,8 @@ export const UnauthorizedView = ({ params = {} }) => {
   const { 
     user, 
     navigateTo, 
+    updateUserProfile,
+    showToast,
     secureLogout, 
     setIsAuthModalOpen, 
     setAuthModalInitialTab 
@@ -104,7 +106,7 @@ export const UnauthorizedView = ({ params = {} }) => {
               border: `1px solid ${isCurrentVendor ? '#bfdbfe' : '#a7f3d0'}`
             }}>
               {isCurrentVendor ? <Store size={13} /> : <ShoppingBag size={13} />}
-              {user?.name || 'Logged User'} ({currentRole.toUpperCase()})
+              {user?.name || user?.fullName || 'Logged In User'} ({currentRole.toUpperCase()})
             </span>
           </div>
 
@@ -129,19 +131,32 @@ export const UnauthorizedView = ({ params = {} }) => {
 
           <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed #cbd5e1', fontSize: '12.5px', color: '#475569', lineHeight: '1.5' }}>
             {isCurrentCustomer ? (
-              <span>⚠️ <strong>Customer accounts</strong> cannot access Vendor Store Management, order dispatching, or inventory controls.</span>
+              <span>💡 <strong>Want to view Vendor Portal?</strong> Click the button below to activate your Vendor Partner view and manage your store.</span>
             ) : (
-              <span>⚠️ <strong>Vendor accounts</strong> cannot access Customer checkout, personal delivery carts, or consumer order placement in this view.</span>
+              <span>💡 <strong>Want to shop as Customer?</strong> Click below to switch back to Customer shopping view.</span>
             )}
           </div>
         </div>
 
         {/* Action Buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {/* Primary Action: Go to Authorized Portal */}
-          {isCurrentVendor ? (
+          {/* 1-Click Role Switch & Enter Requested Portal */}
+          {isCurrentCustomer ? (
             <button
-              onClick={() => navigateTo('vendor-portal')}
+              onClick={() => {
+                if (typeof updateUserProfile === 'function') {
+                  updateUserProfile({
+                    ...user,
+                    role: 'vendor',
+                    businessName: user?.businessName || user?.name || 'Local Vendor Partner Store',
+                    vendorCategory: user?.vendorCategory || 'Vegetables'
+                  });
+                }
+                if (typeof showToast === 'function') {
+                  showToast('🏪 Vendor Partner Mode Activated! Welcome to Vendor Portal.', 'success');
+                }
+                navigateTo('vendor-portal');
+              }}
               className="btn-primary"
               style={{
                 width: '100%',
@@ -149,17 +164,30 @@ export const UnauthorizedView = ({ params = {} }) => {
                 borderRadius: '16px',
                 fontSize: '15px',
                 fontWeight: '800',
+                backgroundColor: '#2563eb',
+                color: '#ffffff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px'
               }}
             >
-              <Store size={18} /> Go to Vendor Partner Portal <ArrowRight size={18} />
+              <Store size={18} /> Activate Vendor Partner View & Enter Portal <ArrowRight size={18} />
             </button>
           ) : (
             <button
-              onClick={() => navigateTo('home')}
+              onClick={() => {
+                if (typeof updateUserProfile === 'function') {
+                  updateUserProfile({
+                    ...user,
+                    role: 'customer'
+                  });
+                }
+                if (typeof showToast === 'function') {
+                  showToast('🛒 Switched to Customer Shopping View!', 'success');
+                }
+                navigateTo('home');
+              }}
               className="btn-primary"
               style={{
                 width: '100%',
@@ -173,15 +201,41 @@ export const UnauthorizedView = ({ params = {} }) => {
                 gap: '8px'
               }}
             >
-              <ShoppingBag size={18} /> Go to Customer Shopping Home <ArrowRight size={18} />
+              <ShoppingBag size={18} /> Switch to Customer Shopping View <ArrowRight size={18} />
             </button>
           )}
+
+          {/* Secondary Action: Go to authorized portal */}
+          <button
+            onClick={() => navigateTo(isCurrentVendor ? 'vendor-portal' : 'home')}
+            style={{
+              width: '100%',
+              padding: '12px 18px',
+              borderRadius: '14px',
+              border: '1.5px solid #cbd5e1',
+              backgroundColor: '#ffffff',
+              color: '#334155',
+              fontSize: '14px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+          >
+            {isCurrentVendor ? (
+              <>Return to Vendor Portal</>
+            ) : (
+              <>Return to Customer Home</>
+            )}
+          </button>
 
           {/* Secondary Action: Switch Role / Sign In as Different User */}
           <button
             onClick={() => {
-              setAuthModalInitialTab(isCurrentCustomer ? 'vendor' : 'google');
-              setIsAuthModalOpen(true);
+              const targetRole = isCurrentCustomer ? 'vendor' : 'customer';
+              navigateTo('login', { role: targetRole, mode: 'signin' });
             }}
             style={{
               width: '100%',

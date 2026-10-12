@@ -85,12 +85,12 @@ export const AdminPanelView = () => {
         setUsersList([
           {
             uid: 'v1',
-            name: 'Ramesh Gowda',
-            email: 'ramesh.vendor@vendorsaathi.com',
+            name: 'Suresh Kumar',
+            email: 'suresh.vendor@vendorsaathi.com',
             phone: '+91 98451 23456',
             role: 'vendor',
             status: 'active',
-            businessName: 'Ramesh Grocery & Fresh Produce',
+            businessName: 'Green Valley Fresh Produce',
             category: 'Vegetable',
             operatingAreas: ['Mijar', 'Moodbidri Town', 'Vijayanagar'],
             vehicleDetails: 'Ape Piaggio Auto (KA-19-M-4821)',
@@ -111,8 +111,8 @@ export const AdminPanelView = () => {
           },
           {
             uid: 'c1',
-            name: 'Bhavana Bai',
-            email: 'bhavana.customer@gmail.com',
+            name: 'Ananya Sharma',
+            email: 'ananya.customer@gmail.com',
             phone: '+91 98765 43210',
             role: 'customer',
             status: 'active',
@@ -166,7 +166,7 @@ export const AdminPanelView = () => {
           {
             id: 'cmp_101',
             complaintId: 'cmp_101',
-            customerName: 'Bhavana Bai',
+            customerName: 'Ananya Sharma',
             customerId: 'c1',
             vendorName: 'Basappa Fresh Veggies',
             vendorId: 'v2',

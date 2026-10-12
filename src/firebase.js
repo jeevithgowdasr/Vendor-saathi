@@ -1337,6 +1337,46 @@ export const subscribeToVendors = (callback) => {
 /**
  * Dedicated Vendor Registration directly via Firebase Auth & Firestore
  */
+/**
+ * Resolve identifier (phone number or email) to Firebase Auth email
+ */
+export const resolveAuthEmail = async (identifier) => {
+  const cleanId = (identifier || '').trim();
+  if (cleanId.includes('@')) {
+    return cleanId.toLowerCase();
+  }
+
+  const cleanDigits = cleanId.replace(/\D/g, '');
+  if (!cleanDigits) {
+    return `${Date.now()}@vendorsaathi.in`;
+  }
+
+  // Lookup Firestore users to see if any user registered with this phone number
+  try {
+    const usersRef = collection(db, "users");
+    const last10 = cleanDigits.slice(-10);
+    const possiblePhones = [cleanDigits, last10, `+91${last10}`, `+91 ${last10}`];
+
+    for (const ph of possiblePhones) {
+      const q = query(usersRef, where("phone", "==", ph));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const foundData = snap.docs[0].data();
+        if (foundData.email && foundData.email.includes('@')) {
+          return foundData.email.toLowerCase();
+        }
+      }
+    }
+  } catch (lookupErr) {
+    console.warn("Phone email resolution note:", lookupErr.message);
+  }
+
+  return `${cleanDigits}@vendorsaathi.in`;
+};
+
+/**
+ * Dedicated Vendor Registration directly via Firebase Auth & Firestore
+ */
 export const firebaseRegisterVendor = async ({
   fullName,
   phone,
@@ -1354,8 +1394,23 @@ export const firebaseRegisterVendor = async ({
     : `${(phone || 'vendor').replace(/\D/g, '') || Date.now()}@vendorsaathi.in`;
 
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, password);
-    const authUser = userCredential.user;
+    let authUser = null;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+      authUser = userCredential.user;
+    } catch (createErr) {
+      if (createErr.code === 'auth/email-already-in-use') {
+        // If email already exists in Firebase Auth, verify with entered password and upgrade/save profile:
+        try {
+          const signinCred = await signInWithEmailAndPassword(auth, cleanEmail, password);
+          authUser = signinCred.user;
+        } catch (pwErr) {
+          throw new Error("This email is already registered. If you already have an account, enter your account password or sign in on the Sign In tab.");
+        }
+      } else {
+        throw createErr;
+      }
+    }
 
     // Upload profile image to Firebase Storage if provided
     let profileImageUrl = '';
@@ -1447,9 +1502,7 @@ export const firebaseRegisterVendor = async ({
  * Dedicated Vendor Login via Firebase Auth & Firestore role verification
  */
 export const firebaseLoginVendor = async ({ identifier, password }) => {
-  const cleanEmail = identifier.includes('@')
-    ? identifier.trim().toLowerCase()
-    : `${identifier.replace(/\D/g, '')}@vendorsaathi.in`;
+  const cleanEmail = await resolveAuthEmail(identifier);
 
   try {
     const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
@@ -1461,20 +1514,70 @@ export const firebaseLoginVendor = async ({ identifier, password }) => {
 
     if (userSnap.exists()) {
       const data = userSnap.data();
-      // RBAC Security Check: Reject non-vendor accounts
+      // If user profile exists and wants to use vendor portal, enable vendor role
       if (data.role !== 'vendor' && data.role !== 'admin') {
-        await signOut(auth);
-        throw new Error("Account is not registered as a vendor.");
+        const upgraded = {
+          ...data,
+          role: 'vendor',
+          businessName: data.businessName || data.name || 'Vendor Partner',
+          category: data.category || 'Vegetable',
+          operatingAreas: Array.isArray(data.operatingAreas) && data.operatingAreas.length > 0 ? data.operatingAreas : ['Mijar', 'Moodbidri Town'],
+          status: 'active',
+          updatedAt: serverTimestamp()
+        };
+        await setDoc(userDocRef, upgraded, { merge: true });
+        await setDoc(doc(db, "vendors", authUser.uid), {
+          id: authUser.uid,
+          uid: authUser.uid,
+          name: upgraded.businessName,
+          category: upgraded.category,
+          status: 'online',
+          isOpen: true,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+
+        return {
+          success: true,
+          user: { ...upgraded, uid: authUser.uid },
+          token: `vs_live_${authUser.uid}_${Date.now()}`
+        };
       }
+
       return {
         success: true,
         user: { ...data, uid: authUser.uid },
         token: `vs_live_${authUser.uid}_${Date.now()}`
       };
     } else {
-      // User has Auth credentials but no vendor record in Firestore
-      await signOut(auth);
-      throw new Error("Account is not registered as a vendor.");
+      // Create new vendor profile for this authenticated user
+      const newVendorProfile = {
+        uid: authUser.uid,
+        id: authUser.uid,
+        role: 'vendor',
+        name: authUser.displayName || 'Vendor Partner',
+        email: cleanEmail,
+        status: 'active',
+        businessName: authUser.displayName || 'Vendor Partner',
+        category: 'Vegetable',
+        operatingAreas: ['Mijar', 'Moodbidri Town'],
+        createdAt: serverTimestamp()
+      };
+      await setDoc(userDocRef, newVendorProfile, { merge: true });
+      await setDoc(doc(db, "vendors", authUser.uid), {
+        id: authUser.uid,
+        uid: authUser.uid,
+        name: newVendorProfile.businessName,
+        category: newVendorProfile.category,
+        status: 'online',
+        isOpen: true,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+
+      return {
+        success: true,
+        user: newVendorProfile,
+        token: `vs_live_${authUser.uid}_${Date.now()}`
+      };
     }
   } catch (error) {
     console.error("firebaseLoginVendor error:", error);
@@ -1500,8 +1603,22 @@ export const firebaseRegisterCustomer = async ({
     : `${(phone || 'customer').replace(/\D/g, '') || Date.now()}@vendorsaathi.in`;
 
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, password);
-    const authUser = userCredential.user;
+    let authUser = null;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+      authUser = userCredential.user;
+    } catch (createErr) {
+      if (createErr.code === 'auth/email-already-in-use') {
+        try {
+          const signinCred = await signInWithEmailAndPassword(auth, cleanEmail, password);
+          authUser = signinCred.user;
+        } catch (pwErr) {
+          throw new Error("This email is already registered. Please enter your existing account password to sign in.");
+        }
+      } else {
+        throw createErr;
+      }
+    }
 
     const avatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(fullName)}&backgroundColor=059669`;
 
@@ -1546,9 +1663,7 @@ export const firebaseRegisterCustomer = async ({
  * Dedicated Customer Login via Firebase Auth & Firestore profile loading
  */
 export const firebaseLoginCustomer = async ({ identifier, password }) => {
-  const cleanEmail = identifier.includes('@')
-    ? identifier.trim().toLowerCase()
-    : `${identifier.replace(/\D/g, '')}@vendorsaathi.in`;
+  const cleanEmail = await resolveAuthEmail(identifier);
 
   try {
     const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
@@ -1568,9 +1683,9 @@ export const firebaseLoginCustomer = async ({ identifier, password }) => {
       const newCustomerProfile = {
         uid: authUser.uid,
         id: authUser.uid,
-        role: 'customer',
         name: authUser.displayName || 'Customer',
         email: cleanEmail,
+        role: 'customer',
         status: 'active',
         createdAt: serverTimestamp()
       };

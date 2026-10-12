@@ -5,19 +5,19 @@ import { sendChatMessageToFirebase } from '../firebase';
 
 export const VendorChatModal = () => {
   const { isVendorChatOpen, setIsVendorChatOpen, activeOrderId, orders, selectedVendor, user } = useApp();
+  const currentOrder = (orders || []).find(o => o.id === activeOrderId) || (orders && orders[0]) || null;
+  const vendorName = currentOrder?.vendorName || selectedVendor?.name || 'Local Partner Vendor';
+  const vendorId = currentOrder?.vendorId || selectedVendor?.id || 'v1';
+
   const [messages, setMessages] = useState([
-    { sender: 'vendor', text: `Namaste! Ramesh here from Ramesh Grocery. Fresh farm produce is ready for your doorstep.`, time: '10:36 AM' },
-    { sender: 'customer', text: 'Hi Ramesh Gowda, please make sure the produce is fresh and crisp.', time: '10:38 AM' },
-    { sender: 'vendor', text: 'Yes! Handpicked from local Moodbidri farms. Ready for express delivery.', time: '10:40 AM' }
+    { sender: 'vendor', text: `Namaste! We are preparing your fresh order from local Moodbidri farms.`, time: '10:36 AM' },
+    { sender: 'customer', text: 'Namaste! Please make sure the produce is fresh and crisp.', time: '10:38 AM' },
+    { sender: 'vendor', text: 'Yes, handpicked this morning! Dispatched for express doorstep delivery.', time: '10:40 AM' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
   if (!isVendorChatOpen) return null;
-
-  const currentOrder = (orders || []).find(o => o.id === activeOrderId) || (orders && orders[0]) || null;
-  const vendorName = currentOrder?.vendorName || selectedVendor?.name || 'Ramesh Grocery';
-  const vendorId = currentOrder?.vendorId || selectedVendor?.id || 'v1';
 
   const handleSend = (e) => {
     e.preventDefault();

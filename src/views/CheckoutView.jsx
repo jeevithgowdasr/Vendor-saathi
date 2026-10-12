@@ -86,7 +86,7 @@ export const CheckoutView = () => {
         customerEmail: user?.email || 'customer@vendorsaathi.com',
         orderId: `VS${Math.floor(10000 + Math.random() * 90000)}`,
         itemsSummary: cart.map(i => `${i.quantity}x ${i.product.shortName || i.product.name}`).join(', '),
-        vendorName: cart[0]?.product.vendorName || 'Ramesh Grocery'
+        vendorName: cart[0]?.product.vendorName || 'Local Partner Store'
       });
 
       try {
@@ -113,7 +113,7 @@ export const CheckoutView = () => {
         paymentStatus: `Paid via Stripe Card Gateway (${cardResult.paymentIntentId.slice(0, 16)})`,
         deliveryAddress: selectedAddress,
         vendorId: cart[0]?.product.vendorId || 'v1',
-        vendorName: cart[0]?.product.vendorName || 'Ramesh Grocery'
+        vendorName: cart[0]?.product.vendorName || 'Local Partner Store'
       });
       return;
     }
@@ -135,7 +135,7 @@ export const CheckoutView = () => {
       paymentStatus: 'Pending (Cash on Delivery)',
       deliveryAddress: selectedAddress,
       vendorId: cart[0]?.product.vendorId || 'v1',
-      vendorName: cart[0]?.product.vendorName || 'Ramesh Grocery'
+      vendorName: cart[0]?.product.vendorName || 'Local Partner Store'
     });
   }, {
     invalidateKeys: [CACHE_KEYS.ORDERS, CACHE_KEYS.CART],
@@ -191,7 +191,7 @@ export const CheckoutView = () => {
       paymentStatus: upiResult.paymentStatus || `Paid via Stripe UPI (UTR #${upiResult.upiRefId})`,
       deliveryAddress: selectedAddress,
       vendorId: cart[0]?.product.vendorId || 'v1',
-      vendorName: cart[0]?.product.vendorName || 'Ramesh Grocery'
+      vendorName: cart[0]?.product.vendorName || 'Local Partner Store'
     });
   };
 
@@ -727,7 +727,7 @@ export const CheckoutView = () => {
         orderDetails={{
           orderId: `VS${Math.floor(10000 + Math.random() * 90000)}`,
           itemsSummary: cart.map(i => `${i.quantity}x ${i.product.shortName || i.product.name}`).join(', '),
-          vendorName: cart[0]?.product.vendorName || 'Ramesh Grocery'
+          vendorName: cart[0]?.product.vendorName || 'Local Partner Store'
         }}
         onPaymentSuccess={handleUpiSuccess}
       />

@@ -5,7 +5,7 @@ import { Star, ThumbsUp, ArrowLeft, MoreVertical, Plus, Sparkles, Gift } from 'l
 const REVIEWS_DATA = [
   {
     id: 'r1',
-    vendorName: 'Ramesh Grocery (Mijar)',
+    vendorName: 'Local Fresh Produce (Mijar)',
     date: '12 May 2026',
     rating: 5.0,
     categories: 'Vegetables, Fresh Farm Tomatoes, Fruits',
@@ -179,7 +179,7 @@ export const MyReviewsView = () => {
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px' }}>
-          {(deliveredOrders.length > 0 ? deliveredOrders : [{ id: 'VS10245', vendorName: 'Ramesh Grocery', date: 'Today, 10:25 AM', items: [{ name: 'Fresh Farm Tomatoes' }, { name: 'Byadgi Chilli' }] }]).map(order => (
+          {(deliveredOrders.length > 0 ? deliveredOrders : [{ id: 'VS10245', vendorName: 'Local Fresh Produce', date: 'Today, 10:25 AM', items: [{ name: 'Fresh Farm Tomatoes' }, { name: 'Byadgi Chilli' }] }]).map(order => (
             <div key={order.id} className="vs-card" style={{ padding: '24px', borderRadius: '24px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <strong style={{ fontSize: '17px', color: '#0f172a', fontWeight: '800' }}>{order.vendorName}</strong>

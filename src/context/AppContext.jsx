@@ -562,7 +562,7 @@ export const AppProvider = ({ children }) => {
       id: newOrderId,
       date: dateString,
       vendorId: orderData.vendorId || cart[0]?.product.vendorId || 'v1',
-      vendorName: orderData.vendorName || cart[0]?.product.vendorName || 'Ramesh Grocery',
+      vendorName: orderData.vendorName || cart[0]?.product.vendorName || 'Local Partner Store',
       vendorPhone: orderData.vendorPhone || '+91 98451 23456',
       vendorDistance: '1.8 km',
       items: orderData.items || cart.map(i => ({

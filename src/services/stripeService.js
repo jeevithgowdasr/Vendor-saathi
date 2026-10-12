@@ -22,7 +22,7 @@ export const createPaymentIntent = async ({
   customerEmail = 'customer@vendorsaathi.com',
   orderId = `VS_${Date.now()}`,
   itemsSummary = 'Fresh Village Groceries',
-  vendorName = 'Ramesh Grocery',
+  vendorName = 'Local Partner Store',
   paymentMethodType = 'upi',
   vpa = 'vendorsaathi@okhdfcbank'
 }) => {
@@ -97,7 +97,7 @@ export const processCardPayment = async ({
   postalCode = '574225',
   orderId = `VS_${Date.now()}`,
   itemsSummary = 'Fresh Village Groceries',
-  vendorName = 'Ramesh Grocery'
+  vendorName = 'Local Partner Store'
 }) => {
   try {
     const cleanCardNumber = (cardNumber || '').replace(/\s+/g, '');
@@ -149,11 +149,11 @@ export const processCardPayment = async ({
 export const processStripeUpiPayment = async ({
   amount,
   vpa = 'vendorsaathi@okhdfcbank',
-  customerName = 'Bhavana Bai',
+  customerName = 'Customer',
   customerEmail = 'customer@vendorsaathi.com',
   orderId = `VS_${Date.now()}`,
   itemsSummary = 'Fresh Village Groceries',
-  vendorName = 'Ramesh Grocery',
+  vendorName = 'Local Partner Store',
   upiApp = 'Google Pay'
 }) => {
   try {

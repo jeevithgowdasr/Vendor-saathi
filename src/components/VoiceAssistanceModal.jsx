@@ -41,8 +41,17 @@ export const VoiceAssistanceModal = () => {
   const explanationText = currentFeature.explanation[selectedLanguage] || currentFeature.explanation['en'];
   const featureTitle = currentFeature.title[selectedLanguage] || currentFeature.title['en'];
 
+  const audioRef = useRef(null);
+
   // Clean speech synthesis & timers on cleanup or close
   const stopSpeech = () => {
+    if (audioRef.current) {
+      try {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      } catch (e) {}
+      audioRef.current = null;
+    }
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
@@ -90,24 +99,82 @@ export const VoiceAssistanceModal = () => {
       }
     }, 320);
 
-    // Use Web Speech API Synthesis
+    // Audio playback for Kannada & multilingual TTS
+    if (selectedLanguage === 'kn') {
+      try {
+        // High quality Kannada TTS audio stream (using client=gtx without referrer to prevent 404)
+        const cleanQuery = textToSpeak.replace(/[\n\r]+/g, ' ').slice(0, 160).trim();
+        const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanQuery)}&tl=kn&client=gtx`;
+        const audio = new Audio();
+        audio.referrerPolicy = 'no-referrer';
+        audio.setAttribute('referrerpolicy', 'no-referrer');
+        audio.src = audioUrl;
+        audioRef.current = audio;
+
+        audio.onended = () => {
+          setIsPlaying(false);
+          setIsPaused(false);
+          setHighlightWordIndex(-1);
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+        };
+
+        audio.onerror = () => {
+          console.warn("Kannada audio stream error, falling back to Web Speech API");
+          fallbackWebSpeech(textToSpeak);
+        };
+
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(err => {
+            console.warn("Kannada audio stream play notice:", err);
+            fallbackWebSpeech(textToSpeak);
+          });
+        }
+        return;
+      } catch (err) {
+        console.warn("Kannada audio init exception:", err);
+      }
+    }
+
+    fallbackWebSpeech(textToSpeak);
+  };
+
+  const fallbackWebSpeech = (textToSpeak) => {
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel(); // cancel any active utterance
+      window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utteranceRef.current = utterance;
 
       utterance.lang = currentLangObj.speechLang;
-      utterance.rate = 0.9; // Slightly slower, clear rate for rural accessibility
+      utterance.rate = 0.88; // clear accessibility rate
       utterance.pitch = 1.0;
 
-      // Select matching native voice if available
       const voices = window.speechSynthesis.getVoices();
-      const matchingVoice = voices.find(v => 
-        v.lang === currentLangObj.speechLang || 
-        v.lang.startsWith(selectedLanguage)
-      );
-      if (matchingVoice) {
-        utterance.voice = matchingVoice;
+      
+      // Strict voice matching: do NOT assign Hindi or English voice to Kannada text
+      if (selectedLanguage === 'kn') {
+        const knVoice = voices.find(v => 
+          v.lang === 'kn-IN' || 
+          v.lang.startsWith('kn') || 
+          (v.name && v.name.toLowerCase().includes('kannada'))
+        );
+        if (knVoice) {
+          utterance.voice = knVoice;
+        }
+        // If no explicit Kannada voice, leave utterance.voice unset so Chrome's network TTS synthesizes kn-IN
+      } else {
+        const matchingVoice = voices.find(v => 
+          v.lang === currentLangObj.speechLang || 
+          v.lang.startsWith(selectedLanguage) ||
+          (v.name && v.name.toLowerCase().includes(currentLangObj.label.toLowerCase()))
+        ) || (selectedLanguage === 'hi' ? voices.find(v => v.lang.includes('hi')) : voices.find(v => v.lang.includes('en')));
+
+        if (matchingVoice) {
+          utterance.voice = matchingVoice;
+        }
       }
 
       utterance.onend = () => {
@@ -120,7 +187,8 @@ export const VoiceAssistanceModal = () => {
         }
       };
 
-      utterance.onerror = () => {
+      utterance.onerror = (e) => {
+        console.warn("Web Speech API notice:", e);
         setIsPlaying(false);
         setIsPaused(false);
         setHighlightWordIndex(-1);
@@ -131,6 +199,13 @@ export const VoiceAssistanceModal = () => {
   };
 
   const handlePause = () => {
+    if (audioRef.current && isPlaying && !isPaused) {
+      audioRef.current.pause();
+      if (timerRef.current) clearInterval(timerRef.current);
+      setIsPaused(true);
+      setIsPlaying(false);
+      return;
+    }
     if (window.speechSynthesis && isPlaying && !isPaused) {
       window.speechSynthesis.pause();
       if (timerRef.current) clearInterval(timerRef.current);
@@ -140,6 +215,12 @@ export const VoiceAssistanceModal = () => {
   };
 
   const handleResumeOrPlay = () => {
+    if (audioRef.current && isPaused) {
+      audioRef.current.play().catch(e => console.warn(e));
+      setIsPaused(false);
+      setIsPlaying(true);
+      return;
+    }
     if (window.speechSynthesis && isPaused) {
       window.speechSynthesis.resume();
       setIsPaused(false);

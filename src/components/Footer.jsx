@@ -147,7 +147,7 @@ export const Footer = () => {
           <div>
             <h4 style={{ color: '#ffffff', fontSize: '15px', fontWeight: '800', marginBottom: '16px' }}>Partner Stores</h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
-              <li><button onClick={() => navigateTo('product-listing', { vendor: 'v1' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>📍 Ramesh Grocery</button></li>
+              <li><button onClick={() => navigateTo('product-listing', { vendor: 'v1' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>📍 Green Valley Fresh Produce</button></li>
               <li><button onClick={() => navigateTo('product-listing', { vendor: 'v2' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>📍 Suresh Provision</button></li>
               <li><button onClick={() => navigateTo('product-listing', { vendor: 'v3' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>📍 Mahesh Kirana</button></li>
               <li><button onClick={() => navigateTo('product-listing', { vendor: 'v4' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>📍 Lakshmi General Store</button></li>

@@ -32,7 +32,7 @@ export const StripePaymentModal = ({
   const [expMonth, setExpMonth] = useState('');
   const [expYear, setExpYear] = useState('');
   const [cvc, setCvc] = useState('');
-  const [cardholderName, setCardholderName] = useState(user?.name || 'Bhavana Bai');
+  const [cardholderName, setCardholderName] = useState(user?.name || user?.fullName || 'Customer');
   const [postalCode, setPostalCode] = useState(user?.pincode || '574225');
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -77,7 +77,7 @@ export const StripePaymentModal = ({
     setExpMonth('12');
     setExpYear('2028');
     setCvc('123');
-    setCardholderName(user?.name || 'Bhavana Bai');
+    setCardholderName(user?.name || user?.fullName || 'Customer');
     setPostalCode('574225');
     setErrorMessage('');
     showToast('Loaded Stripe 4242 Test Card Credentials ✨');
@@ -116,7 +116,7 @@ export const StripePaymentModal = ({
         postalCode,
         orderId: orderDetails?.orderId || `VS${Date.now().toString().slice(-5)}`,
         itemsSummary: orderDetails?.itemsSummary || 'Village Fresh Produce',
-        vendorName: orderDetails?.vendorName || 'Ramesh Grocery'
+        vendorName: orderDetails?.vendorName || 'Local Vendor Store'
       });
 
       if (paymentResult.success) {
@@ -380,7 +380,7 @@ export const StripePaymentModal = ({
               <div style={{ position: 'relative' }}>
                 <input
                   type="text"
-                  placeholder="e.g. Bhavana Bai"
+                  placeholder="e.g. Cardholder Name"
                   value={cardholderName}
                   onChange={(e) => setCardholderName(e.target.value)}
                   style={{

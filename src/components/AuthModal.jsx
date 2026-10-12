@@ -512,75 +512,7 @@ export const AuthModal = () => {
   };
 
   // Quick Demo Fast Login
-  const handleQuickDemo = (role = 'customer') => {
-    if (role === 'vendor') {
-      const session = createAuthSession({ role: 'vendor', uid: 'vendor_ramesh_01' });
-      const vendorUser = {
-        isLoggedIn: true,
-        authToken: session.authToken,
-        tokenExpiresAt: session.tokenExpiresAt,
-        sessionIssuedAt: session.sessionIssuedAt,
-        uid: 'vendor_ramesh_01',
-        name: 'Ramesh Gowda',
-        email: 'ramesh.kirana@gmail.com',
-        phone: '+91 98451 23456',
-        village: 'Mijar',
-        town: 'Moodbidri',
-        district: 'Dakshina Kannada',
-        pincode: '574225',
-        address: 'Ramesh Grocery, Mijar Cross, Moodbidri - 574225',
-        landmark: 'Near Alva’s Campus Entrance',
-        preferredLanguage: 'kn',
-        role: 'vendor',
-        authProvider: 'google',
-        photoURL: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80'
-      };
-      updateUserProfile(vendorUser);
-      setIsAuthModalOpen(false);
-      triggerCelebration();
-      showToast('Signed in as Partner Vendor: Ramesh Gowda 🏪');
 
-      const redirectInfo = getAndClearRedirectTarget();
-      if (redirectInfo && redirectInfo.view) {
-        navigateTo(redirectInfo.view, redirectInfo.params || {});
-      } else {
-        navigateTo('vendor-portal');
-      }
-    } else {
-      const session = createAuthSession({ role: 'customer', uid: 'customer_bhavana_01' });
-      const customerUser = {
-        isLoggedIn: true,
-        authToken: session.authToken,
-        tokenExpiresAt: session.tokenExpiresAt,
-        sessionIssuedAt: session.sessionIssuedAt,
-        uid: 'customer_bhavana_01',
-        name: 'Bhavana Bai',
-        email: 'bhavana.bai@gmail.com',
-        phone: '+91 9876543210',
-        village: 'Mijar',
-        town: 'Moodbidri',
-        district: 'Dakshina Kannada',
-        pincode: '574225',
-        address: 'Near Alva’s Campus Entrance, Mijar Village, Moodbidri - 574225',
-        landmark: 'Opposite Primary Health Center',
-        preferredLanguage: 'en',
-        role: 'customer',
-        authProvider: 'google',
-        photoURL: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80'
-      };
-      updateUserProfile(customerUser);
-      setIsAuthModalOpen(false);
-      triggerCelebration();
-      showToast('Signed in as Customer: Bhavana Bai 🛒');
-
-      const redirectInfo = getAndClearRedirectTarget();
-      if (redirectInfo && redirectInfo.view) {
-        navigateTo(redirectInfo.view, redirectInfo.params || {});
-      } else {
-        navigateTo('home');
-      }
-    }
-  };
 
   return (
     <div style={{
@@ -863,67 +795,75 @@ export const AuthModal = () => {
               <span>Password / Custom Email Login</span>
             </button>
 
-            {/* Fast Quick Demo */}
+            {/* Dedicated Authentication Access */}
             <div style={{
-              backgroundColor: '#f0fdf4',
-              border: '1px solid #bbf7d0',
+              backgroundColor: '#f8fafc',
+              border: '1px solid #e2e8f0',
               borderRadius: '16px',
-              padding: '12px',
+              padding: '14px',
               textAlign: 'center'
             }}>
-              <span style={{ fontSize: '11px', color: '#047857', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-                ⚡ Quick Demo Profiles
+              <span style={{ fontSize: '11.5px', color: '#475569', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '10px' }}>
+                Dedicated Portals
               </span>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <button
-                  onClick={() => handleQuickDemo('customer')}
-                  style={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #a7f3d0',
-                    borderRadius: '10px',
-                    padding: '8px',
-                    fontSize: '12px',
-                    fontWeight: '800',
-                    color: '#065f46',
-                    cursor: 'pointer'
-                  }}
-                >
-                  🛒 Customer (Bhavana)
-                </button>
-                <button
-                  onClick={() => handleQuickDemo('vendor')}
-                  style={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #a7f3d0',
-                    borderRadius: '10px',
-                    padding: '8px',
-                    fontSize: '12px',
-                    fontWeight: '800',
-                    color: '#065f46',
-                    cursor: 'pointer'
-                  }}
-                >
-                  🏪 Vendor (Ramesh)
-                </button>
-              </div>
-
-              <div style={{ marginTop: '16px', textAlign: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
                 <button
                   type="button"
                   onClick={() => {
                     setIsAuthModalOpen(false);
-                    navigateTo('login', { mode: 'signin' });
+                    navigateTo('login', { role: 'customer', mode: 'signin' });
+                  }}
+                  style={{
+                    backgroundColor: '#ffffff',
+                    border: '1.5px solid #a7f3d0',
+                    borderRadius: '12px',
+                    padding: '10px 8px',
+                    fontSize: '12.5px',
+                    fontWeight: '800',
+                    color: '#047857',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🛒 Customer Portal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAuthModalOpen(false);
+                    navigateTo('login', { role: 'vendor', mode: 'signin' });
+                  }}
+                  style={{
+                    backgroundColor: '#ffffff',
+                    border: '1.5px solid #bfdbfe',
+                    borderRadius: '12px',
+                    padding: '10px 8px',
+                    fontSize: '12.5px',
+                    fontWeight: '800',
+                    color: '#1d4ed8',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🏪 Vendor Portal
+                </button>
+              </div>
+
+              <div style={{ marginTop: '12px', textAlign: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAuthModalOpen(false);
+                    navigateTo('login', { role: 'vendor', mode: 'register' });
                   }}
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: '#059669',
-                    fontSize: '13px',
+                    color: '#2563eb',
+                    fontSize: '12.5px',
                     fontWeight: '800',
                     cursor: 'pointer'
                   }}
                 >
-                  Go to Dedicated Vendor & Customer Login / Register Page &rarr;
+                  Register as a New Vendor Partner &rarr;
                 </button>
               </div>
             </div>
@@ -1273,7 +1213,7 @@ export const AuthModal = () => {
                 label="Full Name"
                 name="email_name"
                 required
-                placeholder="e.g. Bhavana Gowda"
+                placeholder="e.g. Ananya Sharma"
                 value={name}
                 onChange={(e) => {
                   setName(e.target.value);

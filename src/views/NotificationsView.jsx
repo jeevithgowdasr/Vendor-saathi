@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { Bell, CheckCircle2, Truck, Tag, Package, Star, ArrowLeft, Sparkles } from 'lucide-react';
 
 const NOTIFICATIONS_FULL = [
-  { id: '1', title: 'Your order #VS10245 has been accepted by Ramesh Grocery.', time: 'Today, 10:35 AM', type: 'success', icon: CheckCircle2, bg: '#ecfdf5', color: '#059669', unread: true },
+  { id: '1', title: 'Your order #VS10245 has been accepted by local partner store.', time: 'Today, 10:35 AM', type: 'success', icon: CheckCircle2, bg: '#ecfdf5', color: '#059669', unread: true },
   { id: '2', title: 'Your order #VS10245 is out for express delivery with rider.', time: 'Today, 11:00 AM', type: 'info', icon: Truck, bg: '#e0f2fe', color: '#0284c7', unread: true },
   { id: '3', title: 'Special Village Offer! Get 10% OFF on all vegetables today with FRESH10.', time: 'Today, 09:00 AM', type: 'promo', icon: Tag, bg: '#f3e8ff', color: '#7e22ce', unread: false },
   { id: '4', title: 'Your order #VS10205 has been delivered successfully to Mijar.', time: 'Yesterday, 12:15 PM', type: 'success', icon: Package, bg: '#ecfdf5', color: '#059669', unread: false },

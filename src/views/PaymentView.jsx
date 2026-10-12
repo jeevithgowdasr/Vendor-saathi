@@ -42,7 +42,7 @@ export const PaymentView = () => {
       paymentStatus: 'Pending (Cash on Delivery)',
       deliveryAddress: user?.address || 'Mijar, Moodbidri, Karnataka - 574225',
       vendorId: cart[0]?.product.vendorId || 'v1',
-      vendorName: cart[0]?.product.vendorName || 'Ramesh Grocery'
+      vendorName: cart[0]?.product.vendorName || 'Local Partner Store'
     });
   };
 
@@ -67,7 +67,7 @@ export const PaymentView = () => {
       paymentStatus: upiResult.paymentStatus || `Paid via UPI (UTR #${upiResult.upiRefId})`,
       deliveryAddress: user?.address || 'Mijar, Moodbidri, Karnataka - 574225',
       vendorId: cart[0]?.product.vendorId || 'v1',
-      vendorName: cart[0]?.product.vendorName || 'Ramesh Grocery'
+      vendorName: cart[0]?.product.vendorName || 'Local Partner Store'
     });
   };
 
@@ -290,7 +290,7 @@ export const PaymentView = () => {
         orderDetails={{
           orderId: `VS${Math.floor(10000 + Math.random() * 90000)}`,
           itemsSummary: cart.map(i => `${i.quantity}x ${i.product.shortName || i.product.name}`).join(', '),
-          vendorName: cart[0]?.product.vendorName || 'Ramesh Grocery'
+          vendorName: cart[0]?.product.vendorName || 'Local Partner Store'
         }}
         onPaymentSuccess={handleUpiSuccess}
       />
