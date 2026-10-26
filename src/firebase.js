@@ -42,14 +42,14 @@ const getEnvVar = (key) => {
   return "";
 };
 
-// Read configuration strictly from environment variables (.env / GitHub Secrets / Vercel)
+// Read configuration strictly from environment variables (.env / GitHub Secrets / Vercel) with live project fallback
 export const firebaseConfig = {
-  apiKey: getEnvVar("VITE_FIREBASE_API_KEY"),
-  authDomain: getEnvVar("VITE_FIREBASE_AUTH_DOMAIN"),
-  projectId: getEnvVar("VITE_FIREBASE_PROJECT_ID"),
-  storageBucket: getEnvVar("VITE_FIREBASE_STORAGE_BUCKET"),
-  messagingSenderId: getEnvVar("VITE_FIREBASE_MESSAGING_SENDER_ID"),
-  appId: getEnvVar("VITE_FIREBASE_APP_ID")
+  apiKey: getEnvVar("VITE_FIREBASE_API_KEY") || "AIzaSyAWTmVrECgfpYi31NepIxKdNDwmpZ34NRM",
+  authDomain: getEnvVar("VITE_FIREBASE_AUTH_DOMAIN") || "vendorsaathi.firebaseapp.com",
+  projectId: getEnvVar("VITE_FIREBASE_PROJECT_ID") || "vendorsaathi",
+  storageBucket: getEnvVar("VITE_FIREBASE_STORAGE_BUCKET") || "vendorsaathi.firebasestorage.app",
+  messagingSenderId: getEnvVar("VITE_FIREBASE_MESSAGING_SENDER_ID") || "77605968480",
+  appId: getEnvVar("VITE_FIREBASE_APP_ID") || "1:77605968480:web:2e321f9334be869719c105"
 };
 
 // Initialize Firebase safely with try/catch
