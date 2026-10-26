@@ -14,7 +14,8 @@
     "test:smoke": "node scripts/smoke-test.js",
     "dev:backend": "npm run dev --prefix backend",
     "start:backend": "npm start --prefix backend",
-    "install:all": "npm install && npm install --prefix backend"
+    "install:all": "npm install && npm install --prefix backend",
+    "deploy:firebase": "npm run build && npx firebase-tools deploy"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.13.0",
