@@ -34,10 +34,10 @@ export const CategoriesView = () => {
             <Sparkles size={14} color="#f59e0b" /> FRESH CATALOG
           </span>
           <h1 style={{ fontSize: '36px', fontWeight: '900', color: '#0f172a', letterSpacing: '-0.025em' }}>
-            All Produce Categories
+            Produce & Flower Categories
           </h1>
           <p style={{ fontSize: '15.5px', color: '#64748b', maxWidth: '640px', margin: '8px auto 0 auto', lineHeight: 1.55 }}>
-            Select a category to browse farm-fresh vegetables, coastal fruits, spices and daily dairy delivered directly to your doorstep.
+            Select a category to browse farm-fresh vegetables, coastal fruits, nutrient-rich green vegetables (Greens / Soppu), and fragrant Pooja flowers delivered directly to your doorstep.
           </p>
         </div>
       </div>

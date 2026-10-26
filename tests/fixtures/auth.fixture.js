@@ -8,7 +8,7 @@ export const test = base.extend({
   /**
    * Page fixture pre-authenticated with Customer role
    */
-  customerPage: async ({ page }, use) => {
+  customerPage: async ({ page }, providePage) => {
     // Inject customer session into localStorage before initial page load
     await page.addInitScript((userData) => {
       window.localStorage.setItem('vendorsaathi_current_user', JSON.stringify(userData));
@@ -18,13 +18,13 @@ export const test = base.extend({
 
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
-    await use(page);
+    await providePage(page);
   },
 
   /**
    * Page fixture pre-authenticated with Vendor role
    */
-  vendorPage: async ({ page }, use) => {
+  vendorPage: async ({ page }, providePage) => {
     // Inject vendor session into localStorage before initial page load
     await page.addInitScript((userData) => {
       window.localStorage.setItem('vendorsaathi_current_user', JSON.stringify(userData));
@@ -34,13 +34,13 @@ export const test = base.extend({
 
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
-    await use(page);
+    await providePage(page);
   },
 
   /**
    * Unauthenticated clean page fixture
    */
-  guestPage: async ({ page }, use) => {
+  guestPage: async ({ page }, providePage) => {
     await page.addInitScript(() => {
       window.localStorage.clear();
       window.sessionStorage.clear();
@@ -48,7 +48,7 @@ export const test = base.extend({
 
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
-    await use(page);
+    await providePage(page);
   }
 });
 

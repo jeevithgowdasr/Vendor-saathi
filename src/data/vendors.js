@@ -1,5 +1,71 @@
-/**
- * Vendor Registry Model & Live Partner Store
- * Empty initial state - all vendor profiles stream live in real-time from Cloud Firestore users collection.
- */
-export const VENDORS = [];
+export const DEFAULT_VENDORS = [
+  {
+    id: 'v1',
+    uid: 'v1',
+    name: 'Green Valley Fresh Produce',
+    owner: 'Suresh Kumar',
+    status: 'online',
+    statusLabel: '🟢 Open Now',
+    location: 'Mijar Village, Moodbidri',
+    address: 'Near Alva’s Engineering College, Mijar',
+    rating: 4.8,
+    reviewCount: 38,
+    coordinates: { lat: 13.0682, lng: 74.9961 },
+    categories: ['vegetables', 'greens'],
+    phone: '+91 98451 23456',
+    verified: true,
+    badge: 'Farm Fresh Verified',
+    isOpen: true,
+    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80',
+    avatar: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80',
+    operatingAreas: ['Mijar', 'Moodbidri Town', 'Vijayanagar'],
+    vehicleDetails: 'Ape Piaggio Auto (KA-19-M-4821)'
+  },
+  {
+    id: 'v2',
+    uid: 'v2',
+    name: 'Basappa Fresh Veggies & Fruits',
+    owner: 'Basappa Gowda',
+    status: 'online',
+    statusLabel: '🟢 Open Now',
+    location: 'Moodbidri Market Center',
+    address: 'Old Post Office Road, Moodbidri Market',
+    rating: 4.7,
+    reviewCount: 29,
+    coordinates: { lat: 13.0725, lng: 74.9985 },
+    categories: ['vegetables', 'fruits'],
+    phone: '+91 98452 34567',
+    verified: true,
+    badge: 'Super Seller',
+    isOpen: true,
+    image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=600&q=80',
+    avatar: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=600&q=80',
+    operatingAreas: ['Vijayanagar', 'Alva’s Gate', 'Bus Stand'],
+    vehicleDetails: 'TVS XL Heavy Duty'
+  },
+  {
+    id: 'v3',
+    uid: 'v3',
+    name: 'Kaveri Pooja Flowers & Soppu',
+    owner: 'Kaveri Amma',
+    status: 'online',
+    statusLabel: '🟢 Open Now',
+    location: 'Alva’s Campus Gate, Moodbidri',
+    address: 'Vidyagiri Main Road, Moodbidri',
+    rating: 4.9,
+    reviewCount: 52,
+    coordinates: { lat: 13.0620, lng: 74.9910 },
+    categories: ['flowers', 'greens'],
+    phone: '+91 98453 98765',
+    verified: true,
+    badge: 'Pooja Special',
+    isOpen: true,
+    image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80',
+    avatar: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80',
+    operatingAreas: ['Alva’s Campus', 'Vidyanagar', 'Mijar'],
+    vehicleDetails: 'Bajaj Maxima C'
+  }
+];
+
+export const VENDORS = DEFAULT_VENDORS;
+

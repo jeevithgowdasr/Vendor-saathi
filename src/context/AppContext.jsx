@@ -120,9 +120,10 @@ export const AppProvider = ({ children }) => {
   const [vendors, setVendors] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.DYNAMIC_VENDORS);
-      return saved ? JSON.parse(saved) : [];
+      const parsed = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : (INITIAL_VENDORS_DATA || []);
     } catch (e) {
-      return [];
+      return INITIAL_VENDORS_DATA || [];
     }
   });
 
@@ -336,11 +337,47 @@ export const AppProvider = ({ children }) => {
       localStorage.setItem(STORAGE_KEYS.DYNAMIC_VENDORS, JSON.stringify(safeVendors));
     });
 
+    // Cross-tab real-time catalog synchronization for instantaneous updates between Vendor & Customer tabs
+    let broadcastChannel = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        broadcastChannel = new BroadcastChannel('vendorsaathi_catalog_channel');
+        broadcastChannel.onmessage = () => {
+          try {
+            const raw = localStorage.getItem('vs_firebase_products_cache');
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setProducts(parsed);
+              }
+            }
+          } catch (e) {}
+        };
+      } catch (e) {}
+    }
+
+    const handleCatalogStorageSync = (e) => {
+      if (e.key === 'vendorsaathi_product_sync' || e.key === 'vs_firebase_products_cache') {
+        try {
+          const raw = localStorage.getItem('vs_firebase_products_cache');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setProducts(parsed);
+            }
+          }
+        } catch (err) {}
+      }
+    };
+    window.addEventListener('storage', handleCatalogStorageSync);
+
     return () => {
       unsubscribeAuth();
       if (typeof unsubscribeOrders === 'function') unsubscribeOrders();
       if (typeof unsubscribeProducts === 'function') unsubscribeProducts();
       if (typeof unsubscribeVendors === 'function') unsubscribeVendors();
+      if (broadcastChannel) broadcastChannel.close();
+      window.removeEventListener('storage', handleCatalogStorageSync);
     };
   }, []);
 

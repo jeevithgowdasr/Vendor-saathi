@@ -21,8 +21,10 @@ import {
   Package,
   Check,
   X,
-  Bell
+  Bell,
+  Satellite
 } from 'lucide-react';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import {
   requestAdditionalItemInFirebase,
   submitOrderRatingToFirebase,
@@ -415,10 +417,10 @@ export const OrderTrackingView = () => {
         <div className="vs-card" style={{ padding: '20px', borderRadius: '24px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0', position: 'relative' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <span style={{ fontSize: '13.5px', fontWeight: '800', color: '#064e3b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Navigation size={16} color="#059669" /> Live GPS Vector Telemetry
+              <Satellite size={16} color="#059669" /> Live GPS Satellite Telemetry
             </span>
             <span className="badge badge-info" style={{ fontSize: '11px' }}>
-              {activeOrder.vendorName} ⇄ Your Delivery Point
+              {activeOrder?.vendorName || 'Local Vendor'} ⇄ Your Delivery Point
             </span>
           </div>
 

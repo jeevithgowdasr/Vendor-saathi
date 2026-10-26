@@ -967,6 +967,7 @@ export const VendorPortalView = () => {
       {activeTab === 'inventory' && (
         <VendorProductsTab
           token={user?.authToken || (typeof window !== 'undefined' ? localStorage.getItem('vs_auth_token') : null)}
+          vendorId={selectedVendorId}
           vendorName={currentVendor.name}
           onToast={showToast}
         />

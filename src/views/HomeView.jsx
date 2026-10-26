@@ -26,6 +26,8 @@ import {
   Smartphone,
   Package
 } from 'lucide-react';
+import { WeatherWidget } from '../components/WeatherWidget';
+import { getFormattedDistanceAndETA } from '../utils/geolocation';
 
 export const HomeView = () => {
   const { 
@@ -59,7 +61,18 @@ export const HomeView = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const activeProducts = products || [];
+  const activeProducts = (products || []).filter(p => {
+    // 1. Strict Category Exclusion for Customer Side (Only Vegetables, Fruits, Greens/Soppu, Flowers)
+    const catLower = (p.category || '').toLowerCase();
+    const disallowed = ['dry fruit', 'daily essential', 'snack', 'bakery', 'grain', 'pulse', 'grocery & oil', 'grocery', 'oil'];
+    if (disallowed.some(d => catLower.includes(d))) return false;
+
+    // 2. Vendor Catalog Active Control: Only show active, approved items
+    if (p.status === 'inactive' || p.status === 'blocked' || p.isApproved === false) {
+      return false;
+    }
+    return p.is_available !== false;
+  });
   const activeVendors = vendors || [];
   const popularProducts = activeProducts.filter(p => p.isPopular);
 
@@ -306,6 +319,11 @@ export const HomeView = () => {
       </section>
 
       <div className="container">
+        {/* Real-Time Local Weather Forecast & Agricultural Climate Advisory */}
+        <div style={{ marginBottom: '28px', marginTop: '10px' }}>
+          <WeatherWidget />
+        </div>
+
         {/* Trust Badges Bar */}
         <div style={{
           display: 'grid',
@@ -374,10 +392,10 @@ export const HomeView = () => {
           {/* Categories Grid */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-            gap: '18px'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '20px'
           }}>
-            {CATEGORIES.slice(0, 5).map(cat => (
+            {CATEGORIES.map(cat => (
               <div
                 key={cat.id}
                 onClick={() => navigateTo('product-listing', { category: cat.id })}
@@ -818,115 +836,118 @@ export const HomeView = () => {
               gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
               gap: '20px'
             }}>
-              {activeVendors.map(v => (
-              <div
-                key={v.id}
-                className="vs-card vs-card-interactive"
-                style={{ borderRadius: '20px', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
-              >
-                <div>
-                  <div style={{ height: '170px', position: 'relative', overflow: 'hidden' }}>
-                    <img
-                      src={v.image}
-                      alt={v.name}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
-                    />
-                    <div style={{
-                      position: 'absolute',
-                      top: '10px',
-                      left: '10px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                      padding: '4px 10px',
-                      borderRadius: '16px',
-                      fontSize: '11.5px',
-                      fontWeight: '800',
-                      color: '#065f46',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '5px'
-                    }}>
-                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }}></span>
-                      <span>Open Now</span>
-                    </div>
+              {activeVendors.map(v => {
+                const distInfo = getFormattedDistanceAndETA(currentLocation, v.coordinates || v);
+                return (
+                  <div
+                    key={v.id}
+                    className="vs-card vs-card-interactive"
+                    style={{ borderRadius: '20px', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+                  >
+                    <div>
+                      <div style={{ height: '170px', position: 'relative', overflow: 'hidden' }}>
+                        <img
+                          src={v.image}
+                          alt={v.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
+                        />
+                        <div style={{
+                          position: 'absolute',
+                          top: '10px',
+                          left: '10px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          padding: '4px 10px',
+                          borderRadius: '16px',
+                          fontSize: '11.5px',
+                          fontWeight: '800',
+                          color: '#065f46',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '5px'
+                        }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }}></span>
+                          <span>Open Now</span>
+                        </div>
 
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '10px',
-                      right: '10px',
-                      backgroundColor: 'rgba(15, 23, 42, 0.85)',
-                      backdropFilter: 'blur(4px)',
-                      color: '#ffffff',
-                      padding: '4px 10px',
-                      borderRadius: '14px',
-                      fontSize: '11px',
-                      fontWeight: '700',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}>
-                      <Clock size={12} color="#34d399" />
-                      <span>{v.deliveryTime}</span>
-                    </div>
-                  </div>
+                        <div style={{
+                          position: 'absolute',
+                          bottom: '10px',
+                          right: '10px',
+                          backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                          backdropFilter: 'blur(4px)',
+                          color: '#ffffff',
+                          padding: '4px 10px',
+                          borderRadius: '14px',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          <Clock size={12} color="#34d399" />
+                          <span>{distInfo.formattedETA}</span>
+                        </div>
+                      </div>
 
-                  <div style={{ padding: '16px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-                      <h3 style={{ fontSize: '16.5px', fontWeight: '800', color: '#0f172a' }}>
-                        {v.name}
-                      </h3>
-                      <div style={{
-                        backgroundColor: '#fffbeb',
-                        color: '#b45309',
-                        padding: '3px 8px',
-                        borderRadius: '8px',
-                        fontSize: '12px',
-                        fontWeight: '800',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '3px'
-                      }}>
-                        <Star size={13} fill="#f59e0b" color="#f59e0b" />
-                        <span>{v.rating}</span>
+                      <div style={{ padding: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                          <h3 style={{ fontSize: '16.5px', fontWeight: '800', color: '#0f172a' }}>
+                            {v.name}
+                          </h3>
+                          <div style={{
+                            backgroundColor: '#fffbeb',
+                            color: '#b45309',
+                            padding: '3px 8px',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            fontWeight: '800',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '3px'
+                          }}>
+                            <Star size={13} fill="#f59e0b" color="#f59e0b" />
+                            <span>{v.rating}</span>
+                          </div>
+                        </div>
+
+                        <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '12px' }}>
+                          📍 <strong>{distInfo.formattedDistance}</strong> away • {v.location}
+                        </p>
+
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                          {v.categories.map((c, i) => (
+                            <span 
+                              key={i} 
+                              style={{ 
+                                backgroundColor: '#ecfdf5', 
+                                color: '#059669', 
+                                fontSize: '11px', 
+                                fontWeight: '700', 
+                                padding: '3px 8px', 
+                                borderRadius: '6px',
+                                textTransform: 'capitalize'
+                              }}
+                            >
+                              {c}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
-                    <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '12px' }}>
-                      📍 {v.distance} away • {v.location}
-                    </p>
-
-                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                      {v.categories.map((c, i) => (
-                        <span 
-                          key={i} 
-                          style={{ 
-                            backgroundColor: '#ecfdf5', 
-                            color: '#059669', 
-                            fontSize: '11px', 
-                            fontWeight: '700', 
-                            padding: '3px 8px', 
-                            borderRadius: '6px',
-                            textTransform: 'capitalize'
-                          }}
-                        >
-                          {c}
-                        </span>
-                      ))}
+                    <div style={{ padding: '0 16px 16px 16px' }}>
+                      <button
+                        onClick={() => navigateTo('product-listing', { vendor: v })}
+                        className="btn-primary"
+                        style={{ width: '100%', padding: '10px', fontSize: '13px', borderRadius: '12px' }}
+                      >
+                        <Store size={15} />
+                        <span>Browse Store Catalog</span>
+                      </button>
                     </div>
                   </div>
-                </div>
-
-                <div style={{ padding: '0 16px 16px 16px' }}>
-                  <button
-                    onClick={() => navigateTo('product-listing', { vendor: v })}
-                    className="btn-primary"
-                    style={{ width: '100%', padding: '10px', fontSize: '13px', borderRadius: '12px' }}
-                  >
-                    <Store size={15} />
-                    <span>Browse Store Catalog</span>
-                  </button>
-                </div>
-              </div>
-            ))}
+                );
+              })}
           </div>
         )}
         </section>

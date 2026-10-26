@@ -26,7 +26,8 @@ import {
   User,
   Plus,
   X,
-  Compass
+  Compass,
+  Satellite
 } from 'lucide-react';
 import { FormField } from '../components/FormField';
 import { 
@@ -266,12 +267,15 @@ export const LoginView = ({ params = {} }) => {
       }
     } catch (err) {
       const msg = err?.message || String(err || '');
-      if (msg.includes('invalid-credential') || msg.includes('user-not-found') || msg.includes('wrong-password')) {
+      if (msg.includes('network-request-failed') || msg.includes('network error') || msg.includes('failed to fetch')) {
+        setErrorMessage('Network connection issue. Please check your connection or try again.');
+      } else if (msg.includes('invalid-credential') || msg.includes('user-not-found') || msg.includes('wrong-password')) {
         setErrorMessage('Invalid phone/email or password. Please verify and try again.');
       } else if (msg.includes('too-many-requests')) {
         setErrorMessage('Too many failed attempts. Please try again in a few moments.');
       } else {
-        setErrorMessage(msg.replace(/^Firebase:\s*Error\s*\((.*?)\)\.?$/, '$1') || 'Login failed. Please check your credentials.');
+        const cleaned = msg.replace(/^Firebase:\s*Error\s*\((.*?)\)\.?$/, '$1');
+        setErrorMessage(cleaned.startsWith('auth/') ? 'Login failed. Please verify your phone/email and password.' : cleaned || 'Login failed. Please check your credentials.');
       }
       playPopSound();
     } finally {
@@ -391,10 +395,13 @@ export const LoginView = ({ params = {} }) => {
         setErrorMessage('This email/phone is already registered! Switched to Sign In — please enter your password.');
         setAuthMode('signin');
         setIdentifier(email.trim() || phone.trim());
+      } else if (msg.includes('network-request-failed') || msg.includes('network error') || msg.includes('failed to fetch')) {
+        setErrorMessage('Network connection issue. Please check your internet connection or try again.');
       } else if (msg.includes('invalid-credential') || msg.includes('wrong-password')) {
         setErrorMessage('Invalid credentials. Please verify your details.');
       } else {
-        setErrorMessage(msg.replace(/^Firebase:\s*Error\s*\((.*?)\)\.?$/, '$1') || 'Registration failed. Please try again.');
+        const cleaned = msg.replace(/^Firebase:\s*Error\s*\((.*?)\)\.?$/, '$1');
+        setErrorMessage(cleaned.startsWith('auth/') ? 'Registration could not be completed. Please check your details.' : cleaned || 'Registration failed. Please try again.');
       }
       playPopSound();
     } finally {
@@ -864,7 +871,7 @@ export const LoginView = ({ params = {} }) => {
                 }}>
                   <Satellite size={14} color="#2563eb" />
                   <span>
-                    <strong>Shop GPS Coordinates:</strong> {coordinates.lat.toFixed(4)}° N, {coordinates.lng.toFixed(4)}° E (Mijar / Moodbidri Zone)
+                    <strong>Shop GPS Coordinates:</strong> {(coordinates?.lat ?? 13.0682).toFixed(4)}° N, {(coordinates?.lng ?? 74.9961).toFixed(4)}° E (Mijar / Moodbidri Zone)
                   </span>
                 </div>
 

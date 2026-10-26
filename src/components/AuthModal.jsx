@@ -501,8 +501,12 @@ export const AuthModal = () => {
       const redirectInfo = getAndClearRedirectTarget();
       if (redirectInfo && redirectInfo.view) {
         navigateTo(redirectInfo.view, redirectInfo.params || {});
+      } else if (loggedUser.role === 'admin') {
+        navigateTo('admin-panel');
       } else if (loggedUser.role === 'vendor') {
         navigateTo('vendor-portal');
+      } else {
+        navigateTo('home');
       }
     } catch (err) {
       setErrorMessage(err.message || 'Authentication failed. Please check credentials.');

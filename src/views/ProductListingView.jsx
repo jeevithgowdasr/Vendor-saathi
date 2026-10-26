@@ -7,6 +7,7 @@ import { usePagination } from '../hooks/usePagination';
 import { EmptyStateFallback } from '../components/EmptyStateFallback';
 import { ErrorStateFallback } from '../components/ErrorStateFallback';
 import { AsyncButton } from '../components/AsyncButton';
+import { getFormattedDistanceAndETA } from '../utils/geolocation';
 
 export const ProductListingView = () => {
   const { 
@@ -23,7 +24,8 @@ export const ProductListingView = () => {
     updateCartQuantity,
     wishlist,
     toggleWishlist,
-    setIsVendorChatOpen
+    setIsVendorChatOpen,
+    currentLocation
   } = useApp();
 
   const [sortBy, setSortBy] = useState('popular'); // popular, price-low, price-high, rating
@@ -36,9 +38,38 @@ export const ProductListingView = () => {
 
   // Filter logic using dynamic products state
   let filteredProducts = (products || []).filter(p => {
-    if (selectedCategory && p.category !== selectedCategory) return false;
-    if (selectedVendor && p.vendorId !== selectedVendor.id) return false;
-    if (inStockOnly && p.stockStatus === 'out-of-stock') return false;
+    // 1. Strict Category Exclusion for Customer Side (Only Vegetables, Fruits, Greens/Soppu, Flowers)
+    const catLower = (p.category || '').toLowerCase();
+    const disallowed = ['dry fruit', 'daily essential', 'snack', 'bakery', 'grain', 'pulse', 'grocery & oil', 'grocery', 'oil'];
+    if (disallowed.some(d => catLower.includes(d))) return false;
+
+    // 2. Vendor Catalog Active Control: Only show active, approved items
+    if (p.status === 'inactive' || p.status === 'blocked' || p.isApproved === false) {
+      return false;
+    }
+
+    if (inStockOnly && (p.stockStatus === 'out-of-stock' || p.is_available === false)) {
+      return false;
+    }
+
+    // 3. Category Selection Filter
+    if (selectedCategory) {
+      const sel = selectedCategory.toLowerCase();
+      if (sel === 'greens' || sel.includes('green') || sel.includes('soppu')) {
+        if (!catLower.includes('green') && !catLower.includes('soppu') && !catLower.includes('leaf') && !catLower.includes('palak')) return false;
+      } else if (sel === 'vegetables' || sel === 'vegetable') {
+        if ((!catLower.includes('vegetable') && !catLower.includes('veggie')) || (catLower.includes('green') && !catLower.includes('vegetable'))) return false;
+      } else if (sel === 'fruits' || sel === 'fruit') {
+        if (!catLower.includes('fruit')) return false;
+      } else if (sel === 'flowers' || sel === 'flower') {
+        if (!catLower.includes('flower') && !catLower.includes('pooja')) return false;
+      } else if (p.category !== selectedCategory) {
+        return false;
+      }
+    }
+
+    if (selectedVendor && (p.vendorId !== selectedVendor.id && p.vendor_id !== selectedVendor.id)) return false;
+
     if (debouncedSearch) {
       const q = debouncedSearch.toLowerCase().trim();
       return p.name.toLowerCase().includes(q) || 
@@ -114,9 +145,14 @@ export const ProductListingView = () => {
                 <h2 style={{ fontSize: '22px', fontWeight: '900', color: '#064e3b', margin: 0 }}>{selectedVendor.name}</h2>
                 <span className="badge badge-success">🟢 Open & Delivering</span>
               </div>
-              <p style={{ fontSize: '13.5px', color: '#475569', marginTop: '4px', margin: '4px 0 0 0' }}>
-                📍 <strong>{selectedVendor.distance}</strong> away • {selectedVendor.address}
-              </p>
+              {(() => {
+                const distInfo = selectedVendor ? getFormattedDistanceAndETA(currentLocation, selectedVendor.coordinates || selectedVendor) : null;
+                return (
+                  <p style={{ fontSize: '13.5px', color: '#475569', marginTop: '4px', margin: '4px 0 0 0' }}>
+                    📍 <strong>{distInfo ? distInfo.formattedDistance : selectedVendor.distance}</strong> away • ⚡ {distInfo?.formattedETA || selectedVendor.deliveryTime || '20 mins delivery'} • {selectedVendor.address}
+                  </p>
+                );
+              })()}
             </div>
             
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>

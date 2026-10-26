@@ -34,6 +34,20 @@ function saveStoredFallbackProducts(list) {
   }
 }
 
+export const broadcastProductChange = (action, productOrId) => {
+  try {
+    const payload = { action, data: productOrId, timestamp: Date.now() };
+    localStorage.setItem('vendorsaathi_product_sync', JSON.stringify(payload));
+    if (typeof BroadcastChannel !== 'undefined') {
+      const channel = new BroadcastChannel('vendorsaathi_catalog_channel');
+      channel.postMessage(payload);
+      channel.close();
+    }
+  } catch (e) {
+    console.warn('Product sync broadcast notice:', e);
+  }
+};
+
 /**
  * Fetch all products for vendor from Firebase Firestore
  * Falls back to local cache if offline or during Firebase initialization
@@ -120,6 +134,7 @@ export const createVendorProductApi = async (tokenOrVendorId, productData) => {
       const items = getStoredFallbackProducts();
       const updated = [fbResult.product, ...items.filter(p => (p._id || p.id) !== newId)];
       saveStoredFallbackProducts(updated);
+      broadcastProductChange('CREATE', fbResult.product);
       return { success: true, message: 'Product stored in Firebase successfully.', product: fbResult.product };
     }
   } catch (err) {
@@ -130,6 +145,7 @@ export const createVendorProductApi = async (tokenOrVendorId, productData) => {
   const items = getStoredFallbackProducts();
   const updated = [productPayload, ...items];
   saveStoredFallbackProducts(updated);
+  broadcastProductChange('CREATE', productPayload);
   return { success: true, message: 'Product saved.', product: productPayload };
 };
 
@@ -148,6 +164,7 @@ export const updateVendorProductApi = async (tokenOrVendorId, id, updates) => {
         return p;
       });
       saveStoredFallbackProducts(updatedList);
+      broadcastProductChange('UPDATE', fbResult.product || { id, ...updates });
       return { success: true, message: 'Product updated in Firebase.', product: fbResult.product };
     }
   } catch (err) {
@@ -165,6 +182,7 @@ export const updateVendorProductApi = async (tokenOrVendorId, id, updates) => {
     return p;
   });
   saveStoredFallbackProducts(updatedList);
+  broadcastProductChange('UPDATE', updatedItem || { id, ...updates });
   return { success: true, message: 'Product updated.', product: updatedItem };
 };
 
@@ -190,6 +208,7 @@ export const toggleProductAvailabilityApi = async (tokenOrVendorId, id, is_avail
         return p;
       });
       saveStoredFallbackProducts(updatedList);
+      broadcastProductChange('TOGGLE_AVAILABILITY', updatedItem);
       return {
         success: true,
         is_available,
@@ -218,6 +237,7 @@ export const toggleProductAvailabilityApi = async (tokenOrVendorId, id, is_avail
     return p;
   });
   saveStoredFallbackProducts(updatedList);
+  broadcastProductChange('TOGGLE_AVAILABILITY', updatedItem);
   return {
     success: true,
     is_available: updatedItem?.is_available,
@@ -236,6 +256,7 @@ export const deleteVendorProductApi = async (tokenOrVendorId, id) => {
       const items = getStoredFallbackProducts();
       const updated = items.filter(p => (p._id || p.id) !== id);
       saveStoredFallbackProducts(updated);
+      broadcastProductChange('DELETE', { id });
       return { success: true, message: 'Product removed from Firebase.', id };
     }
   } catch (err) {
@@ -245,5 +266,6 @@ export const deleteVendorProductApi = async (tokenOrVendorId, id) => {
   const items = getStoredFallbackProducts();
   const updated = items.filter(p => (p._id || p.id) !== id);
   saveStoredFallbackProducts(updated);
+  broadcastProductChange('DELETE', { id });
   return { success: true, message: 'Product removed.', id };
 };

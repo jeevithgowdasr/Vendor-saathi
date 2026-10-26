@@ -30,7 +30,7 @@ import {
 } from '../hooks/useVendorProducts';
 import { FormField } from './FormField';
 
-export const VendorProductsTab = ({ token, onToast, vendorName = 'My Store' }) => {
+export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My Store' }) => {
   const {
     products,
     filteredProducts,
@@ -62,7 +62,7 @@ export const VendorProductsTab = ({ token, onToast, vendorName = 'My Store' }) =
     handleUpdate,
     handleToggleAvailability,
     handleDelete
-  } = useVendorProducts({ token, onToast });
+  } = useVendorProducts({ token, vendorId, onToast, vendorName });
 
   return (
     <div className="animate-fade-in" style={{ width: '100%' }}>

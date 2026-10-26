@@ -28,6 +28,8 @@ import {
 } from '../firebase';
 import { playSuccessChime, playPopSound } from '../utils/audio';
 import confetti from 'canvas-confetti';
+import { getFormattedDistanceAndETA } from '../utils/geolocation';
+import { WeatherWidget } from '../components/WeatherWidget';
 
 export const NearbyVendorsView = () => {
   const {
@@ -317,6 +319,11 @@ export const NearbyVendorsView = () => {
           <Navigation size={14} color="#059669" />
           <span>Showing visits scheduled for <strong>{currentLocation.name}</strong></span>
         </div>
+      </div>
+
+      {/* Real-Time Local Weather Forecast Telemetry */}
+      <div style={{ marginBottom: '24px' }}>
+        <WeatherWidget />
       </div>
 
       {/* Main Mode Toggle: Upcoming Scheduled Visits vs Open Stores */}
@@ -619,73 +626,75 @@ export const NearbyVendorsView = () => {
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
           gap: '24px'
         }}>
-          {filteredVendors.map(vendor => (
-            <div
-              key={vendor.id}
-              className="vs-card vs-card-interactive"
-              style={{ borderRadius: '24px', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0' }}
-            >
-              <div>
-                <div style={{ position: 'relative', height: '190px', overflow: 'hidden' }}>
-                  <img
-                    src={vendor.image}
-                    alt={vendor.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
+          {filteredVendors.map(vendor => {
+            const distInfo = getFormattedDistanceAndETA(currentLocation, vendor.coordinates || vendor);
+            return (
+              <div
+                key={vendor.id}
+                className="vs-card vs-card-interactive"
+                style={{ borderRadius: '24px', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0' }}
+              >
+                <div>
+                  <div style={{ position: 'relative', height: '190px', overflow: 'hidden' }}>
+                    <img
+                      src={vendor.image}
+                      alt={vendor.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
 
-                  {/* Live Open Badge */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '12px',
-                    left: '12px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    backdropFilter: 'blur(4px)',
-                    padding: '4px 12px',
-                    borderRadius: '16px',
-                    fontSize: '12px',
-                    fontWeight: '800',
-                    color: vendor.status === 'offline' ? '#b91c1c' : '#065f46',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
+                    {/* Live Open Badge */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '12px',
+                      left: '12px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(4px)',
+                      padding: '4px 12px',
+                      borderRadius: '16px',
+                      fontSize: '12px',
+                      fontWeight: '800',
+                      color: vendor.status === 'offline' ? '#b91c1c' : '#065f46',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}>
+                      <span style={{
+                        width: '7px',
+                        height: '7px',
+                        borderRadius: '50%',
+                        backgroundColor: vendor.status === 'offline' ? '#ef4444' : vendor.status === 'busy' ? '#f59e0b' : '#10b981'
+                      }} />
+                      <span>{vendor.statusLabel || (vendor.isOpen ? 'Open Now' : 'Closed')}</span>
+                    </div>
+
                     <span style={{
-                      width: '7px',
-                      height: '7px',
-                      borderRadius: '50%',
-                      backgroundColor: vendor.status === 'offline' ? '#ef4444' : vendor.status === 'busy' ? '#f59e0b' : '#10b981'
-                    }} />
-                    <span>{vendor.statusLabel || (vendor.isOpen ? 'Open Now' : 'Closed')}</span>
+                      position: 'absolute',
+                      bottom: '12px',
+                      right: '12px',
+                      backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                      padding: '4px 12px',
+                      borderRadius: '16px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      color: '#34d399',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}>
+                      <Clock size={13} color="#34d399" /> {distInfo.formattedETA}
+                    </span>
                   </div>
 
-                  <span style={{
-                    position: 'absolute',
-                    bottom: '12px',
-                    right: '12px',
-                    backgroundColor: 'rgba(15, 23, 42, 0.85)',
-                    padding: '4px 12px',
-                    borderRadius: '16px',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    color: '#34d399',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px'
-                  }}>
-                    <Clock size={13} color="#34d399" /> Delivery in {vendor.deliveryTime}
-                  </span>
-                </div>
-
-                <div style={{ padding: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                    <div>
-                      <h3 style={{ fontSize: '19px', fontWeight: '900', color: '#0f172a', margin: 0 }}>
-                        {vendor.name}
-                      </h3>
-                      <span style={{ fontSize: '13px', color: '#64748b', display: 'block', marginTop: '2px' }}>
-                        📍 {vendor.distance} away • {vendor.location}
-                      </span>
-                    </div>
+                  <div style={{ padding: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '19px', fontWeight: '900', color: '#0f172a', margin: 0 }}>
+                          {vendor.name}
+                        </h3>
+                        <span style={{ fontSize: '13px', color: '#64748b', display: 'block', marginTop: '2px' }}>
+                          📍 <strong>{distInfo.formattedDistance}</strong> away • {vendor.location}
+                        </span>
+                      </div>
 
                     <div style={{
                       backgroundColor: '#fffbeb',
@@ -742,7 +751,8 @@ export const NearbyVendorsView = () => {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
