@@ -78,7 +78,7 @@ test.describe('Responsive Viewports & Mobile Accessibility Suite', () => {
     await customerPage.locator('button:has-text("Cart")').first().click();
 
     // Verify cart drawer close button has >= 40px touch target
-    const closeDrawerBtn = customerPage.locator('button.btn-close-modal').or(customerPage.locator('button.touch-target-44').first());
+    const closeDrawerBtn = customerPage.locator('button[aria-label*="Close" i]').or(customerPage.locator('button.btn-close-modal')).first();
     await expect(closeDrawerBtn).toBeVisible();
 
     const box = await closeDrawerBtn.boundingBox();

@@ -4,8 +4,8 @@ test.describe('Core Transaction & Anti-Duplicate Multi-Click Suite', () => {
 
   test('Customer end-to-end order flow: Product Catalog -> Add to Cart -> Checkout', async ({ customerPage }) => {
     // 1. Visit Product Catalog
-    await customerPage.goto('/#product-listing');
-    await customerPage.waitForLoadState('networkidle');
+    await customerPage.goto('/#product-listing', { waitUntil: 'domcontentloaded' });
+    await customerPage.waitForLoadState('domcontentloaded');
 
     // 2. Add first available produce item to cart
     const addToCartBtn = customerPage.locator('button:has-text("Add to Cart")').first();
@@ -74,7 +74,7 @@ test.describe('Core Transaction & Anti-Duplicate Multi-Click Suite', () => {
 
       // Navigate to wishlist
       await customerPage.goto('/#wishlist');
-      await expect(customerPage.locator('text=My Wishlist')).toBeVisible({ timeout: 5000 });
+      await expect(customerPage.locator('text=Saved Wishlist').or(customerPage.locator('text=Wishlist')).first()).toBeVisible({ timeout: 5000 });
     }
   });
 

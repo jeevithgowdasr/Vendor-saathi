@@ -6,7 +6,7 @@ test.describe('Form Validation & Input Sanitization Suite', () => {
     await customerPage.goto('/#profile');
 
     // Open Edit Profile modal
-    const editBtn = customerPage.locator('button:has-text("Edit Profile & GPS")');
+    const editBtn = customerPage.locator('button:has-text("Edit & Update GPS")').or(customerPage.locator('button:has-text("Edit Profile")')).first();
     await expect(editBtn).toBeVisible({ timeout: 5000 });
     await editBtn.click();
 
@@ -14,7 +14,7 @@ test.describe('Form Validation & Input Sanitization Suite', () => {
     await expect(customerPage.locator('text=Edit Profile & GPS Details')).toBeVisible();
 
     // Clear Full Name and fill with whitespace only
-    const nameInput = customerPage.locator('input[placeholder*="Full Name"]').or(customerPage.locator('input[name="name"]')).or(customerPage.locator('input').first());
+    const nameInput = customerPage.locator('input[name="edit_name"]').or(customerPage.locator('input[name="reg_fullName"]')).first();
     await nameInput.fill('   ');
 
     // Submit form
@@ -26,13 +26,13 @@ test.describe('Form Validation & Input Sanitization Suite', () => {
   });
 
   test('Validates email formatting and rejects invalid domains', async ({ customerPage }) => {
-    await customerPage.goto('/#profile');
+    await customerPage.goto('/#profile', { waitUntil: 'domcontentloaded' });
 
     // Open Edit Profile modal
-    await customerPage.locator('button:has-text("Edit Profile & GPS")').click();
+    await customerPage.locator('button:has-text("Edit & Update GPS")').or(customerPage.locator('button:has-text("Edit Profile")')).first().click();
 
     // Fill invalid email format
-    const emailInput = customerPage.locator('input[type="email"]').or(customerPage.locator('input[placeholder*="email" i]'));
+    const emailInput = customerPage.locator('input[name="edit_email"]').or(customerPage.locator('input[name="reg_email"]')).first();
     if (await emailInput.count() > 0) {
       await emailInput.fill('invalid-email-address');
 

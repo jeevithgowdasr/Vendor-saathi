@@ -16,7 +16,7 @@ export const test = base.extend({
       window.localStorage.setItem('vendorsaathi_token_expires', String(userData.tokenExpiresAt));
     }, TEST_USERS.customer);
 
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('domcontentloaded');
     await providePage(page);
   },
@@ -32,7 +32,7 @@ export const test = base.extend({
       window.localStorage.setItem('vendorsaathi_token_expires', String(userData.tokenExpiresAt));
     }, TEST_USERS.vendor);
 
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('domcontentloaded');
     await providePage(page);
   },
@@ -46,7 +46,7 @@ export const test = base.extend({
       window.sessionStorage.clear();
     });
 
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('domcontentloaded');
     await providePage(page);
   }
