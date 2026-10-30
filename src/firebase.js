@@ -30,7 +30,8 @@ import {
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { DEFAULT_VENDORS } from "./data/vendors";
+import { DEFAULT_VENDORS } from "./data/vendors.js";
+import { createAuthSession } from "./utils/auth.js";
 
 const getEnvVar = (key) => {
   if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
@@ -1488,6 +1489,7 @@ export const findLocalRegisteredUser = (identifier, role = null) => {
   const digits = clean.replace(/\D/g, '');
   const users = getLocalUsersRegistry();
 
+  // 1. First check explicitly saved registered users in localStorage
   let match = users.find(u => {
     const email = (u.email || '').toLowerCase();
     const phone = (u.phone || '').replace(/\D/g, '');
@@ -1507,7 +1509,45 @@ export const findLocalRegisteredUser = (identifier, role = null) => {
     } catch {}
   }
 
-  // Pre-seed or synthesize active profile matching identifier and requested role
+  // 2. Check seed DEFAULT_VENDORS for vendor logins
+  if (!match && (role === 'vendor' || clean.includes('vendor') || clean.includes('produce') || clean.includes('farm') || clean.includes('suresh') || clean.includes('ramesh') || clean.includes('basappa') || clean.includes('kaveri') || clean === '9845123456' || clean === '9876543210' || clean === '9845234567' || clean === '9845398765' || digits === '9845123456' || digits === '9876543210')) {
+    const matchedVendor = DEFAULT_VENDORS.find(v => {
+      const vPhone = (v.phone || '').replace(/\D/g, '');
+      const vName = (v.name || '').toLowerCase();
+      const vOwner = (v.owner || '').toLowerCase();
+      return (
+        (digits && vPhone.endsWith(digits.slice(-10))) ||
+        (digits && digits.endsWith(vPhone.slice(-10))) ||
+        (clean && (vName.includes(clean) || vOwner.includes(clean)))
+      );
+    }) || DEFAULT_VENDORS[0];
+
+    if (matchedVendor) {
+      match = {
+        uid: matchedVendor.uid || matchedVendor.id || 'v1',
+        id: matchedVendor.id || 'v1',
+        role: 'vendor',
+        name: matchedVendor.owner || matchedVendor.name,
+        businessName: matchedVendor.name,
+        email: clean.includes('@') ? clean : `${(matchedVendor.phone || '9845123456').replace(/\D/g, '')}@vendorsaathi.in`,
+        phone: matchedVendor.phone,
+        category: (matchedVendor.categories && matchedVendor.categories[0]) || 'Vegetables',
+        categories: matchedVendor.categories || ['Vegetables', 'Fruits'],
+        operatingAreas: matchedVendor.operatingAreas || ['Mijar', 'Moodbidri Town'],
+        vehicleDetails: matchedVendor.vehicleDetails,
+        status: 'active',
+        statusLabel: '🟢 Open Now',
+        isOpen: true,
+        rating: matchedVendor.rating || 4.8,
+        ratingCount: matchedVendor.reviewCount || 38,
+        location: matchedVendor.location || 'Mijar Village, Moodbidri',
+        address: matchedVendor.address || 'Near Alva’s Engineering College, Mijar',
+        coordinates: matchedVendor.coordinates || { lat: 13.0682, lng: 74.9961 }
+      };
+    }
+  }
+
+  // 3. Pre-seed or synthesize active profile matching identifier and requested role
   if (!match) {
     const isVendorRole = role === 'vendor' || clean.includes('vendor') || clean.includes('farmer') || clean === '9876543210' || clean === '9845123456';
     const isAdminRole = role === 'admin' || clean.includes('admin');
@@ -1516,8 +1556,8 @@ export const findLocalRegisteredUser = (identifier, role = null) => {
       const namePart = clean.includes('@') ? clean.split('@')[0].replace(/[._]/g, ' ') : `Vendor Partner ${digits.slice(-4) || 'Fresh'}`;
       const capitalized = namePart.charAt(0).toUpperCase() + namePart.slice(1);
       match = {
-        uid: `vend_${digits || Math.random().toString(36).substring(2, 9)}`,
-        id: `vend_${digits || Math.random().toString(36).substring(2, 9)}`,
+        uid: 'v1',
+        id: 'v1',
         role: 'vendor',
         name: capitalized,
         businessName: `${capitalized} Produce & Farm Essentials`,
@@ -1706,19 +1746,38 @@ export const firebaseRegisterVendor = async ({
     // Always persist to local user registry so next login succeeds seamlessly
     saveLocalUserRegistry(vendorProfile, password);
 
+    const session = createAuthSession(vendorProfile);
+    const finalUser = {
+      ...vendorProfile,
+      role: 'vendor',
+      authToken: session.authToken,
+      tokenExpiresAt: session.tokenExpiresAt,
+      sessionIssuedAt: session.sessionIssuedAt,
+      isLoggedIn: true
+    };
+
     return {
       success: true,
-      user: vendorProfile,
-      token: `vs_live_${vendorProfile.uid}_${Date.now()}`
+      user: finalUser,
+      token: session.authToken
     };
   } catch (error) {
     if (isNetworkOrConfigError(error)) {
       console.warn("Firebase network error caught in vendor registration; saving local vendor profile.");
       saveLocalUserRegistry(vendorProfile, password);
+      const session = createAuthSession(vendorProfile);
+      const finalUser = {
+        ...vendorProfile,
+        role: 'vendor',
+        authToken: session.authToken,
+        tokenExpiresAt: session.tokenExpiresAt,
+        sessionIssuedAt: session.sessionIssuedAt,
+        isLoggedIn: true
+      };
       return {
         success: true,
-        user: vendorProfile,
-        token: `vs_live_${vendorProfile.uid}_${Date.now()}`
+        user: finalUser,
+        token: session.authToken
       };
     }
     console.error("firebaseRegisterVendor error:", error);
@@ -1747,17 +1806,22 @@ export const firebaseLoginVendor = async ({ identifier, password }) => {
           if (localUser._password && password && localUser._password !== password) {
             throw new Error("Invalid phone/email or password. Please verify and try again.");
           }
+          const session = createAuthSession(localUser);
           const vendorUser = {
             ...localUser,
             role: 'vendor',
             status: 'active',
-            isOpen: true
+            isOpen: true,
+            authToken: session.authToken,
+            tokenExpiresAt: session.tokenExpiresAt,
+            sessionIssuedAt: session.sessionIssuedAt,
+            isLoggedIn: true
           };
           saveLocalUserRegistry(vendorUser, password);
           return {
             success: true,
             user: vendorUser,
-            token: `vs_live_${vendorUser.uid || vendorUser.id}_${Date.now()}`
+            token: session.authToken
           };
         }
       }
@@ -1772,6 +1836,7 @@ export const firebaseLoginVendor = async ({ identifier, password }) => {
 
         if (userSnap.exists()) {
           const data = userSnap.data();
+          const session = createAuthSession({ ...data, role: 'vendor', uid: authUser.uid });
           const upgraded = {
             ...data,
             uid: authUser.uid,
@@ -1780,19 +1845,24 @@ export const firebaseLoginVendor = async ({ identifier, password }) => {
             businessName: data.businessName || data.name || 'Vendor Partner',
             category: data.category || 'Vegetables',
             operatingAreas: Array.isArray(data.operatingAreas) && data.operatingAreas.length > 0 ? data.operatingAreas : ['Mijar', 'Moodbidri Town'],
-            status: 'active'
+            status: 'active',
+            authToken: session.authToken,
+            tokenExpiresAt: session.tokenExpiresAt,
+            sessionIssuedAt: session.sessionIssuedAt,
+            isLoggedIn: true
           };
           saveLocalUserRegistry(upgraded, password);
           return {
             success: true,
             user: upgraded,
-            token: `vs_live_${authUser.uid}_${Date.now()}`
+            token: session.authToken
           };
         }
       } catch (fsErr) {
         console.warn("Firestore profile note in vendor login:", fsErr.message);
       }
 
+      const session = createAuthSession({ role: 'vendor', uid: authUser.uid, email: cleanEmail });
       const newVendorProfile = {
         uid: authUser.uid,
         id: authUser.uid,
@@ -1802,24 +1872,40 @@ export const firebaseLoginVendor = async ({ identifier, password }) => {
         status: 'active',
         businessName: authUser.displayName || 'Vendor Partner',
         category: 'Vegetables',
-        operatingAreas: ['Mijar', 'Moodbidri Town']
+        operatingAreas: ['Mijar', 'Moodbidri Town'],
+        authToken: session.authToken,
+        tokenExpiresAt: session.tokenExpiresAt,
+        sessionIssuedAt: session.sessionIssuedAt,
+        isLoggedIn: true
       };
       saveLocalUserRegistry(newVendorProfile, password);
 
       return {
         success: true,
         user: newVendorProfile,
-        token: `vs_live_${authUser.uid}_${Date.now()}`
+        token: session.authToken
       };
     }
 
     // Fallback if no authUser
     const localUser = findLocalRegisteredUser(identifier, 'vendor');
     if (localUser) {
+      const session = createAuthSession(localUser);
+      const vendorUser = {
+        ...localUser,
+        role: 'vendor',
+        status: 'active',
+        isOpen: true,
+        authToken: session.authToken,
+        tokenExpiresAt: session.tokenExpiresAt,
+        sessionIssuedAt: session.sessionIssuedAt,
+        isLoggedIn: true
+      };
+      saveLocalUserRegistry(vendorUser, password);
       return {
         success: true,
-        user: { ...localUser, role: 'vendor' },
-        token: `vs_live_${localUser.uid || localUser.id}_${Date.now()}`
+        user: vendorUser,
+        token: session.authToken
       };
     }
 
@@ -1832,10 +1918,22 @@ export const firebaseLoginVendor = async ({ identifier, password }) => {
         if (localUser._password && password && localUser._password !== password) {
           throw new Error("Invalid phone/email or password. Please verify and try again.");
         }
+        const session = createAuthSession(localUser);
+        const vendorUser = {
+          ...localUser,
+          role: 'vendor',
+          status: 'active',
+          isOpen: true,
+          authToken: session.authToken,
+          tokenExpiresAt: session.tokenExpiresAt,
+          sessionIssuedAt: session.sessionIssuedAt,
+          isLoggedIn: true
+        };
+        saveLocalUserRegistry(vendorUser, password);
         return {
           success: true,
-          user: { ...localUser, role: 'vendor' },
-          token: `vs_live_${localUser.uid || localUser.id}_${Date.now()}`
+          user: vendorUser,
+          token: session.authToken
         };
       }
     }
@@ -1936,19 +2034,38 @@ export const firebaseRegisterCustomer = async ({
 
     saveLocalUserRegistry(customerProfile, password);
 
+    const session = createAuthSession(customerProfile);
+    const finalCust = {
+      ...customerProfile,
+      role: 'customer',
+      authToken: session.authToken,
+      tokenExpiresAt: session.tokenExpiresAt,
+      sessionIssuedAt: session.sessionIssuedAt,
+      isLoggedIn: true
+    };
+
     return {
       success: true,
-      user: customerProfile,
-      token: `vs_live_${customerProfile.uid}_${Date.now()}`
+      user: finalCust,
+      token: session.authToken
     };
   } catch (error) {
     if (isNetworkOrConfigError(error)) {
       console.warn("Firebase network error caught in customer registration; saving local profile.");
       saveLocalUserRegistry(customerProfile, password);
+      const session = createAuthSession(customerProfile);
+      const finalCust = {
+        ...customerProfile,
+        role: 'customer',
+        authToken: session.authToken,
+        tokenExpiresAt: session.tokenExpiresAt,
+        sessionIssuedAt: session.sessionIssuedAt,
+        isLoggedIn: true
+      };
       return {
         success: true,
-        user: customerProfile,
-        token: `vs_live_${customerProfile.uid}_${Date.now()}`
+        user: finalCust,
+        token: session.authToken
       };
     }
     console.error("firebaseRegisterCustomer error:", error);
@@ -1977,12 +2094,20 @@ export const firebaseLoginCustomer = async ({ identifier, password }) => {
           if (localUser._password && password && localUser._password !== password) {
             throw new Error("Invalid phone/email or password. Please verify and try again.");
           }
-          const custUser = { ...localUser, role: 'customer' };
+          const session = createAuthSession(localUser);
+          const custUser = {
+            ...localUser,
+            role: 'customer',
+            authToken: session.authToken,
+            tokenExpiresAt: session.tokenExpiresAt,
+            sessionIssuedAt: session.sessionIssuedAt,
+            isLoggedIn: true
+          };
           saveLocalUserRegistry(custUser, password);
           return {
             success: true,
             user: custUser,
-            token: `vs_live_${custUser.uid || custUser.id}_${Date.now()}`
+            token: session.authToken
           };
         }
       }
@@ -1996,39 +2121,63 @@ export const firebaseLoginCustomer = async ({ identifier, password }) => {
 
         if (userSnap.exists()) {
           const data = userSnap.data();
-          saveLocalUserRegistry(data, password);
+          const session = createAuthSession({ ...data, role: 'customer', uid: authUser.uid });
+          const userObj = {
+            ...data,
+            uid: authUser.uid,
+            role: data.role || 'customer',
+            authToken: session.authToken,
+            tokenExpiresAt: session.tokenExpiresAt,
+            sessionIssuedAt: session.sessionIssuedAt,
+            isLoggedIn: true
+          };
+          saveLocalUserRegistry(userObj, password);
           return {
             success: true,
-            user: { ...data, uid: authUser.uid, role: data.role || 'customer' },
-            token: `vs_live_${authUser.uid}_${Date.now()}`
+            user: userObj,
+            token: session.authToken
           };
         }
       } catch (fsErr) {
         console.warn("Firestore fetch customer note:", fsErr.message);
       }
 
+      const session = createAuthSession({ role: 'customer', uid: authUser.uid, email: cleanEmail });
       const newCustomerProfile = {
         uid: authUser.uid,
         id: authUser.uid,
         name: authUser.displayName || 'Customer',
         email: cleanEmail,
         role: 'customer',
-        status: 'active'
+        status: 'active',
+        authToken: session.authToken,
+        tokenExpiresAt: session.tokenExpiresAt,
+        sessionIssuedAt: session.sessionIssuedAt,
+        isLoggedIn: true
       };
       saveLocalUserRegistry(newCustomerProfile, password);
       return {
         success: true,
         user: newCustomerProfile,
-        token: `vs_live_${authUser.uid}_${Date.now()}`
+        token: session.authToken
       };
     }
 
     const localUser = findLocalRegisteredUser(identifier, 'customer');
     if (localUser) {
+      const session = createAuthSession(localUser);
+      const custUser = {
+        ...localUser,
+        role: 'customer',
+        authToken: session.authToken,
+        tokenExpiresAt: session.tokenExpiresAt,
+        sessionIssuedAt: session.sessionIssuedAt,
+        isLoggedIn: true
+      };
       return {
         success: true,
-        user: { ...localUser, role: 'customer' },
-        token: `vs_live_${localUser.uid || localUser.id}_${Date.now()}`
+        user: custUser,
+        token: session.authToken
       };
     }
 
@@ -2041,10 +2190,19 @@ export const firebaseLoginCustomer = async ({ identifier, password }) => {
         if (localUser._password && password && localUser._password !== password) {
           throw new Error("Invalid phone/email or password. Please verify and try again.");
         }
+        const session = createAuthSession(localUser);
+        const custUser = {
+          ...localUser,
+          role: 'customer',
+          authToken: session.authToken,
+          tokenExpiresAt: session.tokenExpiresAt,
+          sessionIssuedAt: session.sessionIssuedAt,
+          isLoggedIn: true
+        };
         return {
           success: true,
-          user: { ...localUser, role: 'customer' },
-          token: `vs_live_${localUser.uid || localUser.id}_${Date.now()}`
+          user: custUser,
+          token: session.authToken
         };
       }
     }

@@ -30,7 +30,7 @@ import { EmptyStateFallback } from '../components/EmptyStateFallback';
 import { CACHE_KEYS } from '../utils/cacheManager';
 
 export const CheckoutView = () => {
-  const { cart, user, placeOrder, navigateTo, showToast } = useApp();
+  const { cart, user, placeOrder, navigateTo, showToast, products, removeFromCart } = useApp();
   const [selectedAddress, setSelectedAddress] = useState(user?.address || 'Mijar Village, Moodbidri, Karnataka - 574225');
   const [deliveryInstructions, setDeliveryInstructions] = useState('Call before arrival. Leave at front door if away.');
   const [deliverySlot, setDeliverySlot] = useState('instant'); // instant | evening | tomorrow
@@ -42,6 +42,16 @@ export const CheckoutView = () => {
   const [cardCvc, setCardCvc] = useState('');
   const [cardName, setCardName] = useState(user?.name || 'Customer');
   const [cardError, setCardError] = useState('');
+
+  // Live stock telemetry validation against current catalog
+  const outOfStockItems = cart.filter(item => {
+    const liveProd = (products || []).find(p => p.id === item.product?.id || p._id === item.product?.id || p.id === item.product?._id);
+    if (liveProd) {
+      return liveProd.is_available === false || liveProd.stockStatus === 'out-of-stock' || (liveProd.availableStock !== undefined && liveProd.availableStock <= 0);
+    }
+    return item.product?.is_available === false || item.product?.stockStatus === 'out-of-stock' || (item.product?.availableStock !== undefined && item.product?.availableStock <= 0);
+  });
+  const hasOutOfStockItems = outOfStockItems.length > 0;
 
   useEffect(() => {
     if (user?.address) {
@@ -58,6 +68,12 @@ export const CheckoutView = () => {
 
   // Async Mutation with double-submission and double-charge prevention
   const { mutateAsync: executeOrderPlacement, isPending: isPlacingOrder } = useAsyncMutation(async (orderPayload) => {
+    if (hasOutOfStockItems) {
+      const names = outOfStockItems.map(i => i.product.name).join(', ');
+      showToast(`⚠️ Out of stock produce: ${names}. Please remove before placing order.`, 'danger');
+      throw new Error(`Out of stock produce: ${names}`);
+    }
+
     if (orderPayload.paymentMethod === 'Card') {
       const cleanCard = cardNumber.replace(/\s+/g, '');
       if (!cleanCard || cleanCard.length < 13 || !/^\d+$/.test(cleanCard)) {
@@ -161,6 +177,12 @@ export const CheckoutView = () => {
       return;
     }
 
+    if (hasOutOfStockItems) {
+      const names = outOfStockItems.map(i => i.product.name).join(', ');
+      showToast(`⚠️ Out of stock produce in cart: ${names}. Please remove before placing order.`, 'danger');
+      return;
+    }
+
     if (paymentMethod === 'UPI') {
       setIsUpiModalOpen(true);
       return;
@@ -171,6 +193,11 @@ export const CheckoutView = () => {
 
   const handleUpiSuccess = (upiResult) => {
     setIsUpiModalOpen(false);
+    if (hasOutOfStockItems) {
+      const names = outOfStockItems.map(i => i.product.name).join(', ');
+      showToast(`⚠️ Cannot complete order with out of stock items: ${names}`, 'danger');
+      return;
+    }
     placeOrder({
       items: cart.map(i => ({
         id: i.product.id,
@@ -225,6 +252,51 @@ export const CheckoutView = () => {
           Select delivery slot, verify village address and choose instant UPI or Stripe payment.
         </p>
       </div>
+
+      {/* Out of Stock Alert Banner */}
+      {hasOutOfStockItems && (
+        <div style={{
+          backgroundColor: '#fef2f2',
+          border: '2px solid #ef4444',
+          borderRadius: '18px',
+          padding: '16px 20px',
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+          boxShadow: '0 4px 14px rgba(239, 68, 68, 0.12)'
+        }}>
+          <AlertCircle size={26} color="#dc2626" style={{ flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <strong style={{ color: '#991b1b', fontSize: '15px', display: 'block' }}>
+              ⚠️ Produce Stock Telemetry Alert
+            </strong>
+            <span style={{ color: '#b91c1c', fontSize: '13px', lineHeight: '1.4', display: 'block', marginTop: '2px' }}>
+              <strong>{outOfStockItems.map(i => i.product.name).join(', ')}</strong> {outOfStockItems.length === 1 ? 'is' : 'are'} currently out of stock at the vendor store. Please remove {outOfStockItems.length === 1 ? 'it' : 'them'} from your cart before confirming your order.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              outOfStockItems.forEach(i => removeFromCart(i.product.id));
+              showToast('Removed out-of-stock items from cart.', 'info');
+            }}
+            style={{
+              padding: '8px 14px',
+              backgroundColor: '#dc2626',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '10px',
+              fontSize: '12px',
+              fontWeight: '800',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            Remove All
+          </button>
+        </div>
+      )}
 
       <form onSubmit={handlePlaceOrderSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '28px', alignItems: 'start' }}>
         {/* Left Column: Delivery & Payment Options */}
@@ -649,12 +721,44 @@ export const CheckoutView = () => {
             </h3>
 
             <div style={{ maxHeight: '220px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '18px' }}>
-              {cart.map(item => (
-                <div key={item.product.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13.5px', color: '#334155' }}>
-                  <span>{item.quantity} x {item.product.shortName || item.product.name}</span>
-                  <strong style={{ color: '#0f172a' }}>₹{item.product.price * item.quantity}</strong>
-                </div>
-              ))}
+              {cart.map(item => {
+                const isOos = outOfStockItems.some(oos => oos.product.id === item.product.id);
+                return (
+                  <div key={item.product.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13.5px', color: isOos ? '#b91c1c' : '#334155', backgroundColor: isOos ? '#fef2f2' : 'transparent', padding: isOos ? '6px 10px' : '0', borderRadius: '10px' }}>
+                    <div>
+                      <span>{item.quantity} x {item.product.shortName || item.product.name}</span>
+                      {isOos && (
+                        <span style={{ display: 'block', fontSize: '11px', color: '#dc2626', fontWeight: '800' }}>
+                          🔴 Out of Stock at Vendor
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <strong style={{ color: isOos ? '#dc2626' : '#0f172a' }}>₹{item.product.price * item.quantity}</strong>
+                      {isOos && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            removeFromCart(item.product.id);
+                            showToast(`Removed ${item.product.name} from cart`, 'info');
+                          }}
+                          style={{
+                            border: 'none',
+                            background: 'transparent',
+                            color: '#ef4444',
+                            fontSize: '11px',
+                            fontWeight: '800',
+                            cursor: 'pointer',
+                            textDecoration: 'underline'
+                          }}
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '9px', fontSize: '13.5px', color: '#475569', borderTop: '1px solid #e2e8f0', paddingTop: '14px', marginBottom: '22px' }}>
@@ -682,6 +786,7 @@ export const CheckoutView = () => {
 
             <AsyncButton
               type="submit"
+              disabled={hasOutOfStockItems || isPlacingOrder}
               isPending={isPlacingOrder}
               loadingText={paymentMethod === 'Card' ? 'Authorizing with Stripe...' : 'Placing Order...'}
               style={{
@@ -690,10 +795,16 @@ export const CheckoutView = () => {
                 borderRadius: '16px',
                 fontSize: '16px',
                 letterSpacing: '0.01em',
-                backgroundColor: paymentMethod === 'Card' ? '#635bff' : '#059669'
+                backgroundColor: hasOutOfStockItems ? '#94a3b8' : (paymentMethod === 'Card' ? '#635bff' : '#059669'),
+                cursor: hasOutOfStockItems ? 'not-allowed' : 'pointer'
               }}
             >
-              {paymentMethod === 'UPI' ? (
+              {hasOutOfStockItems ? (
+                <>
+                  <AlertCircle size={19} />
+                  <span>REMOVE OUT-OF-STOCK ITEMS</span>
+                </>
+              ) : paymentMethod === 'UPI' ? (
                 <>
                   <Zap size={19} />
                   <span>PAY ₹{total} VIA INSTANT UPI</span>

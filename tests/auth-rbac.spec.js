@@ -7,14 +7,14 @@ test.describe('Authentication & Role-Based Access Control (RBAC) Suite', () => {
     await guestPage.goto('/#checkout');
 
     // Should redirect to login or show Authentication Required screen
-    await expect(guestPage.locator('text=Authentication Required').or(guestPage.locator('text=Please sign in'))).toBeVisible({ timeout: 5000 });
+    await expect(guestPage.locator('text=Authentication Required').or(guestPage.locator('text=Please sign in')).first()).toBeVisible({ timeout: 5000 });
   });
 
   test('Guest redirected when attempting to access vendor portal directly', async ({ guestPage }) => {
     await guestPage.goto('/#vendor-portal');
 
     // Should guard against guest access
-    await expect(guestPage.locator('text=Authentication Required').or(guestPage.locator('text=Sign In'))).toBeVisible({ timeout: 5000 });
+    await expect(guestPage.locator('text=Authentication Required').or(guestPage.locator('text=Sign In')).first()).toBeVisible({ timeout: 5000 });
   });
 
   test('Customer (Logged in) gets 403 Unauthorized when accessing Vendor Portal', async ({ customerPage }) => {
@@ -22,7 +22,7 @@ test.describe('Authentication & Role-Based Access Control (RBAC) Suite', () => {
     await customerPage.goto('/#vendor-portal');
 
     // Expect 403 Unauthorized screen for role mismatch
-    await expect(customerPage.locator('text=403 — Unauthorized Role').or(customerPage.locator('text=Access Denied'))).toBeVisible({ timeout: 5000 });
+    await expect(customerPage.locator('text=403 — Unauthorized Role').or(customerPage.locator('text=Access Denied')).first()).toBeVisible({ timeout: 5000 });
     await expect(customerPage.locator('text=VENDOR').first()).toBeVisible();
   });
 
@@ -45,11 +45,13 @@ test.describe('Authentication & Role-Based Access Control (RBAC) Suite', () => {
     await signOutBtn.click();
 
     // Verify localStorage auth tokens are destroyed
-    const authToken = await customerPage.evaluate(() => window.localStorage.getItem('vendorsaathi_auth_token'));
-    const currentUser = await customerPage.evaluate(() => window.localStorage.getItem('vendorsaathi_current_user'));
+    await expect.poll(async () => {
+      return await customerPage.evaluate(() => window.localStorage.getItem('vendorsaathi_auth_token'));
+    }, { timeout: 5000 }).toBeNull();
 
-    expect(authToken).toBeNull();
-    expect(currentUser).toBeNull();
+    await expect.poll(async () => {
+      return await customerPage.evaluate(() => window.localStorage.getItem('vendorsaathi_current_user'));
+    }, { timeout: 5000 }).toBeNull();
   });
 
 });

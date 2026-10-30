@@ -14,7 +14,8 @@ import {
   signOut,
   subscribeToAllProducts,
   subscribeToVendors,
-  updateProductInFirebase
+  updateProductInFirebase,
+  deleteProductFromFirebase
 } from '../firebase';
 import { 
   playSuccessChime, 
@@ -111,9 +112,14 @@ export const AppProvider = ({ children }) => {
   const [products, setProducts] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.DYNAMIC_PRODUCTS);
-      return saved ? JSON.parse(saved) : [];
+      const parsed = saved ? JSON.parse(saved) : [];
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      const cached = localStorage.getItem('vs_firebase_products_cache');
+      const parsedCached = cached ? JSON.parse(cached) : [];
+      if (Array.isArray(parsedCached) && parsedCached.length > 0) return parsedCached;
+      return INITIAL_PRODUCTS_DATA || [];
     } catch (e) {
-      return [];
+      return INITIAL_PRODUCTS_DATA || [];
     }
   });
 
@@ -150,7 +156,23 @@ export const AppProvider = ({ children }) => {
     return DEFAULT_USER;
   });
 
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    try {
+      const saved = localStorage.getItem('vendorsaathi_cart');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {}
+    return [];
+  });
+
+  // Persist cart updates to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('vendorsaathi_cart', JSON.stringify(cart));
+    } catch (e) {}
+  }, [cart]);
   const [wishlist, setWishlist] = useState([]);
   
   const [orders, setOrders] = useState(() => {
@@ -207,13 +229,13 @@ export const AppProvider = ({ children }) => {
   // SECURE LOGOUT: Completely clears tokens, cookies, localStorage, sessionStorage, and resets state
   const secureLogout = useCallback(async () => {
     try {
-      // 1. Terminate Firebase session if connected
-      if (auth) {
-        await signOut(auth).catch(err => console.warn('Firebase signOut note:', err));
-      }
-
-      // 2. Wipe all storage
+      // 1. Synchronously wipe all auth storage immediately
       clearAllAuthStorage();
+
+      // 2. Terminate Firebase session if connected (non-blocking)
+      if (auth) {
+        signOut(auth).catch(err => console.warn('Firebase signOut note:', err));
+      }
 
       // 3. Reset in-memory global state
       setUser(DEFAULT_USER);
@@ -235,6 +257,7 @@ export const AppProvider = ({ children }) => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       console.error('Logout error:', err);
+      clearAllAuthStorage();
       setUser(DEFAULT_USER);
       setCurrentView('home');
     }
@@ -339,17 +362,67 @@ export const AppProvider = ({ children }) => {
 
     // Cross-tab real-time catalog synchronization for instantaneous updates between Vendor & Customer tabs
     let broadcastChannel = null;
+    let ordersBroadcastChannel = null;
+
     if (typeof BroadcastChannel !== 'undefined') {
       try {
         broadcastChannel = new BroadcastChannel('vendorsaathi_catalog_channel');
         broadcastChannel.onmessage = () => {
           try {
-            const raw = localStorage.getItem('vs_firebase_products_cache');
+            const raw = localStorage.getItem('vs_firebase_products_cache') || localStorage.getItem(STORAGE_KEYS.DYNAMIC_PRODUCTS);
             if (raw) {
               const parsed = JSON.parse(raw);
-              if (Array.isArray(parsed) && parsed.length > 0) {
+              if (Array.isArray(parsed)) {
                 setProducts(parsed);
               }
+            }
+          } catch (e) {}
+        };
+      } catch (e) {}
+
+      try {
+        ordersBroadcastChannel = new BroadcastChannel('vendorsaathi_orders_channel');
+        ordersBroadcastChannel.onmessage = (evt) => {
+          try {
+            const data = evt.data;
+            if (data?.type === 'NEW_ORDER' && data.order) {
+              setOrders(prev => {
+                if (prev.some(o => o.id === data.order.id)) return prev;
+                return [data.order, ...prev];
+              });
+              playOrderNotificationSound();
+              showToast(`🔔 [Vendor Hub] New order #${data.order.id} received! (₹${data.order.total})`, 'info');
+              setNotifications(prev => [
+                {
+                  id: `n_sync_ord_${Date.now()}`,
+                  title: `📦 New Order #${data.order.id}`,
+                  body: `${data.order.items?.length || 1} items totaling ₹${data.order.total}`,
+                  time: 'Just now',
+                  read: false
+                },
+                ...prev
+              ]);
+            } else if (data?.type === 'STATUS_UPDATE' && data.orderId && data.status) {
+              setOrders(prev => prev.map(order => {
+                if (order.id !== data.orderId) return order;
+                const statuses = ['Placed', 'Accepted', 'Preparing', 'Out for Delivery', 'Delivered'];
+                const currentIdx = statuses.indexOf(data.status);
+                const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const updatedTimeline = (order.timeline || []).map((step, idx) => {
+                  if (idx <= currentIdx) {
+                    return { ...step, completed: true, time: step.time === 'Pending' ? now : step.time };
+                  }
+                  return step;
+                });
+                return {
+                  ...order,
+                  status: data.status,
+                  timeline: updatedTimeline,
+                  ...(data.extraData || {})
+                };
+              }));
+              playStatusUpdateSound();
+              showToast(`🛵 Order #${data.orderId} status: "${data.status}"`, 'info');
             }
           } catch (e) {}
         };
@@ -357,12 +430,12 @@ export const AppProvider = ({ children }) => {
     }
 
     const handleCatalogStorageSync = (e) => {
-      if (e.key === 'vendorsaathi_product_sync' || e.key === 'vs_firebase_products_cache') {
+      if (!e || e.key === 'vendorsaathi_product_sync' || e.key === 'vs_firebase_products_cache' || e.key === STORAGE_KEYS.DYNAMIC_PRODUCTS) {
         try {
-          const raw = localStorage.getItem('vs_firebase_products_cache');
+          const raw = localStorage.getItem('vs_firebase_products_cache') || localStorage.getItem(STORAGE_KEYS.DYNAMIC_PRODUCTS);
           if (raw) {
             const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed) && parsed.length > 0) {
+            if (Array.isArray(parsed)) {
               setProducts(parsed);
             }
           }
@@ -371,15 +444,79 @@ export const AppProvider = ({ children }) => {
     };
     window.addEventListener('storage', handleCatalogStorageSync);
 
+    const handleOrdersStorageSync = (e) => {
+      if (!e) return;
+      if (e.key === STORAGE_KEYS.SYNC_ORDERS && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) {
+            setOrders(parsed);
+          }
+        } catch (err) {}
+      } else if (e.key === STORAGE_KEYS.NEW_ORDER_SYNC && e.newValue) {
+        try {
+          const payload = JSON.parse(e.newValue);
+          if (payload?.order) {
+            setOrders(prev => {
+              if (prev.some(o => o.id === payload.order.id)) return prev;
+              return [payload.order, ...prev];
+            });
+            playOrderNotificationSound();
+            showToast(`🔔 [Vendor Hub] New order #${payload.order.id} received!`, 'info');
+          }
+        } catch (err) {}
+      } else if (e.key === 'vendorsaathi_status_update' && e.newValue) {
+        try {
+          const update = JSON.parse(e.newValue);
+          if (update?.orderId && update?.status) {
+            setOrders(prev => prev.map(o => o.id === update.orderId ? { ...o, status: update.status, ...(update.extraData || {}) } : o));
+            playStatusUpdateSound();
+            showToast(`🛵 Order #${update.orderId} status: "${update.status}"`, 'info');
+          }
+        } catch (err) {}
+      }
+    };
+    window.addEventListener('storage', handleOrdersStorageSync);
+
+    // In-window custom event listener for immediate catalog updates in same window
+    const handleCatalogCustomUpdate = () => {
+      try {
+        const raw = localStorage.getItem('vs_firebase_products_cache') || localStorage.getItem(STORAGE_KEYS.DYNAMIC_PRODUCTS);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            setProducts(parsed);
+          }
+        }
+      } catch (err) {}
+    };
+    window.addEventListener('vendorsaathi_catalog_updated', handleCatalogCustomUpdate);
+
+    // In-window custom event listener for immediate new order in same window
+    const handleInWindowNewOrder = (customEvt) => {
+      const newOrder = customEvt?.detail;
+      if (newOrder && newOrder.id) {
+        setOrders(prev => {
+          if (prev.some(o => o.id === newOrder.id)) return prev;
+          return [newOrder, ...prev];
+        });
+      }
+    };
+    window.addEventListener('vendorsaathi_new_order', handleInWindowNewOrder);
+
     return () => {
       unsubscribeAuth();
       if (typeof unsubscribeOrders === 'function') unsubscribeOrders();
       if (typeof unsubscribeProducts === 'function') unsubscribeProducts();
       if (typeof unsubscribeVendors === 'function') unsubscribeVendors();
       if (broadcastChannel) broadcastChannel.close();
+      if (ordersBroadcastChannel) ordersBroadcastChannel.close();
       window.removeEventListener('storage', handleCatalogStorageSync);
+      window.removeEventListener('storage', handleOrdersStorageSync);
+      window.removeEventListener('vendorsaathi_catalog_updated', handleCatalogCustomUpdate);
+      window.removeEventListener('vendorsaathi_new_order', handleInWindowNewOrder);
     };
-  }, []);
+  }, [showToast]);
 
   // Sync user state to localStorage and registry by email
   const updateUserProfile = (newUserData) => {
@@ -461,20 +598,13 @@ export const AppProvider = ({ children }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [vendors]);
 
-  // Handle browser back/forward buttons with safe decoding
+  // Handle browser back/forward buttons and hash navigation with safe decoding
   useEffect(() => {
-    const handlePopState = (e) => {
+    const handleNavigationEvent = (e) => {
       const parsed = parseHashRoute(window.location.hash);
-      const targetView = e.state?.view || parsed.view || 'home';
-      const targetParams = e.state?.params || parsed.params || {};
+      const targetView = e?.state?.view || parsed.view || 'home';
+      const targetParams = e?.state?.params || parsed.params || {};
       
-      // If user is not logged in, prevent back button from accessing protected view
-      if (!user?.isLoggedIn && ['checkout', 'payment', 'order-confirmation', 'order-tracking', 'my-orders', 'profile', 'vendor-portal'].includes(targetView)) {
-        setCurrentView('home');
-        window.history.replaceState({ view: 'home' }, '', '#home');
-        return;
-      }
-
       if (targetParams.category !== undefined) setSelectedCategory(targetParams.category);
       if (targetParams.search !== undefined) setSearchQuery(targetParams.search);
 
@@ -482,22 +612,79 @@ export const AppProvider = ({ children }) => {
       setCurrentViewParams(targetParams);
     };
 
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('popstate', handleNavigationEvent);
+    window.addEventListener('hashchange', handleNavigationEvent);
+    return () => {
+      window.removeEventListener('popstate', handleNavigationEvent);
+      window.removeEventListener('hashchange', handleNavigationEvent);
+    };
   }, [user]);
 
-  // Vendor updates product stock / price in real-time
+  // Vendor updates product stock / price / new products in real-time
   const updateVendorProduct = (productId, updates) => {
     setProducts(prev => {
-      const updated = prev.map(p => p.id === productId ? { ...p, ...updates } : p);
+      const exists = prev.some(p => p.id === productId || p._id === productId);
+      let updated;
+      if (exists) {
+        updated = prev.map(p => (p.id === productId || p._id === productId) ? { ...p, ...updates } : p);
+      } else {
+        const newItem = { id: productId, _id: productId, ...updates };
+        updated = [newItem, ...prev];
+      }
       localStorage.setItem(STORAGE_KEYS.DYNAMIC_PRODUCTS, JSON.stringify(updated));
+      localStorage.setItem('vs_firebase_products_cache', JSON.stringify(updated));
       cacheManager.invalidate(CACHE_KEYS.PRODUCTS, updated);
       return updated;
     });
-    localStorage.setItem(STORAGE_KEYS.PRODUCT_SYNC, JSON.stringify({ productId, updates, timestamp: Date.now() }));
+
+    const syncPayload = { productId, updates, timestamp: Date.now() };
+    localStorage.setItem(STORAGE_KEYS.PRODUCT_SYNC, JSON.stringify(syncPayload));
+    
+    // Dispatch in-window event and storage event so customer views update immediately
+    window.dispatchEvent(new CustomEvent('vendorsaathi_catalog_updated', { detail: syncPayload }));
     window.dispatchEvent(new Event('storage'));
+
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        const ch = new BroadcastChannel('vendorsaathi_catalog_channel');
+        ch.postMessage({ action: 'UPDATE', data: { id: productId, ...updates } });
+        ch.close();
+      } catch (e) {}
+    }
+
     updateProductInFirebase(productId, updates).catch(() => {});
     showToast('📦 Product catalog updated in real-time!', 'info');
+  };
+
+  // Vendor soft-deletes/removes product from catalog in real-time
+  const deleteVendorProduct = (productId) => {
+    setProducts(prev => {
+      const updated = prev.filter(p => p.id !== productId && p._id !== productId);
+      localStorage.setItem(STORAGE_KEYS.DYNAMIC_PRODUCTS, JSON.stringify(updated));
+      localStorage.setItem('vs_firebase_products_cache', JSON.stringify(updated));
+      cacheManager.invalidate(CACHE_KEYS.PRODUCTS, updated);
+      return updated;
+    });
+
+    // Also remove from cart if present
+    setCart(prev => prev.filter(item => item.product?.id !== productId && item.product?._id !== productId));
+
+    const syncPayload = { action: 'DELETE', data: { id: productId }, timestamp: Date.now() };
+    localStorage.setItem(STORAGE_KEYS.PRODUCT_SYNC, JSON.stringify(syncPayload));
+
+    window.dispatchEvent(new CustomEvent('vendorsaathi_catalog_updated', { detail: syncPayload }));
+    window.dispatchEvent(new Event('storage'));
+
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        const ch = new BroadcastChannel('vendorsaathi_catalog_channel');
+        ch.postMessage(syncPayload);
+        ch.close();
+      } catch (e) {}
+    }
+
+    deleteProductFromFirebase(productId).catch(() => {});
+    showToast('🗑️ Product removed from store catalog.', 'info');
   };
 
   // Vendor updates store status (online/busy/offline)
@@ -597,11 +784,18 @@ export const AppProvider = ({ children }) => {
 
     const newOrder = {
       id: newOrderId,
+      orderId: newOrderId,
+      customerId: user?.uid || user?.id || 'cust_guest',
+      customerName: user?.name || orderData.customerName || 'Customer',
+      customerPhone: orderData.deliveryContact || user?.phone || '+91 9876543210',
       date: dateString,
+      timestamp: Date.now(),
+      createdAt: now.toISOString(),
       vendorId: orderData.vendorId || cart[0]?.product.vendorId || 'v1',
       vendorName: orderData.vendorName || cart[0]?.product.vendorName || 'Local Partner Store',
       vendorPhone: orderData.vendorPhone || '+91 98451 23456',
       vendorDistance: '1.8 km',
+      deliveryType: orderData.deliveryType || 'delivery',
       items: orderData.items || cart.map(i => ({
         id: i.product.id,
         name: i.product.name,
@@ -613,6 +807,7 @@ export const AppProvider = ({ children }) => {
       subtotal: calculatedSubtotal,
       deliveryFee: calculatedDeliveryFee,
       discount: calculatedDiscount,
+      totalAmount: calculatedTotal,
       total: calculatedTotal,
       paymentMethod: orderData.paymentMethod || 'UPI (Instant QR)',
       paymentStatus: orderData.paymentStatus || (orderData.upiRefId ? `Paid via UPI (UTR #${orderData.upiRefId})` : 'Pending Doorstep Payment'),
@@ -647,12 +842,19 @@ export const AppProvider = ({ children }) => {
     // Sync to Firebase Firestore in background
     saveOrderToFirebase(newOrder);
 
-    // Broadcast for cross-window vendor companion app sync
-    localStorage.setItem(STORAGE_KEYS.NEW_ORDER_SYNC, JSON.stringify({
-      order: newOrder,
-      timestamp: Date.now()
-    }));
+    // Multi-tenant broadcast for live vendor order feed
+    const syncPayload = { order: newOrder, timestamp: Date.now() };
+    localStorage.setItem(STORAGE_KEYS.NEW_ORDER_SYNC, JSON.stringify(syncPayload));
+    window.dispatchEvent(new CustomEvent('vendorsaathi_new_order', { detail: newOrder }));
     window.dispatchEvent(new Event('storage'));
+
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        const orderChan = new BroadcastChannel('vendorsaathi_orders_channel');
+        orderChan.postMessage({ type: 'NEW_ORDER', order: newOrder, timestamp: Date.now() });
+        orderChan.close();
+      } catch (e) {}
+    }
 
     playOrderNotificationSound();
     showToast(`Order #${newOrderId} placed & transmitted to Vendor! 🎉`);
@@ -687,6 +889,20 @@ export const AppProvider = ({ children }) => {
       cacheManager.invalidate(CACHE_KEYS.ORDERS, updated);
       return updated;
     });
+
+    // Multi-tenant broadcast for live customer tracking feed
+    const updatePayload = { orderId, status: newStatus, extraData, timestamp: Date.now() };
+    localStorage.setItem('vendorsaathi_status_update', JSON.stringify(updatePayload));
+    window.dispatchEvent(new CustomEvent('vendorsaathi_status_updated', { detail: updatePayload }));
+    window.dispatchEvent(new Event('storage'));
+
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        const orderChan = new BroadcastChannel('vendorsaathi_orders_channel');
+        orderChan.postMessage({ type: 'STATUS_UPDATE', orderId, status: newStatus, extraData, timestamp: Date.now() });
+        orderChan.close();
+      } catch (e) {}
+    }
 
     // Sync status change to Firebase Firestore
     updateOrderStatusInFirebase(orderId, newStatus, extraData);
@@ -726,6 +942,7 @@ export const AppProvider = ({ children }) => {
         setSearchQuery,
         products,
         updateVendorProduct,
+        deleteVendorProduct,
         vendors,
         updateVendorStore,
         currentLocation,

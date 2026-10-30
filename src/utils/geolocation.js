@@ -22,58 +22,90 @@ const KNOWN_LOCAL_AREAS = [
 ];
 
 /**
- * Acquire exact GPS coordinates from browser Geolocation API
- * @returns {Promise<{lat: number, lng: number, accuracy: number, timestamp: string}>}
+ * Acquire exact GPS coordinates from browser Geolocation API with two-tier precision lock
+ * Attempts hardware GPS first (enableHighAccuracy: true). If weak signal or timeout occurs,
+ * gracefully falls back to network/cell triangulation, and finally calibrated local coordinates.
+ * @returns {Promise<{lat: number, lng: number, accuracy: number, altitude: number|null, timestamp: string, source: string}>}
  */
-export const getLiveGPSCoordinates = () => {
+export const getLiveGPSCoordinates = (options = {}) => {
   return new Promise((resolve) => {
     const fallbackCoords = {
       lat: 13.0682,
       lng: 74.9961,
-      accuracy: 25,
+      accuracy: 20,
       altitude: null,
       timestamp: new Date().toISOString(),
-      isCalibrated: true
+      isCalibrated: true,
+      source: 'CALIBRATED_FALLBACK'
     };
 
-    if (!navigator.geolocation) {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
       resolve(fallbackCoords);
       return;
     }
 
-    let resolved = false;
-    const fallbackTimer = setTimeout(() => {
-      if (!resolved) {
-        resolved = true;
-        resolve(fallbackCoords);
-      }
-    }, 4500);
+    let isDone = false;
 
+    const finish = (result) => {
+      if (!isDone) {
+        isDone = true;
+        resolve(result);
+      }
+    };
+
+    // Overall guard timeout (15 seconds) to prevent infinite pending state
+    const guardTimer = setTimeout(() => {
+      finish(fallbackCoords);
+    }, 15000);
+
+    // Phase 1: High Accuracy Hardware GPS Lock
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        if (!resolved) {
-          resolved = true;
-          clearTimeout(fallbackTimer);
-          resolve({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-            accuracy: Math.round(position.coords.accuracy || 12),
-            altitude: position.coords.altitude || null,
-            timestamp: new Date().toISOString()
-          });
-        }
+        clearTimeout(guardTimer);
+        finish({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: Math.round(position.coords.accuracy || 10),
+          altitude: position.coords.altitude || null,
+          speed: position.coords.speed || null,
+          heading: position.coords.heading || null,
+          timestamp: new Date(position.timestamp || Date.now()).toISOString(),
+          source: 'HARDWARE_GPS_HIGH_ACCURACY'
+        });
       },
-      (error) => {
-        if (!resolved) {
-          resolved = true;
-          clearTimeout(fallbackTimer);
-          resolve(fallbackCoords);
-        }
+      (highAccError) => {
+        console.warn('High-accuracy GPS note, attempting standard positioning:', highAccError.message);
+        // Phase 2: Standard positioning fallback
+        navigator.geolocation.getCurrentPosition(
+          (stdPosition) => {
+            clearTimeout(guardTimer);
+            finish({
+              lat: stdPosition.coords.latitude,
+              lng: stdPosition.coords.longitude,
+              accuracy: Math.round(stdPosition.coords.accuracy || 25),
+              altitude: stdPosition.coords.altitude || null,
+              speed: stdPosition.coords.speed || null,
+              heading: stdPosition.coords.heading || null,
+              timestamp: new Date(stdPosition.timestamp || Date.now()).toISOString(),
+              source: 'NETWORK_TRIANGULATION'
+            });
+          },
+          (stdError) => {
+            console.warn('Standard geolocation unavailable, using calibrated coordinates:', stdError.message);
+            clearTimeout(guardTimer);
+            finish(fallbackCoords);
+          },
+          {
+            enableHighAccuracy: false,
+            timeout: 8000,
+            maximumAge: 30000
+          }
+        );
       },
       {
-        enableHighAccuracy: false,
-        timeout: 4000,
-        maximumAge: 600000
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0 // Fresh GPS fix
       }
     );
   });
@@ -89,13 +121,18 @@ export const getLiveGPSCoordinates = () => {
  */
 export const reverseGeocodeGPS = async (lat, lng, accuracy = 15) => {
   try {
-    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=en`;
     const response = await fetch(url, {
+      signal: controller.signal,
       headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'VendorSaathi-Rural-Grocery/2.0'
+        'Accept': 'application/json'
       }
     });
+
+    clearTimeout(timeoutId);
 
     if (response.ok) {
       const data = await response.json();

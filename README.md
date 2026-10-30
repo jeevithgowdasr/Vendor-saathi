@@ -68,4 +68,3 @@ npm run preview
 - **Dual Payment Integrations**: Stripe 3DS Card Payments + Dynamic UPI QR Codes (GPay / PhonePe / Paytm).
 - **Voice AI Search & Voice Assistant**: Multilingual speech recognition in English, Kannada, and Hindi.
 - **Live GPS & Telemetry Tracking**: Real-time simulated rider dispatch and order milestone tracking.
->>>>>>> e16cb94 (feat: complete VendorSaathi PWA with live ordering, RBAC routing, vendor portal, and service worker fixes)

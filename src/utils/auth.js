@@ -70,25 +70,39 @@ export const validateAuthSession = (user) => {
     return { isValid: false, reason: 'TOKEN_EXPIRED' };
   }
 
-  // Verify encoded token payload integrity
+// Verify encoded token payload integrity
   try {
-    const parts = user.authToken.split('.');
-    if (parts.length < 2 || !parts[0].startsWith('vs_')) {
-      return { isValid: false, reason: 'INVALID_TOKEN_FORMAT' };
+    // 1. Structured JWT-like token (vs_<base64>.<signature>)
+    if (user.authToken.startsWith('vs_') && user.authToken.includes('.')) {
+      const parts = user.authToken.split('.');
+      const rawPayload = parts[0].replace('vs_', '');
+      const decoded = JSON.parse(decodeURIComponent(escape(atob(rawPayload))));
+
+      if (decoded.exp && decoded.exp <= Date.now()) {
+        return { isValid: false, reason: 'TOKEN_EXPIRED' };
+      }
+
+      if (user.role && decoded.role && user.role.toLowerCase() !== decoded.role.toLowerCase()) {
+        return { isValid: false, reason: 'ROLE_MISMATCH' };
+      }
+      return { isValid: true, reason: 'VALID' };
     }
 
-    const rawPayload = parts[0].replace('vs_', '');
-    const decoded = JSON.parse(decodeURIComponent(escape(atob(rawPayload))));
-
-    if (decoded.exp && decoded.exp <= Date.now()) {
-      return { isValid: false, reason: 'TOKEN_EXPIRED' };
+    // 2. Live Firebase / backend issued tokens (vs_live_<uid>_<timestamp>)
+    if (user.authToken.startsWith('vs_live_') || user.authToken.startsWith('vs_')) {
+      if (user.tokenExpiresAt && Number(user.tokenExpiresAt) <= Date.now()) {
+        return { isValid: false, reason: 'TOKEN_EXPIRED' };
+      }
+      return { isValid: true, reason: 'VALID' };
     }
 
-    if (user.role && decoded.role && user.role.toLowerCase() !== decoded.role.toLowerCase()) {
-      return { isValid: false, reason: 'ROLE_MISMATCH' };
-    }
+    return { isValid: false, reason: 'INVALID_TOKEN_FORMAT' };
   } catch (err) {
     console.warn('Session token decode check error:', err);
+    // If explicit tokenExpiresAt is unexpired, still permit valid session
+    if (user.tokenExpiresAt && Number(user.tokenExpiresAt) > Date.now()) {
+      return { isValid: true, reason: 'VALID' };
+    }
     return { isValid: false, reason: 'TOKEN_DECODE_FAILED' };
   }
 

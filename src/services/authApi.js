@@ -14,6 +14,7 @@ import {
   auth,
   signInWithEmailAndPassword
 } from '../firebase';
+import { createAuthSession } from '../utils/auth';
 
 /**
  * Universal Login API backed directly by Firebase Auth & Firestore role verification
@@ -35,6 +36,7 @@ export const loginApi = async ({ identifier, password, role = 'customer' }) => {
         const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
         const profile = await getUserProfileFromFirebase(userCredential.user.uid);
         const userRole = profile?.data?.role || 'admin';
+        const session = createAuthSession({ uid: userCredential.user.uid, role: 'admin', email: cleanEmail });
         return {
           success: true,
           user: {
@@ -43,14 +45,19 @@ export const loginApi = async ({ identifier, password, role = 'customer' }) => {
             name: profile?.data?.name || userCredential.user.displayName || 'Administrator',
             email: cleanEmail,
             role: 'admin',
+            authToken: session.authToken,
+            tokenExpiresAt: session.tokenExpiresAt,
+            sessionIssuedAt: session.sessionIssuedAt,
+            isLoggedIn: true,
             ...(profile?.data || {})
           },
-          token: `vs_live_${userCredential.user.uid}_${Date.now()}`
+          token: session.authToken
         };
       }
     } catch (err) {
       if (isNetworkOrConfigError(err)) {
         console.warn("Firebase Auth network error during admin login; using verified local admin authorization.");
+        const session = createAuthSession({ uid: 'admin_master_001', role: 'admin', email: cleanEmail });
         return {
           success: true,
           user: {
@@ -58,14 +65,19 @@ export const loginApi = async ({ identifier, password, role = 'customer' }) => {
             id: 'admin_master_001',
             name: 'Platform Administrator',
             email: cleanEmail,
-            role: 'admin'
+            role: 'admin',
+            authToken: session.authToken,
+            tokenExpiresAt: session.tokenExpiresAt,
+            sessionIssuedAt: session.sessionIssuedAt,
+            isLoggedIn: true
           },
-          token: `vs_live_admin_${Date.now()}`
+          token: session.authToken
         };
       }
       throw err;
     }
 
+    const session = createAuthSession({ uid: 'admin_master_001', role: 'admin', email: cleanEmail });
     return {
       success: true,
       user: {
@@ -73,9 +85,13 @@ export const loginApi = async ({ identifier, password, role = 'customer' }) => {
         id: 'admin_master_001',
         name: 'Platform Administrator',
         email: cleanEmail,
-        role: 'admin'
+        role: 'admin',
+        authToken: session.authToken,
+        tokenExpiresAt: session.tokenExpiresAt,
+        sessionIssuedAt: session.sessionIssuedAt,
+        isLoggedIn: true
       },
-      token: `vs_live_admin_${Date.now()}`
+      token: session.authToken
     };
   } else {
     // Customer login

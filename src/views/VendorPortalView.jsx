@@ -226,9 +226,12 @@ export const VendorPortalView = () => {
   const handleStockToggle = (product) => {
     const nextStatus = product.stockStatus === 'in-stock' ? 'out-of-stock' : 'in-stock';
     const nextStock = nextStatus === 'in-stock' ? 15 : 0;
+    const isAvail = nextStatus === 'in-stock';
     updateVendorProduct(product.id, {
       stockStatus: nextStatus,
-      availableStock: nextStock
+      availableStock: nextStock,
+      available_quantity: nextStock,
+      is_available: isAvail
     });
     showToast(`${product.name} marked as ${nextStatus.toUpperCase()}`);
   };
@@ -280,8 +283,10 @@ export const VendorPortalView = () => {
     setFieldErrors({});
     const numPrice = Number(sanitizedData.price);
 
+    const newId = `p_custom_${Date.now()}`;
     const newProd = {
-      id: `p_custom_${Date.now()}`,
+      id: newId,
+      _id: newId,
       name: sanitizedData.name,
       shortName: sanitizedData.name.split(' ')[0],
       category: newProdCategory,
@@ -289,8 +294,11 @@ export const VendorPortalView = () => {
       originalPrice: Math.round(numPrice * 1.25),
       unit: newProdUnit,
       availableStock: 20,
+      available_quantity: 20,
+      is_available: true,
       stockStatus: 'in-stock',
       vendorId: selectedVendorId,
+      vendor_id: selectedVendorId,
       vendorName: currentVendor.name,
       vendorDistance: currentVendor.distance || '1.5 km',
       rating: 4.8,
@@ -298,6 +306,7 @@ export const VendorPortalView = () => {
       isPopular: true,
       isOrganic: true,
       image: newProdImage,
+      image_url: newProdImage,
       description: `Locally sourced fresh farm produce from ${currentVendor.name}, Moodbidri.`
     };
 
@@ -673,7 +682,7 @@ export const VendorPortalView = () => {
       }}>
         {[
           { id: 'orders', label: `📦 Live Orders (${vendorOrders.length})`, icon: Package },
-          { id: 'inventory', label: `🥬 Produce & Stock Manager (${vendorProducts.length})`, icon: Sliders },
+          { id: 'inventory', label: `🥬 Produce & Stock Inventory (${vendorProducts.length})`, icon: Sliders },
           { id: 'schedule', label: `📅 Plan Visits & Schedules`, icon: Calendar },
           { id: 'gps', label: '🛵 Live Rider GPS Dispatch', icon: Navigation },
           { id: 'chat', label: '💬 Customer Live Chat', icon: MessageSquare }
@@ -713,6 +722,51 @@ export const VendorPortalView = () => {
               Updates click status in real-time on customer's phone
             </span>
           </div>
+
+          {/* Live Order Incoming Alert Banner */}
+          {vendorOrders.some(o => o.status === 'Placed' || o.status === 'pending') && (
+            <div style={{
+              backgroundColor: '#fffbeb',
+              border: '2px solid #f59e0b',
+              borderRadius: '18px',
+              padding: '16px 20px',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              boxShadow: '0 6px 18px rgba(245, 158, 11, 0.15)',
+              gap: '12px',
+              flexWrap: 'wrap'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '24px' }}>🔔</span>
+                <div>
+                  <strong style={{ color: '#92400e', fontSize: '15.5px', display: 'block' }}>
+                    {vendorOrders.filter(o => o.status === 'Placed' || o.status === 'pending').length} New Customer Order(s) Awaiting Confirmation!
+                  </strong>
+                  <span style={{ color: '#b45309', fontSize: '12.5px', marginTop: '2px', display: 'block' }}>
+                    Customer is connected in real-time. Click "1. Accept Order" below to confirm delivery.
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => playOrderNotificationSound()}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '12px',
+                  backgroundColor: '#f59e0b',
+                  color: '#ffffff',
+                  border: 'none',
+                  fontWeight: '800',
+                  fontSize: '12.5px',
+                  cursor: 'pointer'
+                }}
+              >
+                🔊 Replay Audio Chime
+              </button>
+            </div>
+          )}
 
           {vendorOrders.length === 0 ? (
             <div className="vs-card" style={{ padding: '48px', textAlign: 'center', backgroundColor: '#ffffff', borderRadius: '20px' }}>

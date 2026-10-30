@@ -11,24 +11,44 @@ import {
   updateProductInFirebase,
   toggleProductAvailabilityInFirebase,
   deleteProductFromFirebase
-} from '../firebase';
+} from '../firebase.js';
+import { DEFAULT_PRODUCTS } from '../data/products.js';
 
 const LOCAL_STORAGE_KEY = 'vs_firebase_products_cache';
-
-const INITIAL_FALLBACK_PRODUCTS = [];
 
 function getStoredFallbackProducts() {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    // Also check dynamic products storage key
+    const dynRaw = localStorage.getItem('vendorsaathi_dynamic_products');
+    if (dynRaw) {
+      const parsedDyn = JSON.parse(dynRaw);
+      if (Array.isArray(parsedDyn) && parsedDyn.length > 0) {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(parsedDyn));
+        return parsedDyn;
+      }
+    }
+    // Default seed catalog
+    if (DEFAULT_PRODUCTS && DEFAULT_PRODUCTS.length > 0) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS));
+      localStorage.setItem('vendorsaathi_dynamic_products', JSON.stringify(DEFAULT_PRODUCTS));
+      return DEFAULT_PRODUCTS;
+    }
     return [];
+  } catch {
+    return DEFAULT_PRODUCTS || [];
   }
 }
 
 function saveStoredFallbackProducts(list) {
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list || []));
+    const safeList = Array.isArray(list) ? list : [];
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(safeList));
+    localStorage.setItem('vendorsaathi_dynamic_products', JSON.stringify(safeList));
   } catch (err) {
     console.warn('Could not cache products to localStorage', err);
   }
@@ -38,6 +58,13 @@ export const broadcastProductChange = (action, productOrId) => {
   try {
     const payload = { action, data: productOrId, timestamp: Date.now() };
     localStorage.setItem('vendorsaathi_product_sync', JSON.stringify(payload));
+    
+    // In-window direct sync dispatch for instantaneous UI updates
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('vendorsaathi_catalog_updated', { detail: payload }));
+      window.dispatchEvent(new Event('storage'));
+    }
+
     if (typeof BroadcastChannel !== 'undefined') {
       const channel = new BroadcastChannel('vendorsaathi_catalog_channel');
       channel.postMessage(payload);

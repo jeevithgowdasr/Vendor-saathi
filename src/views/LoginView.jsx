@@ -84,12 +84,18 @@ export const LoginView = ({ params = {} }) => {
   // Mode: 'signin' | 'register'
   const [authMode, setAuthMode] = useState(params?.mode === 'register' ? 'register' : 'signin');
   // Role: 'customer' | 'vendor' | 'admin'
-  const [selectedRole, setSelectedRole] = useState(params?.role || 'customer');
+  const [selectedRole, setSelectedRole] = useState(
+    params?.role || (params?.requiredRoles?.includes('vendor') && !params?.requiredRoles?.includes('customer') ? 'vendor' : 'customer')
+  );
 
   useEffect(() => {
-    if (params?.role) setSelectedRole(params.role);
+    if (params?.role) {
+      setSelectedRole(params.role);
+    } else if (params?.requiredRoles?.includes('vendor') && !params?.requiredRoles?.includes('customer')) {
+      setSelectedRole('vendor');
+    }
     if (params?.mode) setAuthMode(params.mode);
-  }, [params?.role, params?.mode]);
+  }, [params?.role, params?.requiredRoles, params?.mode]);
 
   // Common Form Fields
   const [identifier, setIdentifier] = useState('');
@@ -195,10 +201,15 @@ export const LoginView = ({ params = {} }) => {
     const session = createAuthSession(userData);
     const resolvedRole = (userData.role || selectedRole).toLowerCase();
 
+    // Ensure token strictly complies with validateAuthSession structure
+    const effectiveToken = (token && token.startsWith('vs_') && token.includes('.'))
+      ? token
+      : session.authToken;
+
     const fullUser = {
       ...userData,
       isLoggedIn: true,
-      authToken: token || session.authToken,
+      authToken: effectiveToken,
       tokenExpiresAt: session.tokenExpiresAt,
       sessionIssuedAt: session.sessionIssuedAt,
       role: resolvedRole
@@ -467,7 +478,7 @@ export const LoginView = ({ params = {} }) => {
           <p style={{ fontSize: '14px', color: '#64748b', marginTop: '6px' }}>
             {authMode === 'register' 
               ? (isCustomer ? 'Explore verified local vendors, farm produce & track deliveries' : 'Grow your local commerce with digital storefront & instant orders')
-              : `Access your ${isCustomer ? 'Customer' : 'Vendor Partner'} portal & live orders`}
+              : `Please sign in to access your ${isCustomer ? 'Customer' : 'Vendor Partner'} portal & live orders`}
           </p>
         </div>
 
@@ -711,6 +722,121 @@ export const LoginView = ({ params = {} }) => {
               {isLoading ? 'Signing in...' : `Sign in as ${selectedRole === 'vendor' ? 'Vendor Partner' : selectedRole === 'admin' ? 'Administrator' : 'Customer'}`}
               <ArrowRight size={18} />
             </button>
+
+            {/* Quick 1-Click Demo Accounts */}
+            <div style={{
+              marginTop: '16px',
+              padding: '14px',
+              backgroundColor: '#f8fafc',
+              borderRadius: '16px',
+              border: '1px dashed #cbd5e1'
+            }}>
+              <div style={{ fontSize: '12px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Sparkles size={14} color="#f59e0b" />
+                <span>1-Click Quick Demo Sign In</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedRole('vendor');
+                    setIdentifier('9845123456');
+                    setPassword('password123');
+                    clearFieldError('all');
+                    playPopSound();
+                  }}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '10px',
+                    border: '1px solid #bfdbfe',
+                    backgroundColor: '#eff6ff',
+                    color: '#1d4ed8',
+                    fontSize: '11.5px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  🏪 <strong>Vendor (Suresh)</strong><br />
+                  <span style={{ fontSize: '10.5px', opacity: 0.8 }}>9845123456</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedRole('vendor');
+                    setIdentifier('ramesh.kirana@gmail.com');
+                    setPassword('password123');
+                    clearFieldError('all');
+                    playPopSound();
+                  }}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '10px',
+                    border: '1px solid #bfdbfe',
+                    backgroundColor: '#eff6ff',
+                    color: '#1d4ed8',
+                    fontSize: '11.5px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  🥕 <strong>Vendor (Ramesh)</strong><br />
+                  <span style={{ fontSize: '10.5px', opacity: 0.8 }}>ramesh.kirana@...</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedRole('customer');
+                    setIdentifier('bhavana.bai@gmail.com');
+                    setPassword('password123');
+                    clearFieldError('all');
+                    playPopSound();
+                  }}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '10px',
+                    border: '1px solid #a7f3d0',
+                    backgroundColor: '#ecfdf5',
+                    color: '#065f46',
+                    fontSize: '11.5px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  🛒 <strong>Customer (Bhavana)</strong><br />
+                  <span style={{ fontSize: '10.5px', opacity: 0.8 }}>bhavana.bai@...</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedRole('admin');
+                    setIdentifier('admin@vendorsaathi.in');
+                    setPassword('admin123');
+                    clearFieldError('all');
+                    playPopSound();
+                  }}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '10px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#f1f5f9',
+                    color: '#334155',
+                    fontSize: '11.5px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                >
+                  🛡️ <strong>Admin Portal</strong><br />
+                  <span style={{ fontSize: '10.5px', opacity: 0.8 }}>admin@...</span>
+                </button>
+              </div>
+            </div>
           </form>
         )}
 
