@@ -127,9 +127,9 @@ export const AppProvider = ({ children }) => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.DYNAMIC_VENDORS);
       const parsed = saved ? JSON.parse(saved) : [];
-      return Array.isArray(parsed) && parsed.length > 0 ? parsed : (INITIAL_VENDORS_DATA || []);
+      return Array.isArray(parsed) ? parsed : [];
     } catch (e) {
-      return INITIAL_VENDORS_DATA || [];
+      return [];
     }
   });
 
@@ -577,7 +577,7 @@ export const AppProvider = ({ children }) => {
     if (params.query !== undefined) setSearchQuery(params.query);
     if (params.vendor !== undefined) {
       if (typeof params.vendor === 'string') {
-        const found = (vendors || INITIAL_VENDORS_DATA).find(v => v.id === params.vendor);
+        const found = (vendors || []).find(v => v.id === params.vendor);
         setSelectedVendor(found || null);
       } else {
         setSelectedVendor(params.vendor);

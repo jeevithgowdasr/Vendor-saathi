@@ -39,6 +39,7 @@ export const HomeView = () => {
     wishlist, 
     setIsVoiceAssistanceOpen, 
     setIsVoiceSearchOpen,
+    setIsAuthModalOpen,
     currentLocation,
     user,
     products,
@@ -61,6 +62,37 @@ export const HomeView = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Scroll-triggered non-intrusive Sign-In pop-up for unauthenticated visitors (30-40% down)
+  useEffect(() => {
+    if (user?.isLoggedIn) return;
+
+    const handleScroll = () => {
+      try {
+        if (sessionStorage.getItem('vs_signin_dismissed') === 'true') return;
+      } catch (e) {
+        return;
+      }
+
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const totalScrollable = document.documentElement.scrollHeight - windowHeight;
+
+      // Trigger if user scrolls past 35% of the viewport or scrollable page
+      const passedViewport = scrollY > windowHeight * 0.35;
+      const passedPage = totalScrollable > 0 && (scrollY / totalScrollable) >= 0.30;
+
+      if (passedViewport || passedPage) {
+        try {
+          sessionStorage.setItem('vs_signin_dismissed', 'true');
+        } catch (e) {}
+        setIsAuthModalOpen(true);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [user?.isLoggedIn, setIsAuthModalOpen]);
+
   const activeProducts = (products || []).filter(p => {
     // 1. Strict Category Exclusion for Customer Side (Only Vegetables, Fruits, Greens/Soppu, Flowers)
     const catLower = (p.category || '').toLowerCase();
@@ -78,18 +110,19 @@ export const HomeView = () => {
 
   return (
     <div className="animate-fade-in" style={{ paddingBottom: '30px' }}>
-      {/* Dynamic Animated Hero Section */}
+      {/* Dynamic Animated Hero Section - Cool Slate / Deep Indigo Palette */}
       <section style={{
-        background: 'radial-gradient(ellipse at 80% 20%, #065f46 0%, #047857 35%, #064e3b 70%, #022c22 100%)',
+        background: 'radial-gradient(ellipse at 80% 20%, #1e293b 0%, #0f172a 65%, #020617 100%)',
         color: '#ffffff',
         padding: '52px 0 60px 0',
         borderRadius: '0 0 32px 32px',
         marginBottom: '40px',
         position: 'relative',
         overflow: 'hidden',
-        boxShadow: '0 20px 40px -15px rgba(6, 78, 59, 0.4)'
+        boxShadow: '0 20px 40px -15px rgba(15, 23, 42, 0.45)',
+        borderBottom: '1px solid #334155'
       }}>
-        {/* Ambient Glow Orbs */}
+        {/* Ambient Glow Orbs in Cool Blue and Cyan */}
         <div style={{
           position: 'absolute',
           top: '-60px',
@@ -97,7 +130,7 @@ export const HomeView = () => {
           width: '380px',
           height: '380px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0) 70%)',
+          background: 'radial-gradient(circle, rgba(37, 99, 235, 0.22) 0%, rgba(37, 99, 235, 0) 70%)',
           pointerEvents: 'none'
         }} />
         
@@ -108,7 +141,7 @@ export const HomeView = () => {
           width: '280px',
           height: '280px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(245, 158, 11, 0.2) 0%, rgba(245, 158, 11, 0) 70%)',
+          background: 'radial-gradient(circle, rgba(14, 165, 233, 0.18) 0%, rgba(14, 165, 233, 0) 70%)',
           pointerEvents: 'none'
         }} />
 
@@ -126,18 +159,18 @@ export const HomeView = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                background: 'rgba(255, 255, 255, 0.16)',
-                border: '1.5px solid rgba(255, 255, 255, 0.3)',
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1.5px solid rgba(255, 255, 255, 0.2)',
                 backdropFilter: 'blur(8px)',
                 padding: '8px 18px',
                 borderRadius: '28px',
                 fontSize: '13.5px',
                 fontWeight: '800',
-                color: '#6ee7b7',
+                color: '#38bdf8',
                 marginBottom: '20px',
-                boxShadow: '0 4px 14px rgba(0,0,0,0.12)'
+                boxShadow: '0 4px 14px rgba(0,0,0,0.18)'
               }}>
-                <Sparkles size={18} color="#fbbf24" />
+                <Sparkles size={18} color="#38bdf8" />
                 <span>{currentLocation?.village || currentLocation?.name?.split(',')[0] || user?.village || 'Fast 20-Min'} • Express Delivery</span>
               </div>
               
@@ -146,11 +179,12 @@ export const HomeView = () => {
                 fontWeight: '900', 
                 lineHeight: 1.1, 
                 marginBottom: '18px', 
-                letterSpacing: '-0.035em' 
+                letterSpacing: '-0.035em',
+                color: '#ffffff'
               }}>
                 Farm-Fresh Groceries from <br />
                 <span style={{ 
-                  background: 'linear-gradient(135deg, #34d399 0%, #a7f3d0 50%, #fbbf24 100%)',
+                  background: 'linear-gradient(135deg, #38bdf8 0%, #60a5fa 50%, #93c5fd 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   display: 'inline-block'
@@ -167,12 +201,28 @@ export const HomeView = () => {
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
                 <button 
                   onClick={() => navigateTo('categories')}
-                  className="btn-primary"
                   style={{ 
                     padding: '15px 32px', 
                     fontSize: '16px', 
                     borderRadius: '18px',
-                    fontWeight: '800'
+                    fontWeight: '800',
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                    color: '#ffffff',
+                    border: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                    boxShadow: '0 6px 20px rgba(37, 99, 235, 0.38)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(37, 99, 235, 0.38)';
                   }}
                 >
                   <span>Explore Fresh Catalog</span>
@@ -182,8 +232,8 @@ export const HomeView = () => {
                 <button 
                   onClick={() => navigateTo('nearby-vendors')}
                   style={{ 
-                    background: 'rgba(255, 255, 255, 0.15)', 
-                    border: '1.5px solid rgba(255, 255, 255, 0.3)',
+                    background: 'rgba(255, 255, 255, 0.1)', 
+                    border: '1.5px solid rgba(255, 255, 255, 0.25)',
                     color: '#ffffff', 
                     padding: '15px 26px', 
                     fontSize: '16px', 
@@ -192,18 +242,19 @@ export const HomeView = () => {
                     alignItems: 'center',
                     gap: '8px',
                     fontWeight: '800',
+                    cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.18)';
                     e.currentTarget.style.transform = 'translateY(-2px)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
                     e.currentTarget.style.transform = 'translateY(0)';
                   }}
                 >
-                  <Store size={18} color="#fbbf24" /> 
+                  <Store size={18} color="#38bdf8" /> 
                   <span>Nearby Kirana Stores</span>
                 </button>
               </div>
@@ -214,18 +265,18 @@ export const HomeView = () => {
                 alignItems: 'center',
                 gap: '10px',
                 marginTop: '28px',
-                background: 'rgba(0, 0, 0, 0.25)',
+                background: 'rgba(15, 23, 42, 0.65)',
                 padding: '8px 16px',
                 borderRadius: '20px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
                 fontSize: '12px',
-                color: '#a7f3d0'
+                color: '#93c5fd'
               }}>
                 <span style={{
                   width: '8px',
                   height: '8px',
                   borderRadius: '50%',
-                  backgroundColor: '#34d399',
+                  backgroundColor: '#38bdf8',
                   animation: 'pulseGlowRing 2s infinite'
                 }}></span>
                 <span><strong>Live:</strong> Fast delivery active in <strong>{currentLocation?.village || currentLocation?.name?.split(',')[0] || user?.village || 'your area'}</strong> • Average: <strong>20 mins</strong></span>
@@ -265,23 +316,23 @@ export const HomeView = () => {
                   position: 'absolute',
                   top: '-14px',
                   left: '-14px',
-                  background: 'rgba(255, 255, 255, 0.95)',
-                  color: '#065f46',
+                  background: 'rgba(255, 255, 255, 0.98)',
+                  color: '#0f172a',
                   padding: '10px 16px',
                   borderRadius: '16px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  boxShadow: '0 12px 24px -4px rgba(0,0,0,0.25)',
-                  border: '1px solid #d1fae5',
+                  boxShadow: '0 12px 24px -4px rgba(15, 23, 42, 0.18)',
+                  border: '1.5px solid #e2e8f0',
                   zIndex: 3
                 }}
               >
-                <div style={{ background: '#ecfdf5', padding: '6px', borderRadius: '10px' }}>
-                  <Truck size={18} color="#059669" />
+                <div style={{ background: '#eff6ff', padding: '6px', borderRadius: '10px' }}>
+                  <Truck size={18} color="#2563eb" />
                 </div>
                 <div style={{ textAlign: 'left' }}>
-                  <strong style={{ fontSize: '13px', display: 'block', lineHeight: 1.1 }}>20 Mins Express</strong>
+                  <strong style={{ fontSize: '13px', display: 'block', lineHeight: 1.1, color: '#0f172a' }}>20 Mins Express</strong>
                   <span style={{ fontSize: '10.5px', color: '#64748b' }}>To your doorstep</span>
                 </div>
               </div>
@@ -293,23 +344,23 @@ export const HomeView = () => {
                   position: 'absolute',
                   bottom: '-14px',
                   right: '-14px',
-                  background: 'rgba(255, 255, 255, 0.95)',
+                  background: 'rgba(255, 255, 255, 0.98)',
                   color: '#0f172a',
                   padding: '10px 16px',
                   borderRadius: '16px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  boxShadow: '0 12px 24px -4px rgba(0,0,0,0.25)',
-                  border: '1px solid #fef3c7',
+                  boxShadow: '0 12px 24px -4px rgba(15, 23, 42, 0.18)',
+                  border: '1.5px solid #e2e8f0',
                   zIndex: 3
                 }}
               >
-                <div style={{ background: '#fffbeb', padding: '6px', borderRadius: '10px' }}>
+                <div style={{ background: '#f8fafc', padding: '6px', borderRadius: '10px' }}>
                   <Star size={18} fill="#f59e0b" color="#f59e0b" />
                 </div>
                 <div style={{ textAlign: 'left' }}>
-                  <strong style={{ fontSize: '13px', display: 'block', lineHeight: 1.1 }}>4.9★ Local Rating</strong>
+                  <strong style={{ fontSize: '13px', display: 'block', lineHeight: 1.1, color: '#0f172a' }}>4.9★ Local Rating</strong>
                   <span style={{ fontSize: '10.5px', color: '#64748b' }}>500+ Happy Villagers</span>
                 </div>
               </div>
@@ -331,8 +382,8 @@ export const HomeView = () => {
           gap: '18px',
           marginBottom: '44px'
         }}>
-          <div className="vs-card vs-card-interactive" style={{ padding: '18px', display: 'flex', gap: '14px', alignItems: 'center' }}>
-            <div style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)', color: '#059669', padding: '12px', borderRadius: '14px', border: '1px solid #a7f3d0' }}>
+          <div className="vs-card vs-card-interactive" style={{ padding: '18px', display: 'flex', gap: '14px', alignItems: 'center', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0', borderRadius: '18px', boxShadow: '0 4px 14px rgba(15, 23, 42, 0.04)' }}>
+            <div style={{ background: '#eff6ff', color: '#2563eb', padding: '12px', borderRadius: '14px', border: '1px solid #bfdbfe' }}>
               <ShieldCheck size={26} />
             </div>
             <div>
@@ -341,8 +392,8 @@ export const HomeView = () => {
             </div>
           </div>
 
-          <div className="vs-card vs-card-interactive" style={{ padding: '18px', display: 'flex', gap: '14px', alignItems: 'center' }}>
-            <div style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', color: '#d97706', padding: '12px', borderRadius: '14px', border: '1px solid #fde68a' }}>
+          <div className="vs-card vs-card-interactive" style={{ padding: '18px', display: 'flex', gap: '14px', alignItems: 'center', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0', borderRadius: '18px', boxShadow: '0 4px 14px rgba(15, 23, 42, 0.04)' }}>
+            <div style={{ background: '#f8fafc', color: '#0f172a', padding: '12px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
               <Store size={26} />
             </div>
             <div>
@@ -351,8 +402,8 @@ export const HomeView = () => {
             </div>
           </div>
 
-          <div className="vs-card vs-card-interactive" style={{ padding: '18px', display: 'flex', gap: '14px', alignItems: 'center' }}>
-            <div style={{ background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', color: '#2563eb', padding: '12px', borderRadius: '14px', border: '1px solid #bfdbfe' }}>
+          <div className="vs-card vs-card-interactive" style={{ padding: '18px', display: 'flex', gap: '14px', alignItems: 'center', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0', borderRadius: '18px', boxShadow: '0 4px 14px rgba(15, 23, 42, 0.04)' }}>
+            <div style={{ background: '#f0f9ff', color: '#0284c7', padding: '12px', borderRadius: '14px', border: '1px solid #bae6fd' }}>
               <Truck size={26} />
             </div>
             <div>
@@ -366,14 +417,14 @@ export const HomeView = () => {
         <section style={{ marginBottom: '52px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '22px' }}>
             <div>
-              <span className="badge badge-success" style={{ marginBottom: '6px' }}>FRESH PRODUCE</span>
-              <h2 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a' }}>Explore Categories</h2>
+              <span style={{ display: 'inline-block', backgroundColor: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', borderRadius: '12px', padding: '3px 10px', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '6px' }}>FRESH PRODUCE</span>
+              <h2 style={{ fontSize: '26px', fontWeight: '900', color: '#0f172a', letterSpacing: '-0.02em' }}>Explore Categories</h2>
               <p style={{ fontSize: '13.5px', color: '#64748b', marginTop: '2px' }}>Handpicked daily essentials from local vendors</p>
             </div>
             <button 
               onClick={() => navigateTo('categories')}
               style={{ 
-                color: '#059669', 
+                color: '#2563eb', 
                 fontWeight: '800', 
                 fontSize: '14px', 
                 display: 'flex', 
@@ -381,6 +432,9 @@ export const HomeView = () => {
                 gap: '4px',
                 padding: '6px 12px',
                 borderRadius: '10px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
                 transition: 'background 0.2s ease'
               }}
             >
@@ -436,7 +490,7 @@ export const HomeView = () => {
                   <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a', marginBottom: '2px' }}>
                     {cat.name}
                   </h3>
-                  <span style={{ fontSize: '12px', color: '#059669', fontWeight: '700' }}>
+                  <span style={{ fontSize: '12px', color: '#2563eb', fontWeight: '700' }}>
                     {cat.itemCount}+ Products Available
                   </span>
                 </div>
@@ -445,25 +499,25 @@ export const HomeView = () => {
           </div>
         </section>
 
-        {/* Flash Deals with Realtime Countdown */}
+        {/* Flash Deals with Realtime Countdown - Cool Tone Palette */}
         <section style={{ 
           marginBottom: '52px',
-          background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #fff7ed 100%)',
-          border: '1.5px solid #fde68a',
+          background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+          border: '1.5px solid #e2e8f0',
           borderRadius: '24px',
           padding: '28px 24px',
-          boxShadow: '0 10px 25px -5px rgba(245, 158, 11, 0.15)'
+          boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.05)'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ background: '#f59e0b', color: '#ffffff', padding: '10px', borderRadius: '12px' }}>
+              <div style={{ background: '#0f172a', color: '#38bdf8', padding: '10px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)' }}>
                 <Flame size={24} />
               </div>
               <div>
-                <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#78350f', lineHeight: 1.1 }}>
+                <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#0f172a', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
                   Flash Harvest Deals
                 </h2>
-                <span style={{ fontSize: '13px', color: '#92400e', fontWeight: '600' }}>
+                <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>
                   Special discounted prices for morning harvest
                 </span>
               </div>
@@ -475,15 +529,15 @@ export const HomeView = () => {
               alignItems: 'center',
               gap: '6px',
               backgroundColor: '#ffffff',
-              border: '1px solid #fcd34d',
+              border: '1.5px solid #cbd5e1',
               padding: '6px 14px',
               borderRadius: '20px',
               fontWeight: '800',
-              color: '#b45309',
+              color: '#0f172a',
               fontSize: '13px',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.05)'
+              boxShadow: '0 2px 6px rgba(15, 23, 42, 0.04)'
             }}>
-              <Clock size={16} />
+              <Clock size={16} color="#2563eb" />
               <span>Ends in {String(flashTime.h).padStart(2, '0')}:{String(flashTime.m).padStart(2, '0')}:{String(flashTime.s).padStart(2, '0')}</span>
             </div>
           </div>
@@ -491,8 +545,8 @@ export const HomeView = () => {
           {/* Flash Products Grid */}
           {activeProducts.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px 20px', backgroundColor: '#f8fafc', borderRadius: '20px', border: '1.5px dashed #cbd5e1' }}>
-              <Package size={40} color="#059669" style={{ margin: '0 auto 10px auto' }} />
-              <strong style={{ fontSize: '16px', color: '#1e293b', display: 'block' }}>Fresh Produce Arriving Soon</strong>
+              <Package size={40} color="#2563eb" style={{ margin: '0 auto 10px auto' }} />
+              <strong style={{ fontSize: '16px', color: '#0f172a', display: 'block' }}>Fresh Produce Arriving Soon</strong>
               <p style={{ fontSize: '13px', color: '#64748b', maxWidth: '400px', margin: '6px auto 16px auto' }}>
                 Local mobile vendors are updating their catalogs for upcoming village delivery routes. Check upcoming schedules!
               </p>
@@ -501,12 +555,13 @@ export const HomeView = () => {
                 style={{
                   padding: '10px 18px',
                   borderRadius: '12px',
-                  backgroundColor: '#059669',
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                   color: '#ffffff',
                   border: 'none',
                   fontSize: '13px',
                   fontWeight: '800',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)'
                 }}
               >
                 📅 View Upcoming Scheduled Visits
@@ -530,15 +585,17 @@ export const HomeView = () => {
                     flexDirection: 'column',
                     justifyContent: 'space-between',
                     position: 'relative',
-                    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                    border: '1.5px solid #e2e8f0',
+                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                    boxShadow: '0 4px 14px rgba(15, 23, 42, 0.04)'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = '0 12px 24px -4px rgba(0,0,0,0.1)';
+                    e.currentTarget.style.boxShadow = '0 12px 24px -4px rgba(15, 23, 42, 0.1)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(15, 23, 42, 0.04)';
                   }}
                 >
                   {/* Discount Badge */}
@@ -564,12 +621,13 @@ export const HomeView = () => {
                       position: 'absolute',
                       top: '10px',
                       right: '10px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
                       padding: '6px',
                       borderRadius: '50%',
                       zIndex: 2,
                       color: isWish ? '#ef4444' : '#94a3b8',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                      border: '1px solid #e2e8f0',
                       transition: 'transform 0.2s ease'
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
@@ -605,7 +663,7 @@ export const HomeView = () => {
                     </span>
 
                     <div style={{ margin: '10px 0 6px 0', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                      <span style={{ fontSize: '17px', fontWeight: '900', color: '#059669' }}>
+                      <span style={{ fontSize: '17px', fontWeight: '900', color: '#0f172a' }}>
                         ₹{prod.price}
                       </span>
                       <span style={{ fontSize: '12px', color: '#94a3b8', textDecoration: 'line-through' }}>
@@ -624,23 +682,23 @@ export const HomeView = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        backgroundColor: '#ecfdf5',
-                        border: '1.5px solid #a7f3d0',
+                        backgroundColor: '#eff6ff',
+                        border: '1.5px solid #bfdbfe',
                         borderRadius: '12px',
                         padding: '4px 8px'
                       }}>
                         <button
                           onClick={() => updateCartQuantity(prod.id, inCart.quantity - 1)}
-                          style={{ color: '#059669', padding: '4px', display: 'flex', alignItems: 'center' }}
+                          style={{ color: '#2563eb', padding: '4px', display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer' }}
                         >
                           <Minus size={15} />
                         </button>
-                        <span style={{ fontWeight: '800', color: '#065f46', fontSize: '13px' }}>
+                        <span style={{ fontWeight: '800', color: '#1e40af', fontSize: '13px' }}>
                           {inCart.quantity}
                         </span>
                         <button
                           onClick={() => updateCartQuantity(prod.id, inCart.quantity + 1)}
-                          style={{ color: '#059669', padding: '4px', display: 'flex', alignItems: 'center' }}
+                          style={{ color: '#2563eb', padding: '4px', display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer' }}
                         >
                           <Plus size={15} />
                         </button>
@@ -648,8 +706,22 @@ export const HomeView = () => {
                     ) : (
                       <button
                         onClick={() => addToCart(prod, 1)}
-                        className="btn-primary"
-                        style={{ width: '100%', padding: '8px 12px', fontSize: '13px', borderRadius: '12px' }}
+                        style={{
+                          width: '100%',
+                          padding: '9px 12px',
+                          fontSize: '13px',
+                          borderRadius: '12px',
+                          background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                          color: '#ffffff',
+                          border: 'none',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)'
+                        }}
                       >
                         <Plus size={15} />
                         <span>Add</span>
@@ -663,9 +735,9 @@ export const HomeView = () => {
         )}
         </section>
 
-        {/* Smart Voice AI Shopping Assistant Callout Banner */}
+        {/* Smart Voice AI Shopping Assistant Callout Banner - Cool Slate / Indigo Theme */}
         <section style={{
-          background: 'linear-gradient(135deg, #064e3b 0%, #047857 60%, #065f46 100%)',
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)',
           borderRadius: '28px',
           padding: '32px',
           color: '#ffffff',
@@ -676,39 +748,53 @@ export const HomeView = () => {
           alignItems: 'center',
           position: 'relative',
           overflow: 'hidden',
-          boxShadow: '0 16px 36px -4px rgba(6, 78, 59, 0.35)'
+          boxShadow: '0 16px 36px -4px rgba(15, 23, 42, 0.35)',
+          border: '1px solid #334155'
         }}>
           <div>
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              backgroundColor: 'rgba(255, 255, 255, 0.18)',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
               padding: '4px 12px',
               borderRadius: '20px',
               fontSize: '12px',
               fontWeight: '700',
-              color: '#a7f3d0',
-              marginBottom: '14px'
+              color: '#38bdf8',
+              marginBottom: '14px',
+              border: '1px solid rgba(255, 255, 255, 0.15)'
             }}>
-              <Mic size={14} color="#fbbf24" />
-              <span>Voice Ordering in Kannada & English</span>
+              <Mic size={14} color="#38bdf8" />
+              <span>Voice Ordering in Kannada, English & Hindi</span>
             </div>
 
             <h2 style={{ fontSize: '28px', fontWeight: '900', lineHeight: 1.2, marginBottom: '12px' }}>
               Speak Naturally to Order <br />
-              <span style={{ color: '#fbbf24' }}>"2 Kilo Tomato Beku"</span>
+              <span style={{ color: '#38bdf8' }}>"2 Kilo Tomato Beku"</span>
             </h2>
 
             <p style={{ fontSize: '14px', color: '#cbd5e1', marginBottom: '20px', lineHeight: 1.6 }}>
-              Can't type or searching in regional language? Just tap the microphone and speak in Kannada or English for instant item detection.
+              Can't type or searching in regional language? Just tap the microphone and speak in Kannada, English, or Hindi for instant item detection.
             </p>
 
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               <button
                 onClick={() => setIsVoiceSearchOpen(true)}
-                className="btn-amber"
-                style={{ borderRadius: '14px', padding: '11px 22px' }}
+                style={{
+                  borderRadius: '14px',
+                  padding: '11px 22px',
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  fontWeight: '800',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)'
+                }}
               >
                 <Mic size={18} />
                 <span>Try Voice Search Now</span>
@@ -717,8 +803,8 @@ export const HomeView = () => {
               <button
                 onClick={() => setIsVoiceAssistanceOpen(true)}
                 style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                  border: '1px solid rgba(255, 255, 255, 0.25)',
                   color: '#ffffff',
                   padding: '11px 20px',
                   borderRadius: '14px',
@@ -727,10 +813,11 @@ export const HomeView = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
+                  cursor: 'pointer',
                   transition: 'all 0.2s ease'
                 }}
               >
-                <Sparkles size={16} color="#fbbf24" />
+                <Sparkles size={16} color="#38bdf8" />
                 <span>Audio Assistant</span>
               </button>
             </div>
@@ -745,44 +832,64 @@ export const HomeView = () => {
               gap: '6px',
               height: '60px',
               padding: '0 24px',
-              backgroundColor: 'rgba(0, 0, 0, 0.25)',
+              backgroundColor: 'rgba(0, 0, 0, 0.3)',
               borderRadius: '24px',
-              border: '1px solid rgba(255, 255, 255, 0.1)'
+              border: '1px solid rgba(255, 255, 255, 0.15)'
             }}>
-              <span className="equalizer-bar eq-1"></span>
-              <span className="equalizer-bar eq-2"></span>
-              <span className="equalizer-bar eq-3"></span>
-              <span className="equalizer-bar eq-4"></span>
-              <span className="equalizer-bar eq-5"></span>
-              <span className="equalizer-bar eq-2"></span>
-              <span className="equalizer-bar eq-1"></span>
+              <span className="equalizer-bar eq-1" style={{ backgroundColor: '#38bdf8' }}></span>
+              <span className="equalizer-bar eq-2" style={{ backgroundColor: '#60a5fa' }}></span>
+              <span className="equalizer-bar eq-3" style={{ backgroundColor: '#38bdf8' }}></span>
+              <span className="equalizer-bar eq-4" style={{ backgroundColor: '#60a5fa' }}></span>
+              <span className="equalizer-bar eq-5" style={{ backgroundColor: '#38bdf8' }}></span>
+              <span className="equalizer-bar eq-2" style={{ backgroundColor: '#60a5fa' }}></span>
+              <span className="equalizer-bar eq-1" style={{ backgroundColor: '#38bdf8' }}></span>
             </div>
-            <span style={{ fontSize: '12px', color: '#a7f3d0', fontWeight: '600' }}>
-              🎙️ Real-time Web Speech Synthesis Engine
+            <span style={{ fontSize: '12px', color: '#93c5fd', fontWeight: '600' }}>
+              🎙️ Real-time Multi-Language Speech Assistant
             </span>
           </div>
         </section>
 
-        {/* Nearby Local Stores Showcase */}
+        {/* Authentic Partner Stores Showcase */}
         <section style={{ marginBottom: '52px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '22px' }}>
             <div>
-              <span className="badge badge-warning" style={{ marginBottom: '6px' }}>TRUSTED KIRANA</span>
-              <h2 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a' }}>Nearby Village Stores</h2>
-              <p style={{ fontSize: '13.5px', color: '#64748b', marginTop: '2px' }}>Buy directly from your trusted neighbourhood vendors</p>
+              <span style={{ 
+                display: 'inline-block',
+                padding: '4px 10px', 
+                backgroundColor: '#eff6ff', 
+                color: '#2563eb', 
+                border: '1px solid #bfdbfe', 
+                borderRadius: '9999px',
+                fontSize: '11px', 
+                fontWeight: '800', 
+                letterSpacing: '0.05em',
+                marginBottom: '8px' 
+              }}>
+                AUTHENTIC PARTNER STORES
+              </span>
+              <h2 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.02em' }}>
+                Partner Stores & Local Vendors
+              </h2>
+              <p style={{ fontSize: '13.5px', color: '#64748b', marginTop: '2px' }}>
+                Buy directly from authentic, verified neighbourhood vendors & partner stores
+              </p>
             </div>
             <button 
               onClick={() => navigateTo('nearby-vendors')}
               style={{ 
-                color: '#059669', 
+                color: '#2563eb', 
                 fontWeight: '800', 
                 fontSize: '14px', 
                 display: 'flex', 
                 alignItems: 'center', 
-                gap: '4px',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer'
+                gap: '6px',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '12px',
+                padding: '8px 14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
               }}
             >
               <span>View All Stores</span>
@@ -791,42 +898,68 @@ export const HomeView = () => {
           </div>
 
           {activeVendors.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px 20px', backgroundColor: '#f8fafc', borderRadius: '20px', border: '1.5px dashed #cbd5e1' }}>
-              <Store size={40} color="#2563eb" style={{ margin: '0 auto 10px auto' }} />
-              <strong style={{ fontSize: '16px', color: '#1e293b', display: 'block' }}>No Live Mobile Vendors in Area Right Now</strong>
-              <p style={{ fontSize: '13px', color: '#64748b', maxWidth: '440px', margin: '6px auto 16px auto' }}>
-                Mobile street cart vendors announce advance visit schedules. Discover when mobile vegetable & fruit vendors will visit your neighborhood!
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '48px 24px', 
+              backgroundColor: '#f8fafc', 
+              borderRadius: '24px', 
+              border: '1.5px dashed #cbd5e1',
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.03)'
+            }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '20px',
+                backgroundColor: '#eff6ff',
+                color: '#2563eb',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px auto',
+                border: '1px solid #bfdbfe'
+              }}>
+                <Store size={32} />
+              </div>
+              <strong style={{ fontSize: '18px', color: '#0f172a', display: 'block', fontWeight: '800' }}>
+                No Partner Stores Registered Yet
+              </strong>
+              <p style={{ fontSize: '13.5px', color: '#64748b', maxWidth: '460px', margin: '8px auto 20px auto', lineHeight: '1.5' }}>
+                Verified partner stores and street vendors will show up here dynamically once registered on the platform.
               </p>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
                 <button
                   onClick={() => navigateTo('nearby-vendors')}
                   style={{
-                    padding: '10px 18px',
+                    padding: '11px 20px',
                     borderRadius: '12px',
-                    backgroundColor: '#059669',
+                    backgroundColor: '#0f172a',
                     color: '#ffffff',
                     border: 'none',
                     fontSize: '13px',
-                    fontWeight: '800',
-                    cursor: 'pointer'
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
                   }}
                 >
-                  📅 Explore Upcoming Visits
+                  <Navigation size={15} />
+                  <span>Check Nearby Map</span>
                 </button>
                 <button
                   onClick={() => navigateTo('login', { role: 'vendor', mode: 'register' })}
                   style={{
-                    padding: '10px 18px',
+                    padding: '11px 20px',
                     borderRadius: '12px',
-                    backgroundColor: '#eff6ff',
+                    backgroundColor: '#ffffff',
                     color: '#2563eb',
                     border: '1.5px solid #bfdbfe',
                     fontSize: '13px',
-                    fontWeight: '800',
+                    fontWeight: '700',
                     cursor: 'pointer'
                   }}
                 >
-                  🏪 Become a Vendor Partner
+                  🏪 Register as a Store Partner
                 </button>
               </div>
             </div>
@@ -842,12 +975,21 @@ export const HomeView = () => {
                   <div
                     key={v.id}
                     className="vs-card vs-card-interactive"
-                    style={{ borderRadius: '20px', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+                    style={{ 
+                      borderRadius: '20px', 
+                      overflow: 'hidden', 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      justifyContent: 'space-between',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e2e8f0',
+                      boxShadow: '0 4px 16px rgba(15, 23, 42, 0.04)'
+                    }}
                   >
                     <div>
                       <div style={{ height: '170px', position: 'relative', overflow: 'hidden' }}>
                         <img
-                          src={v.image}
+                          src={v.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=600'}
                           alt={v.name}
                           style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
                         />
@@ -860,20 +1002,21 @@ export const HomeView = () => {
                           borderRadius: '16px',
                           fontSize: '11.5px',
                           fontWeight: '800',
-                          color: '#065f46',
+                          color: '#0f172a',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '5px'
+                          gap: '5px',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.08)'
                         }}>
-                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }}></span>
-                          <span>Open Now</span>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#0284c7' }}></span>
+                          <span>Verified Store</span>
                         </div>
 
                         <div style={{
                           position: 'absolute',
                           bottom: '10px',
                           right: '10px',
-                          backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                          backgroundColor: 'rgba(15, 23, 42, 0.88)',
                           backdropFilter: 'blur(4px)',
                           color: '#ffffff',
                           padding: '4px 10px',
@@ -884,7 +1027,7 @@ export const HomeView = () => {
                           alignItems: 'center',
                           gap: '4px'
                         }}>
-                          <Clock size={12} color="#34d399" />
+                          <Clock size={12} color="#38bdf8" />
                           <span>{distInfo.formattedETA}</span>
                         </div>
                       </div>
@@ -895,8 +1038,8 @@ export const HomeView = () => {
                             {v.name}
                           </h3>
                           <div style={{
-                            backgroundColor: '#fffbeb',
-                            color: '#b45309',
+                            backgroundColor: '#fef3c7',
+                            color: '#92400e',
                             padding: '3px 8px',
                             borderRadius: '8px',
                             fontSize: '12px',
@@ -906,21 +1049,21 @@ export const HomeView = () => {
                             gap: '3px'
                           }}>
                             <Star size={13} fill="#f59e0b" color="#f59e0b" />
-                            <span>{v.rating}</span>
+                            <span>{v.rating || '4.8'}</span>
                           </div>
                         </div>
 
                         <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '12px' }}>
-                          📍 <strong>{distInfo.formattedDistance}</strong> away • {v.location}
+                          📍 <strong>{distInfo.formattedDistance}</strong> away • {v.location || 'Local Area'}
                         </p>
 
                         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                          {v.categories.map((c, i) => (
+                          {(v.categories || ['Produce', 'Vegetables']).map((c, i) => (
                             <span 
                               key={i} 
                               style={{ 
-                                backgroundColor: '#ecfdf5', 
-                                color: '#059669', 
+                                backgroundColor: '#f1f5f9', 
+                                color: '#334155', 
                                 fontSize: '11px', 
                                 fontWeight: '700', 
                                 padding: '3px 8px', 
@@ -939,7 +1082,19 @@ export const HomeView = () => {
                       <button
                         onClick={() => navigateTo('product-listing', { vendor: v })}
                         className="btn-primary"
-                        style={{ width: '100%', padding: '10px', fontSize: '13px', borderRadius: '12px' }}
+                        style={{ 
+                          width: '100%', 
+                          padding: '10px', 
+                          fontSize: '13px', 
+                          borderRadius: '12px',
+                          backgroundColor: '#2563eb',
+                          color: '#ffffff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          fontWeight: '700'
+                        }}
                       >
                         <Store size={15} />
                         <span>Browse Store Catalog</span>
@@ -948,8 +1103,8 @@ export const HomeView = () => {
                   </div>
                 );
               })}
-          </div>
-        )}
+            </div>
+          )}
         </section>
       </div>
     </div>

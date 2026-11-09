@@ -1330,18 +1330,14 @@ export const subscribeToVendors = (callback) => {
           vehicleDetails: data.vehicleDetails || {}
         });
       });
-      if (vendors.length === 0) {
-        callback(DEFAULT_VENDORS);
-      } else {
-        callback(vendors);
-      }
+      callback(vendors);
     }, (err) => {
       console.warn("subscribeToVendors snapshot warning:", err.message);
-      callback(DEFAULT_VENDORS);
+      callback([]);
     });
   } catch (error) {
     console.warn("subscribeToVendors init error:", error.message);
-    callback(DEFAULT_VENDORS);
+    callback([]);
     return () => {};
   }
 };

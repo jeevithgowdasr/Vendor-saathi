@@ -103,24 +103,7 @@ export const Navbar = () => {
             </span>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            {/* Live Firebase Cloud Sync Pill */}
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '5px',
-              backgroundColor: 'rgba(245, 158, 11, 0.2)',
-              border: '1px solid rgba(245, 158, 11, 0.4)',
-              color: '#fef08a',
-              padding: '2px 10px',
-              borderRadius: '20px',
-              fontSize: '11px',
-              fontWeight: '800'
-            }}>
-              <Radio size={11} className="animate-pulse" />
-              <span>Firebase Cloud Connected</span>
-            </span>
-          </div>
+          <div></div>
         </div>
       </div>
 
@@ -210,34 +193,36 @@ export const Navbar = () => {
             <ChevronDown size={13} color="#059669" />
           </button>
 
-          {/* Language Selector Dropdown */}
+          {/* Multilingual Dropdown Selector (English, Kannada, Hindi) */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
-            gap: '4px', 
-            backgroundColor: '#ffffff', 
-            border: '1px solid #cbd5e1', 
-            padding: '4px 10px', 
+            gap: '6px', 
+            backgroundColor: '#f8fafc', 
+            border: '1.5px solid #e2e8f0', 
+            padding: '5px 12px', 
             borderRadius: '20px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+            boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)',
+            transition: 'border-color 0.2s ease'
           }}>
-            <Globe size={13} color="#059669" />
+            <Globe size={14} color="#2563eb" />
             <select
               value={selectedLanguage}
               onChange={(e) => changeLanguage(e.target.value)}
+              aria-label="Select Application Language"
               style={{
                 border: 'none',
                 backgroundColor: 'transparent',
                 fontSize: '12px',
                 fontWeight: '700',
-                color: '#334155',
+                color: '#0f172a',
                 outline: 'none',
                 cursor: 'pointer'
               }}
             >
-              <option value="en">🇬🇧 English</option>
-              <option value="kn">🇮🇳 ಕನ್ನಡ</option>
-              <option value="hi">🇮🇳 हिंदी</option>
+              <option value="en">English</option>
+              <option value="kn">ಕನ್ನಡ (Kannada)</option>
+              <option value="hi">हिंदी (Hindi)</option>
             </select>
           </div>
         </div>
@@ -250,12 +235,12 @@ export const Navbar = () => {
               alignItems: 'center',
               backgroundColor: '#f8fafc',
               borderRadius: '24px',
-              border: searchFocused ? '2px solid #10b981' : '1.5px solid #e2e8f0',
+              border: searchFocused ? '2px solid #2563eb' : '1.5px solid #e2e8f0',
               padding: '2px 6px 2px 14px',
-              boxShadow: searchFocused ? '0 0 0 4px rgba(16, 185, 129, 0.15)' : '0 2px 4px rgba(0,0,0,0.02)',
+              boxShadow: searchFocused ? '0 0 0 4px rgba(37, 99, 235, 0.15)' : '0 2px 4px rgba(0,0,0,0.02)',
               transition: 'all 0.2s ease'
             }}>
-              <Search size={17} color={searchFocused ? '#059669' : '#94a3b8'} />
+              <Search size={17} color={searchFocused ? '#2563eb' : '#94a3b8'} />
               <input
                 type="text"
                 value={searchQuery}
@@ -289,9 +274,9 @@ export const Navbar = () => {
                 type="button"
                 onClick={() => setIsVoiceSearchOpen(true)}
                 style={{
-                  background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-                  border: '1px solid #a7f3d0',
-                  color: '#059669',
+                  background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                  border: '1px solid #bfdbfe',
+                  color: '#2563eb',
                   padding: '6px 10px',
                   borderRadius: '18px',
                   display: 'flex',
@@ -302,7 +287,7 @@ export const Navbar = () => {
                   cursor: 'pointer',
                   transition: 'all 0.2s ease'
                 }}
-                title="Search using Voice (Kannada / English)"
+                title="Search using Voice (Kannada / English / Hindi)"
                 onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
                 onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
               >
@@ -315,35 +300,60 @@ export const Navbar = () => {
 
         {/* Right Header Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* Smart AI Voice Assistant Pill */}
+          {/* Prominent Smart AI Voice Assistant with Active Listening Animation */}
           <button
+            type="button"
             onClick={() => setIsVoiceAssistanceOpen(true)}
             style={{
-              background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+              background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
               color: '#ffffff',
-              padding: '7px 14px',
+              padding: '8px 16px',
               borderRadius: '20px',
               fontSize: '12px',
               fontWeight: '800',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              border: 'none',
+              gap: '8px',
+              border: '1.5px solid #334155',
               cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
-              transition: 'all 0.2s ease'
+              boxShadow: '0 4px 14px rgba(15, 23, 42, 0.22)',
+              transition: 'all 0.2s ease',
+              position: 'relative'
             }}
+            title="Voice Assistant (English, Kannada, Hindi)"
+            aria-label="Activate Voice Assistant"
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 18px rgba(16, 185, 129, 0.45)';
+              e.currentTarget.style.boxShadow = '0 6px 18px rgba(37, 99, 235, 0.35)';
+              e.currentTarget.style.borderColor = '#2563eb';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.35)';
+              e.currentTarget.style.boxShadow = '0 4px 14px rgba(15, 23, 42, 0.22)';
+              e.currentTarget.style.borderColor = '#334155';
             }}
           >
-            <Sparkles size={14} color="#fef08a" />
-            <span>Voice AI</span>
+            {/* Active Listening Pulse Ring Indicator */}
+            <span style={{
+              position: 'relative',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '18px',
+              height: '18px'
+            }}>
+              <span style={{
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
+                borderRadius: '50%',
+                backgroundColor: '#38bdf8',
+                opacity: 0.6,
+                animation: 'pulseGlowRing 1.8s infinite'
+              }} />
+              <Mic size={14} color="#38bdf8" style={{ position: 'relative', zIndex: 1 }} />
+            </span>
+            <span>Voice Assistant</span>
           </button>
 
           {/* Admin Panel Direct Button (for Admin role) */}

@@ -518,8 +518,19 @@ export const AuthModal = () => {
   // Quick Demo Fast Login
 
 
+  const handleDismiss = () => {
+    try {
+      sessionStorage.setItem('vs_signin_dismissed', 'true');
+    } catch (e) {}
+    setIsAuthModalOpen(false);
+  };
+
   return (
-    <div style={{
+    <div 
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleDismiss();
+      }}
+      style={{
       position: 'fixed',
       inset: 0,
       backgroundColor: 'rgba(15, 23, 42, 0.82)',
@@ -549,7 +560,7 @@ export const AuthModal = () => {
         {/* Close Button with 44x44px accessible touch target */}
         <button
           type="button"
-          onClick={() => setIsAuthModalOpen(false)}
+          onClick={handleDismiss}
           className="btn-close-modal touch-target-44"
           style={{
             position: 'absolute',
