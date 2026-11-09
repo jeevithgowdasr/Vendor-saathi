@@ -552,7 +552,7 @@ img {
 
 /* Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: #ffffff;
   font-family: var(--font-heading);
   font-weight: 700;
@@ -564,7 +564,7 @@ img {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.35);
+  box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.35);
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
@@ -580,9 +580,9 @@ img {
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px 0 rgba(16, 185, 129, 0.45);
+  box-shadow: 0 8px 20px 0 rgba(37, 99, 235, 0.45);
 }
 
 .btn-primary:hover::after {
@@ -591,7 +591,7 @@ img {
 
 .btn-primary:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px 0 rgba(16, 185, 129, 0.3);
+  box-shadow: 0 2px 8px 0 rgba(37, 99, 235, 0.3);
 }
 
 .btn-amber {

@@ -1343,6 +1343,49 @@ export const subscribeToVendors = (callback) => {
 };
 
 /**
+ * Query & Subscribe to Pending Vendor Registrations in Firestore
+ */
+export const subscribeToPendingVendors = (callback) => {
+  try {
+    const usersCol = collection(db, "users");
+    const q = query(usersCol, where("role", "==", "vendor"), where("status", "==", "pending"));
+    return onSnapshot(q, (snapshot) => {
+      const pending = [];
+      snapshot.forEach((d) => {
+        pending.push({ id: d.id, uid: d.id, ...d.data() });
+      });
+      callback(pending);
+    }, (err) => {
+      console.warn("subscribeToPendingVendors snapshot warning:", err.message);
+      callback([]);
+    });
+  } catch (error) {
+    console.warn("subscribeToPendingVendors init error:", error.message);
+    callback([]);
+    return () => {};
+  }
+};
+
+/**
+ * Fetch Pending Vendor Registrations from Firestore
+ */
+export const getPendingVendorsFromFirebase = async () => {
+  try {
+    const usersCol = collection(db, "users");
+    const q = query(usersCol, where("role", "==", "vendor"), where("status", "==", "pending"));
+    const snapshot = await getDocs(q);
+    const pending = [];
+    snapshot.forEach((d) => {
+      pending.push({ id: d.id, uid: d.id, ...d.data() });
+    });
+    return { success: true, vendors: pending };
+  } catch (error) {
+    console.warn("getPendingVendors error:", error.message);
+    return { success: false, vendors: [] };
+  }
+};
+
+/**
  * Dedicated Vendor Registration directly via Firebase Auth & Firestore
  */
 /**

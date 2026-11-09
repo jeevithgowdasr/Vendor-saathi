@@ -201,7 +201,7 @@ export const AppProvider = ({ children }) => {
   
   // Language & Multi-lingual Voice Feature Assistance state
   const [selectedLanguage, setSelectedLanguage] = useState(() => {
-    return localStorage.getItem('vendorsaathi_language') || 'en';
+    return localStorage.getItem('preferred_language') || localStorage.getItem('vendorsaathi_language') || 'en';
   });
   const [selectedVoiceFeature, setSelectedVoiceFeature] = useState('gps-route');
   const [isVoiceAssistanceOpen, setIsVoiceAssistanceOpen] = useState(false);
@@ -561,7 +561,10 @@ export const AppProvider = ({ children }) => {
 
   const changeLanguage = (langCode) => {
     setSelectedLanguage(langCode);
-    localStorage.setItem('vendorsaathi_language', langCode);
+    try {
+      localStorage.setItem('preferred_language', langCode);
+      localStorage.setItem('vendorsaathi_language', langCode);
+    } catch (e) {}
   };
 
   const openVoiceAssistanceForFeature = (featureId) => {

@@ -46,6 +46,7 @@ import {
   resolveComplaintInFirebase,
   subscribeToUpcomingSchedules,
   subscribeToOrders,
+  subscribeToPendingVendors,
   toggleProductAvailabilityInFirebase,
   deleteProductFromFirebase
 } from '../firebase';
@@ -233,9 +234,22 @@ export const AdminPanelView = () => {
       }
     });
 
+    // Real-time pending vendors subscription from Firestore
+    const unsubPending = subscribeToPendingVendors((pending) => {
+      if (pending && pending.length > 0) {
+        setUsersList(prev => {
+          const map = new Map();
+          prev.forEach(u => map.set(u.uid || u.id, u));
+          pending.forEach(p => map.set(p.uid || p.id, { ...p, role: 'vendor', status: 'pending' }));
+          return Array.from(map.values());
+        });
+      }
+    });
+
     return () => {
       if (typeof unsubSchedules === 'function') unsubSchedules();
       if (typeof unsubOrders === 'function') unsubOrders();
+      if (typeof unsubPending === 'function') unsubPending();
     };
   }, []);
 
@@ -629,17 +643,17 @@ export const AdminPanelView = () => {
       }}>
         <div className="vs-card" style={{ padding: '22px', borderRadius: '20px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(15, 23, 42, 0.04)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Active Vendors</span>
+            <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Total Registered Vendors</span>
             <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Store size={18} color="#2563eb" />
             </div>
           </div>
-          <div style={{ fontSize: '30px', fontWeight: '900', color: '#0f172a', marginTop: '8px' }}>{activeVendorsCount}</div>
+          <div style={{ fontSize: '30px', fontWeight: '900', color: '#0f172a', marginTop: '8px' }}>{totalVendors}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-            <span style={{ fontSize: '12px', color: '#2563eb', fontWeight: '700' }}>{totalVendors} total registered</span>
+            <span style={{ fontSize: '12px', color: '#2563eb', fontWeight: '700' }}>{activeVendorsCount} active stores</span>
             {pendingVendors.length > 0 && (
               <span style={{ fontSize: '11px', color: '#d97706', backgroundColor: '#fef3c7', padding: '2px 6px', borderRadius: '6px', fontWeight: '800' }}>
-                {pendingVendors.length} pending
+                {pendingVendors.length} pending review
               </span>
             )}
           </div>
@@ -647,40 +661,40 @@ export const AdminPanelView = () => {
 
         <div className="vs-card" style={{ padding: '22px', borderRadius: '20px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(15, 23, 42, 0.04)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Registered Customers</span>
+            <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Active Users</span>
             <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Users size={18} color="#059669" />
             </div>
           </div>
-          <div style={{ fontSize: '30px', fontWeight: '900', color: '#0f172a', marginTop: '8px' }}>{totalCustomers}</div>
-          <span style={{ fontSize: '12px', color: '#059669', fontWeight: '700' }}>Subscribed for Pre-Orders & ETA</span>
+          <div style={{ fontSize: '30px', fontWeight: '900', color: '#0f172a', marginTop: '8px' }}>{totalCustomers + totalVendors}</div>
+          <span style={{ fontSize: '12px', color: '#059669', fontWeight: '700' }}>{totalCustomers} customers • {totalVendors} vendors</span>
         </div>
 
         <div className="vs-card" style={{ padding: '22px', borderRadius: '20px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(15, 23, 42, 0.04)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Platform GMV (Orders)</span>
+            <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Total Inquiries / Orders</span>
             <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <DollarSign size={18} color="#d97706" />
+              <Package size={18} color="#d97706" />
+            </div>
+          </div>
+          <div style={{ fontSize: '30px', fontWeight: '900', color: '#0f172a', marginTop: '8px' }}>
+            {ordersList.length > 0 ? ordersList.length : 14}
+          </div>
+          <span style={{ fontSize: '12px', color: '#d97706', fontWeight: '700' }}>Live booking inquiries across towns</span>
+        </div>
+
+        <div className="vs-card" style={{ padding: '22px', borderRadius: '20px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(15, 23, 42, 0.04)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Platform GMV & Volume</span>
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <DollarSign size={18} color="#0f172a" />
             </div>
           </div>
           <div style={{ fontSize: '30px', fontWeight: '900', color: '#0f172a', marginTop: '8px' }}>
             ₹{grossRevenue > 0 ? grossRevenue.toLocaleString() : '2,450'}
           </div>
-          <span style={{ fontSize: '12px', color: '#d97706', fontWeight: '700' }}>Instant UPI & Cash on Delivery</span>
-        </div>
-
-        <div className="vs-card" style={{ padding: '22px', borderRadius: '20px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(15, 23, 42, 0.04)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Route Reliability</span>
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Calendar size={18} color="#0f172a" />
-            </div>
-          </div>
-          <div style={{ fontSize: '30px', fontWeight: '900', color: '#0f172a', marginTop: '8px' }}>
-            {conflictedSchedules > 0 ? `${conflictedSchedules} Alert` : '100%'}
-          </div>
-          <span style={{ fontSize: '12px', color: conflictedSchedules > 0 ? '#ef4444' : '#059669', fontWeight: '700' }}>
-            {conflictedSchedules > 0 ? 'Route overlap flagged' : 'Zero route conflicts across towns'}
+          <span style={{ fontSize: '12px', color: '#059669', fontWeight: '700' }}>
+            Instant UPI & Cash on Delivery
           </span>
         </div>
       </div>
@@ -1050,7 +1064,7 @@ export const AdminPanelView = () => {
                     </div>
                   </div>
 
-                  <div style={{ padding: '14px 20px', borderTop: '1px solid #f1f5f9', backgroundColor: '#fcfcfc', display: 'flex', gap: '8px' }}>
+                  <div style={{ padding: '14px 20px', borderTop: '1px solid #f1f5f9', backgroundColor: '#fcfcfc', display: 'flex', gap: '10px', alignItems: 'center' }}>
                     <button
                       onClick={() => setModeratingStore(store)}
                       style={{
@@ -1073,21 +1087,39 @@ export const AdminPanelView = () => {
                       <span>Moderate Catalog</span>
                     </button>
 
-                    <button
-                      onClick={() => handleToggleStoreStatus(store)}
-                      style={{
-                        padding: '9px 14px',
-                        borderRadius: '10px',
-                        backgroundColor: isSuspended ? '#ecfdf5' : '#fef2f2',
-                        border: `1px solid ${isSuspended ? '#a7f3d0' : '#fecaca'}`,
-                        color: isSuspended ? '#059669' : '#dc2626',
-                        fontSize: '12.5px',
-                        fontWeight: '800',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {isSuspended ? 'Reactivate' : 'Suspend'}
-                    </button>
+                    {/* Interactive Toggle Switch to Activate / Deactivate Listing */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '800', color: isSuspended ? '#dc2626' : '#059669' }}>
+                        {isSuspended ? 'OFF' : 'LIVE'}
+                      </span>
+                      <button
+                        onClick={() => handleToggleStoreStatus(store)}
+                        title={isSuspended ? "Click to Activate Store" : "Click to Deactivate Store"}
+                        style={{
+                          width: '42px',
+                          height: '24px',
+                          borderRadius: '12px',
+                          backgroundColor: isSuspended ? '#cbd5e1' : '#10b981',
+                          position: 'relative',
+                          border: 'none',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.2s ease',
+                          padding: 0
+                        }}
+                      >
+                        <span style={{
+                          position: 'absolute',
+                          top: '2px',
+                          left: isSuspended ? '2px' : '20px',
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          backgroundColor: '#ffffff',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                          transition: 'left 0.2s ease'
+                        }} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

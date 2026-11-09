@@ -515,11 +515,9 @@ export const AuthModal = () => {
     }
   };
 
-  // Quick Demo Fast Login
-
-
   const handleDismiss = () => {
     try {
+      sessionStorage.setItem('signin_popup_dismissed', 'true');
       sessionStorage.setItem('vs_signin_dismissed', 'true');
     } catch (e) {}
     setIsAuthModalOpen(false);

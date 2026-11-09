@@ -44,6 +44,7 @@ export const Navbar = () => {
     setIsVoiceSearchOpen,
     selectedLanguage,
     changeLanguage,
+    isVoiceAssistanceOpen,
     setIsVoiceAssistanceOpen,
     secureLogout,
     updateUserProfile,
@@ -220,9 +221,9 @@ export const Navbar = () => {
                 cursor: 'pointer'
               }}
             >
-              <option value="en">English</option>
-              <option value="kn">ಕನ್ನಡ (Kannada)</option>
-              <option value="hi">हिंदी (Hindi)</option>
+              <option value="en">English (EN)</option>
+              <option value="kn">ಕನ್ನಡ (KN)</option>
+              <option value="hi">हिंदी (HI)</option>
             </select>
           </div>
         </div>
@@ -303,9 +304,10 @@ export const Navbar = () => {
           {/* Prominent Smart AI Voice Assistant with Active Listening Animation */}
           <button
             type="button"
-            onClick={() => setIsVoiceAssistanceOpen(true)}
+            onClick={() => setIsVoiceAssistanceOpen(prev => !prev)}
+            className={isVoiceAssistanceOpen ? 'animate-pulse text-indigo-600' : ''}
             style={{
-              background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+              background: isVoiceAssistanceOpen ? 'linear-gradient(135deg, #312e81 0%, #1e1b4b 100%)' : 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
               color: '#ffffff',
               padding: '8px 16px',
               borderRadius: '20px',
@@ -314,9 +316,9 @@ export const Navbar = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              border: '1.5px solid #334155',
+              border: isVoiceAssistanceOpen ? '1.5px solid #6366f1' : '1.5px solid #334155',
               cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(15, 23, 42, 0.22)',
+              boxShadow: isVoiceAssistanceOpen ? '0 0 0 3px rgba(99, 102, 241, 0.35)' : '0 4px 14px rgba(15, 23, 42, 0.22)',
               transition: 'all 0.2s ease',
               position: 'relative'
             }}
@@ -329,8 +331,8 @@ export const Navbar = () => {
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 14px rgba(15, 23, 42, 0.22)';
-              e.currentTarget.style.borderColor = '#334155';
+              e.currentTarget.style.boxShadow = isVoiceAssistanceOpen ? '0 0 0 3px rgba(99, 102, 241, 0.35)' : '0 4px 14px rgba(15, 23, 42, 0.22)';
+              e.currentTarget.style.borderColor = isVoiceAssistanceOpen ? '#6366f1' : '#334155';
             }}
           >
             {/* Active Listening Pulse Ring Indicator */}
@@ -342,16 +344,16 @@ export const Navbar = () => {
               width: '18px',
               height: '18px'
             }}>
-              <span style={{
+              <span className={isVoiceAssistanceOpen ? 'animate-pulse text-indigo-600' : ''} style={{
                 position: 'absolute',
                 width: '100%',
                 height: '100%',
                 borderRadius: '50%',
-                backgroundColor: '#38bdf8',
+                backgroundColor: isVoiceAssistanceOpen ? '#818cf8' : '#38bdf8',
                 opacity: 0.6,
                 animation: 'pulseGlowRing 1.8s infinite'
               }} />
-              <Mic size={14} color="#38bdf8" style={{ position: 'relative', zIndex: 1 }} />
+              <Mic size={14} color={isVoiceAssistanceOpen ? '#a5b4fc' : '#38bdf8'} style={{ position: 'relative', zIndex: 1 }} />
             </span>
             <span>Voice Assistant</span>
           </button>
