@@ -119,7 +119,7 @@ function formatTimeMillis(millis) {
  */
 export async function detectScheduleConflict(proposed) {
   const {
-    vendorId = 'v1',
+    vendorId = '',
     vendorCategory = 'Vegetables',
     date,
     area,
@@ -306,7 +306,7 @@ export async function detectScheduleConflict(proposed) {
 /**
  * Fetch all planned schedules for a vendor
  */
-export const fetchVendorSchedules = async (vendorId = 'v1', { status, date } = {}) => {
+export const fetchVendorSchedules = async (vendorId = '', { status, date } = {}) => {
   try {
     const fbResult = await getVendorSchedulesFromFirebase(vendorId, { status, date });
     if (fbResult.success && fbResult.schedules && fbResult.schedules.length > 0) {

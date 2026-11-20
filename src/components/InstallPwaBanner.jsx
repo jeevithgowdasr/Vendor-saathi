@@ -92,11 +92,11 @@ export const InstallPwaBanner = () => {
         animation: 'modalPop 0.3s ease-out'
       }}>
         <div style={{
-          background: 'linear-gradient(135deg, #064e3b 0%, #047857 60%, #065f46 100%)',
+          background: 'linear-gradient(135deg, #0f172a 0%, #1d4ed8 60%, #1e40af 100%)',
           borderRadius: '20px',
           padding: '14px 18px',
           color: '#ffffff',
-          boxShadow: '0 20px 40px -10px rgba(6, 78, 59, 0.45), 0 0 0 1.5px rgba(52, 211, 153, 0.3)',
+          boxShadow: '0 20px 40px -10px rgba(15, 23, 42, 0.45), 0 0 0 1.5px rgba(56, 189, 248, 0.3)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -127,7 +127,7 @@ export const InstallPwaBanner = () => {
                   PWA
                 </span>
               </div>
-              <p style={{ fontSize: '11.5px', color: '#a7f3d0', margin: '2px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <p style={{ fontSize: '11.5px', color: '#bfdbfe', margin: '2px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 Fast 1-Tap Access • Offline Ready • Express Deliveries
               </p>
             </div>
@@ -139,7 +139,7 @@ export const InstallPwaBanner = () => {
               onClick={handleInstallClick}
               style={{
                 backgroundColor: '#ffffff',
-                color: '#065f46',
+                color: '#1e40af',
                 border: 'none',
                 padding: '9px 16px',
                 borderRadius: '12px',
@@ -153,7 +153,7 @@ export const InstallPwaBanner = () => {
                 transition: 'all 0.2s ease'
               }}
             >
-              <Download size={15} color="#059669" />
+              <Download size={15} color="#2563eb" />
               <span>Install</span>
             </button>
 
@@ -200,13 +200,13 @@ export const InstallPwaBanner = () => {
             width: '100%',
             textAlign: 'center',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            border: '1.5px solid #a7f3d0'
+            border: '1.5px solid #bfdbfe'
           }}>
             <div style={{
               width: '56px',
               height: '56px',
               borderRadius: '18px',
-              backgroundColor: '#ecfdf5',
+              backgroundColor: '#eff6ff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -216,7 +216,7 @@ export const InstallPwaBanner = () => {
               📱
             </div>
 
-            <h3 style={{ fontSize: '18px', fontWeight: '900', color: '#064e3b', marginBottom: '8px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '900', color: '#0f172a', marginBottom: '8px' }}>
               Install on iPhone / iPad
             </h3>
             <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '20px', lineHeight: 1.5 }}>
@@ -225,14 +225,14 @@ export const InstallPwaBanner = () => {
 
             <div style={{ textAlign: 'left', backgroundColor: '#f8fafc', padding: '16px', borderRadius: '16px', marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                <span style={{ backgroundColor: '#059669', color: '#ffffff', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900' }}>1</span>
+                <span style={{ backgroundColor: '#2563eb', color: '#ffffff', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900' }}>1</span>
                 <span style={{ fontSize: '13px', color: '#334155', fontWeight: '700' }}>
                   Tap the <strong>Share</strong> button <Share size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /> at the bottom.
                 </span>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ backgroundColor: '#059669', color: '#ffffff', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900' }}>2</span>
+                <span style={{ backgroundColor: '#2563eb', color: '#ffffff', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900' }}>2</span>
                 <span style={{ fontSize: '13px', color: '#334155', fontWeight: '700' }}>
                   Scroll down and tap <strong>"Add to Home Screen"</strong>.
                 </span>

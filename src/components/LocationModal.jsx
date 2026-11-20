@@ -58,21 +58,7 @@ export const LocationModal = () => {
       setIsLocationModalOpen(false);
     } catch (err) {
       console.warn("Location modal GPS error:", err);
-      // Fallback
-      const detected = {
-        name: 'Mijar, Moodbidri (GPS Calibrated)',
-        village: 'Mijar',
-        town: 'Moodbidri',
-        district: 'Dakshina Kannada',
-        pincode: '574225',
-        lat: 13.0682,
-        lng: 74.9961,
-        accuracy: 15,
-        source: 'GPS_ESTIMATE'
-      };
-      setCurrentLocation(detected);
-      showToast('📍 Using calibrated area coordinates for Mijar / Moodbidri');
-      setIsLocationModalOpen(false);
+      showToast('⚠️ Unable to get exact GPS coordinates. Please allow location permissions in your browser or select your locality below.', 'error');
     } finally {
       setIsDetecting(false);
     }
@@ -138,7 +124,7 @@ export const LocationModal = () => {
         borderRadius: '28px',
         backgroundColor: '#ffffff',
         boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)',
-        border: '1.5px solid #d1fae5',
+        border: '1.5px solid #dbeafe',
         position: 'relative'
       }}>
         {/* Modal Header */}
@@ -167,8 +153,8 @@ export const LocationModal = () => {
         {/* Current Active Location Badge */}
         {currentLocation && (
           <div style={{
-            backgroundColor: '#f0fdf4',
-            border: '1.5px solid #a7f3d0',
+            backgroundColor: '#eff6ff',
+            border: '1.5px solid #bfdbfe',
             borderRadius: '16px',
             padding: '12px 16px',
             marginBottom: '16px',
@@ -177,13 +163,13 @@ export const LocationModal = () => {
             justifyContent: 'space-between'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Crosshair size={18} color="#059669" />
+              <Crosshair size={18} color="#2563eb" />
               <div>
-                <strong style={{ fontSize: '13px', color: '#064e3b', display: 'block' }}>
+                <strong style={{ fontSize: '13px', color: '#0f172a', display: 'block' }}>
                   {currentLocation.name}
                 </strong>
                 {currentLocation.lat && (
-                  <span style={{ fontSize: '11px', color: '#059669' }}>
+                  <span style={{ fontSize: '11px', color: '#2563eb' }}>
                     🛰️ Lat: {currentLocation.lat.toFixed(4)}°, Lng: {currentLocation.lng.toFixed(4)}°
                   </span>
                 )}
@@ -242,7 +228,7 @@ export const LocationModal = () => {
                 right: '8px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                backgroundColor: '#10b981',
+                backgroundColor: '#2563eb',
                 color: '#ffffff',
                 border: 'none',
                 padding: '6px 12px',
@@ -289,11 +275,11 @@ export const LocationModal = () => {
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#10b981'}
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#2563eb'}
                   onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Home size={16} color="#059669" />
+                    <Home size={16} color="#2563eb" />
                     <div>
                       <strong style={{ fontSize: '13px', color: '#0f172a' }}>{addr.tag} ({addr.name})</strong>
                       <span style={{ fontSize: '11.5px', color: '#64748b', display: 'block' }}>{addr.address}</span>
@@ -329,8 +315,8 @@ export const LocationModal = () => {
                   transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#ecfdf5';
-                  e.currentTarget.style.borderColor = '#a7f3d0';
+                  e.currentTarget.style.backgroundColor = '#eff6ff';
+                  e.currentTarget.style.borderColor = '#bfdbfe';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = '#f8fafc';
@@ -338,7 +324,7 @@ export const LocationModal = () => {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <MapPin size={16} color="#059669" />
+                  <MapPin size={16} color="#2563eb" />
                   <div>
                     <strong style={{ fontSize: '13.5px', color: '#0f172a' }}>{loc.name}</strong>
                     <span style={{ fontSize: '11.5px', color: '#64748b', display: 'block' }}>

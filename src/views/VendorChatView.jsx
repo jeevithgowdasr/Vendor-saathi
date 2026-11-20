@@ -53,16 +53,16 @@ export const VendorChatView = () => {
         onClick={() => hasOrders ? navigateTo('order-tracking') : navigateTo('nearby-vendors')}
         style={{ 
           fontSize: '13.5px', 
-          color: '#059669', 
+          color: '#2563eb', 
           fontWeight: '800', 
           display: 'inline-flex', 
           alignItems: 'center', 
           gap: '6px', 
           marginBottom: '16px',
-          backgroundColor: '#ecfdf5',
+          backgroundColor: '#eff6ff',
           padding: '6px 14px',
           borderRadius: '12px',
-          border: '1px solid #a7f3d0',
+          border: '1px solid #bfdbfe',
           cursor: 'pointer'
         }}
       >
@@ -83,7 +83,7 @@ export const VendorChatView = () => {
       }}>
         {/* Vendor Header */}
         <div style={{
-          background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
+          background: 'linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%)',
           color: '#ffffff',
           padding: '16px 20px',
           display: 'flex',
@@ -94,7 +94,7 @@ export const VendorChatView = () => {
             <img src={vendor.avatar} alt={vendor.name} style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #ffffff' }} />
             <div>
               <strong style={{ fontSize: '16px', display: 'block', lineHeight: 1.2, fontWeight: '800' }}>{vendor.name}</strong>
-              <span style={{ fontSize: '11.5px', color: '#a7f3d0', fontWeight: '600' }}>🟢 Online • Verified Local Store</span>
+              <span style={{ fontSize: '11.5px', color: '#bfdbfe', fontWeight: '600' }}>🟢 Online • Verified Local Store</span>
             </div>
           </div>
 
@@ -122,7 +122,7 @@ export const VendorChatView = () => {
               style={{
                 alignSelf: msg.sender === 'customer' ? 'flex-end' : 'flex-start',
                 background: msg.sender === 'customer' 
-                  ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' 
+                  ? 'linear-gradient(135deg, #2563eb 0%, #2563eb 100%)' 
                   : '#ffffff',
                 color: msg.sender === 'customer' ? '#ffffff' : '#0f172a',
                 padding: '12px 16px',
@@ -153,9 +153,9 @@ export const VendorChatView = () => {
               alignItems: 'center',
               gap: '4px'
             }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', animation: 'typingDots 1.2s infinite 0s' }} />
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', animation: 'typingDots 1.2s infinite 0.2s' }} />
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', animation: 'typingDots 1.2s infinite 0.4s' }} />
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2563eb', animation: 'typingDots 1.2s infinite 0s' }} />
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2563eb', animation: 'typingDots 1.2s infinite 0.2s' }} />
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2563eb', animation: 'typingDots 1.2s infinite 0.4s' }} />
             </div>
           )}
         </div>

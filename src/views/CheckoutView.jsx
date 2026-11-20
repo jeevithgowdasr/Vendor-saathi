@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import { getLocalizedProductName, getLocalizedUnit } from '../utils/productLocalization';
 import { 
   MapPin, 
   Wallet, 
@@ -30,9 +31,9 @@ import { EmptyStateFallback } from '../components/EmptyStateFallback';
 import { CACHE_KEYS } from '../utils/cacheManager';
 
 export const CheckoutView = () => {
-  const { cart, user, placeOrder, navigateTo, showToast, products, removeFromCart } = useApp();
-  const [selectedAddress, setSelectedAddress] = useState(user?.address || 'Mijar Village, Moodbidri, Karnataka - 574225');
-  const [deliveryInstructions, setDeliveryInstructions] = useState('Call before arrival. Leave at front door if away.');
+  const { cart, user, placeOrder, navigateTo, showToast, products, removeFromCart, t, selectedLanguage } = useApp();
+  const [selectedAddress, setSelectedAddress] = useState(user?.address || '');
+  const [deliveryInstructions, setDeliveryInstructions] = useState('');
   const [deliverySlot, setDeliverySlot] = useState('instant'); // instant | evening | tomorrow
   const [paymentMethod, setPaymentMethod] = useState('UPI'); // UPI | Card | Cash on Delivery
   const [isUpiModalOpen, setIsUpiModalOpen] = useState(false);
@@ -40,7 +41,7 @@ export const CheckoutView = () => {
   const [cardNumber, setCardNumber] = useState('');
   const [cardExp, setCardExp] = useState('');
   const [cardCvc, setCardCvc] = useState('');
-  const [cardName, setCardName] = useState(user?.name || 'Customer');
+  const [cardName, setCardName] = useState(user?.name || '');
   const [cardError, setCardError] = useState('');
 
   // Live stock telemetry validation against current catalog
@@ -128,7 +129,7 @@ export const CheckoutView = () => {
         stripePaymentId: cardResult.paymentIntentId,
         paymentStatus: `Paid via Stripe Card Gateway (${cardResult.paymentIntentId.slice(0, 16)})`,
         deliveryAddress: selectedAddress,
-        vendorId: cart[0]?.product.vendorId || 'v1',
+        vendorId: cart[0]?.product.vendorId || '',
         vendorName: cart[0]?.product.vendorName || 'Local Partner Store'
       });
       return;
@@ -150,7 +151,7 @@ export const CheckoutView = () => {
       paymentMethod: 'Cash on Delivery (Doorstep)',
       paymentStatus: 'Pending (Cash on Delivery)',
       deliveryAddress: selectedAddress,
-      vendorId: cart[0]?.product.vendorId || 'v1',
+      vendorId: cart[0]?.product.vendorId || '',
       vendorName: cart[0]?.product.vendorName || 'Local Partner Store'
     });
   }, {
@@ -160,15 +161,7 @@ export const CheckoutView = () => {
     }
   });
 
-  const handleFillTestCard = (e) => {
-    e.preventDefault();
-    setCardNumber('4242 4242 4242 4242');
-    setCardExp('12/28');
-    setCardCvc('888');
-    setCardName(user?.name || 'Customer');
-    setCardError('');
-    showToast('🧪 Stripe Test Card details auto-filled!');
-  };
+
 
   const handlePlaceOrderSubmit = async (e) => {
     e.preventDefault();
@@ -217,7 +210,7 @@ export const CheckoutView = () => {
       stripePaymentId: upiResult.stripePaymentId,
       paymentStatus: upiResult.paymentStatus || `Paid via Stripe UPI (UTR #${upiResult.upiRefId})`,
       deliveryAddress: selectedAddress,
-      vendorId: cart[0]?.product.vendorId || 'v1',
+      vendorId: cart[0]?.product.vendorId || '',
       vendorName: cart[0]?.product.vendorName || 'Local Partner Store'
     });
   };
@@ -228,28 +221,28 @@ export const CheckoutView = () => {
         onClick={() => navigateTo('cart')}
         style={{ 
           fontSize: '13.5px', 
-          color: '#059669', 
+          color: '#2563eb', 
           fontWeight: '800', 
           display: 'inline-flex', 
           alignItems: 'center', 
           gap: '6px', 
           marginBottom: '20px',
-          backgroundColor: '#ecfdf5',
+          backgroundColor: '#eff6ff',
           padding: '6px 14px',
           borderRadius: '20px',
-          border: '1px solid #a7f3d0',
+          border: '1px solid #bfdbfe',
           cursor: 'pointer'
         }}
       >
-        <ArrowLeft size={16} /> Back to Cart
+        <ArrowLeft size={16} /> {t('checkout.backToCart', 'Back to Cart')}
       </button>
 
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a', letterSpacing: '-0.02em', margin: 0 }}>
-          🛒 Final Review & Secure Checkout
+          🛒 {t('checkout.title', 'Checkout & Delivery')}
         </h1>
         <p style={{ fontSize: '14px', color: '#64748b', marginTop: '4px', margin: 0 }}>
-          Select delivery slot, verify village address and choose instant UPI or Stripe payment.
+          {t('checkout.slotInstantDesc', 'Select delivery slot, verify village address and choose instant payment.')}
         </p>
       </div>
 
@@ -306,20 +299,20 @@ export const CheckoutView = () => {
           <div className="vs-card" style={{ padding: '24px', borderRadius: '24px', backgroundColor: '#ffffff' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ backgroundColor: '#ecfdf5', padding: '8px', borderRadius: '12px', color: '#059669' }}>
+                <div style={{ backgroundColor: '#eff6ff', padding: '8px', borderRadius: '12px', color: '#2563eb' }}>
                   <MapPin size={20} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '16px', fontWeight: '800', margin: 0, color: '#0f172a' }}>Delivery Location</h3>
-                  <span style={{ fontSize: '12px', color: '#059669', fontWeight: '700' }}>GPS Coordinates Calibrated</span>
+                  <h3 style={{ fontSize: '16px', fontWeight: '800', margin: 0, color: '#0f172a' }}>{t('checkout.deliveryLocation', 'Delivery Location')}</h3>
+                  <span style={{ fontSize: '12px', color: '#2563eb', fontWeight: '700' }}>{t('checkout.gpsCalibrated', 'GPS Coordinates Calibrated')}</span>
                 </div>
               </div>
               <button 
                 type="button"
                 onClick={() => navigateTo('profile')}
-                style={{ fontSize: '12.5px', color: '#059669', fontWeight: '800', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                style={{ fontSize: '12.5px', color: '#2563eb', fontWeight: '800', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
               >
-                Change Address
+                {t('checkout.changeAddress', 'Change Address')}
               </button>
             </div>
 
@@ -363,7 +356,7 @@ export const CheckoutView = () => {
                 <Clock size={20} />
               </div>
               <div>
-                <h3 style={{ fontSize: '16px', fontWeight: '800', margin: 0, color: '#0f172a' }}>Delivery Speed & Time Slot</h3>
+                <h3 style={{ fontSize: '16px', fontWeight: '800', margin: 0, color: '#0f172a' }}>{t('checkout.deliverySlotTitle', 'Delivery Speed & Time Slot')}</h3>
                 <span style={{ fontSize: '12px', color: '#475569' }}>Delivered directly from nearest local vendor</span>
               </div>
             </div>
@@ -376,18 +369,18 @@ export const CheckoutView = () => {
                 style={{
                   padding: '14px',
                   borderRadius: '16px',
-                  border: deliverySlot === 'instant' ? '2px solid #059669' : '1.5px solid #e2e8f0',
-                  backgroundColor: deliverySlot === 'instant' ? '#f0fdf4' : '#ffffff',
+                  border: deliverySlot === 'instant' ? '2px solid #2563eb' : '1.5px solid #e2e8f0',
+                  backgroundColor: deliverySlot === 'instant' ? '#eff6ff' : '#ffffff',
                   textAlign: 'left',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                  <Sparkles size={16} color="#059669" />
-                  <strong style={{ fontSize: '13.5px', color: '#0f172a' }}>⚡ Instant (20 Mins)</strong>
+                  <Sparkles size={16} color="#2563eb" />
+                  <strong style={{ fontSize: '13.5px', color: '#0f172a' }}>{t('checkout.slotInstantTitle', '⚡ Instant Express (20–30 mins)')}</strong>
                 </div>
-                <span style={{ fontSize: '11.5px', color: '#059669', fontWeight: '700', display: 'block' }}>Rider departing immediately</span>
+                <span style={{ fontSize: '11.5px', color: '#2563eb', fontWeight: '700', display: 'block' }}>{t('checkout.slotInstantDesc', 'Rider departing immediately')}</span>
               </button>
 
               <button
@@ -397,8 +390,8 @@ export const CheckoutView = () => {
                 style={{
                   padding: '14px',
                   borderRadius: '16px',
-                  border: deliverySlot === 'evening' ? '2px solid #059669' : '1.5px solid #e2e8f0',
-                  backgroundColor: deliverySlot === 'evening' ? '#f0fdf4' : '#ffffff',
+                  border: deliverySlot === 'evening' ? '2px solid #2563eb' : '1.5px solid #e2e8f0',
+                  backgroundColor: deliverySlot === 'evening' ? '#eff6ff' : '#ffffff',
                   textAlign: 'left',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease'
@@ -406,9 +399,9 @@ export const CheckoutView = () => {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                   <Clock size={16} color="#475569" />
-                  <strong style={{ fontSize: '13.5px', color: '#0f172a' }}>Evening Slot</strong>
+                  <strong style={{ fontSize: '13.5px', color: '#0f172a' }}>{t('checkout.slotEveningTitle', '🌆 Evening Harvest (5:00 PM – 7:30 PM)')}</strong>
                 </div>
-                <span style={{ fontSize: '11.5px', color: '#475569', display: 'block' }}>5:00 PM – 7:00 PM</span>
+                <span style={{ fontSize: '11.5px', color: '#475569', display: 'block' }}>{t('checkout.slotEveningDesc', 'Freshly packed from afternoon harvest')}</span>
               </button>
 
               <button
@@ -418,8 +411,8 @@ export const CheckoutView = () => {
                 style={{
                   padding: '14px',
                   borderRadius: '16px',
-                  border: deliverySlot === 'tomorrow' ? '2px solid #059669' : '1.5px solid #e2e8f0',
-                  backgroundColor: deliverySlot === 'tomorrow' ? '#f0fdf4' : '#ffffff',
+                  border: deliverySlot === 'tomorrow' ? '2px solid #2563eb' : '1.5px solid #e2e8f0',
+                  backgroundColor: deliverySlot === 'tomorrow' ? '#eff6ff' : '#ffffff',
                   textAlign: 'left',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease'
@@ -427,9 +420,9 @@ export const CheckoutView = () => {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                   <Truck size={16} color="#475569" />
-                  <strong style={{ fontSize: '13.5px', color: '#0f172a' }}>Tomorrow Morning</strong>
+                  <strong style={{ fontSize: '13.5px', color: '#0f172a' }}>{t('checkout.slotTomorrowTitle', '🌅 Tomorrow Morning (7:00 AM – 9:00 AM)')}</strong>
                 </div>
-                <span style={{ fontSize: '11.5px', color: '#475569', display: 'block' }}>7:00 AM – 9:00 AM</span>
+                <span style={{ fontSize: '11.5px', color: '#475569', display: 'block' }}>{t('checkout.slotTomorrowDesc', 'Direct sunrise harvest')}</span>
               </button>
             </div>
           </div>
@@ -441,7 +434,7 @@ export const CheckoutView = () => {
                 <Wallet size={20} />
               </div>
               <div>
-                <h3 style={{ fontSize: '16px', fontWeight: '800', margin: 0, color: '#0f172a' }}>Choose Payment Method</h3>
+                <h3 style={{ fontSize: '16px', fontWeight: '800', margin: 0, color: '#0f172a' }}>{t('checkout.paymentMethodTitle', 'Choose Payment Method')}</h3>
                 <span style={{ fontSize: '12px', color: '#64748b' }}>100% Encrypted & NPCI Bharat UPI Guaranteed</span>
               </div>
             </div>
@@ -452,14 +445,14 @@ export const CheckoutView = () => {
               <label style={{
                 padding: '18px 20px',
                 borderRadius: '20px',
-                border: paymentMethod === 'UPI' ? '2.5px solid #059669' : '1.5px solid #e2e8f0',
-                backgroundColor: paymentMethod === 'UPI' ? '#f0fdf4' : '#ffffff',
+                border: paymentMethod === 'UPI' ? '2.5px solid #2563eb' : '1.5px solid #e2e8f0',
+                backgroundColor: paymentMethod === 'UPI' ? '#eff6ff' : '#ffffff',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
-                boxShadow: paymentMethod === 'UPI' ? '0 6px 20px -4px rgba(5, 150, 105, 0.18)' : 'none'
+                boxShadow: paymentMethod === 'UPI' ? '0 6px 20px -4px rgba(37, 99, 235, 0.18)' : 'none'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -469,25 +462,25 @@ export const CheckoutView = () => {
                       value="UPI"
                       checked={paymentMethod === 'UPI'}
                       onChange={() => setPaymentMethod('UPI')}
-                      style={{ accentColor: '#059669', width: '18px', height: '18px' }}
+                      style={{ accentColor: '#2563eb', width: '18px', height: '18px' }}
                     />
                     <div style={{
-                      backgroundColor: '#ecfdf5',
+                      backgroundColor: '#eff6ff',
                       padding: '10px',
                       borderRadius: '14px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: '#059669'
+                      color: '#2563eb'
                     }}>
                       <Smartphone size={22} />
                     </div>
                     <div>
                       <strong style={{ fontSize: '15.5px', color: '#0f172a', fontWeight: '900', display: 'block' }}>
-                        UPI Instant Payment (QR / GPay / PhonePe / Paytm)
+                        {t('checkout.upiTitle', 'UPI Instant Payment (QR / GPay / PhonePe / Paytm)')}
                       </strong>
-                      <span style={{ display: 'block', fontSize: '12px', color: '#059669', fontWeight: '700', marginTop: '1px' }}>
-                        ⚡ 0% Transaction Fee • Dynamic QR & 1-Tap App Payment (Stripe Powered)
+                      <span style={{ display: 'block', fontSize: '12px', color: '#2563eb', fontWeight: '700', marginTop: '1px' }}>
+                        {t('checkout.upiDesc', '⚡ 0% Transaction Fee • Dynamic QR & 1-Tap App Payment (Stripe Powered)')}
                       </span>
                     </div>
                   </div>
@@ -502,7 +495,7 @@ export const CheckoutView = () => {
                     padding: '14px 16px',
                     backgroundColor: '#ffffff',
                     borderRadius: '14px',
-                    border: '1.5px solid #a7f3d0',
+                    border: '1.5px solid #bfdbfe',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '10px'
@@ -514,7 +507,7 @@ export const CheckoutView = () => {
                       <span className="badge" style={{ backgroundColor: '#e0f2f1', color: '#00796b', fontSize: '11px', fontWeight: '800' }}>🟠 BHIM UPI</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#475569' }}>
-                      <QrCode size={16} color="#059669" />
+                      <QrCode size={16} color="#2563eb" />
                       <span>Clicking below opens the <strong>Live Dynamic QR Code & UPI Apps Modal</strong> to scan & pay instantly.</span>
                     </div>
                   </div>
@@ -583,23 +576,7 @@ export const CheckoutView = () => {
                     gap: '12px'
                   }} onClick={(e) => e.stopPropagation()}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '12.5px', fontWeight: '800', color: '#334155' }}>Card Details (Stripe Test Gateway)</span>
-                      <button
-                        type="button"
-                        onClick={handleFillTestCard}
-                        style={{
-                          backgroundColor: '#eef2ff',
-                          color: '#635bff',
-                          border: '1px solid #c7d2fe',
-                          borderRadius: '8px',
-                          padding: '4px 10px',
-                          fontSize: '11px',
-                          fontWeight: '800',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        🧪 Fill Stripe Test Card
-                      </button>
+                      <span style={{ fontSize: '12.5px', fontWeight: '800', color: '#334155' }}>Card Details</span>
                     </div>
 
                     {cardError && (
@@ -625,7 +602,7 @@ export const CheckoutView = () => {
                         label="Card Number"
                         name="checkout_card_num"
                         required
-                        placeholder="4242 •••• •••• 4242"
+                        placeholder="•••• •••• •••• ••••"
                         value={cardNumber}
                         onChange={(e) => {
                           setCardNumber(e.target.value);
@@ -673,8 +650,8 @@ export const CheckoutView = () => {
               <label style={{
                 padding: '16px 20px',
                 borderRadius: '18px',
-                border: paymentMethod === 'Cash on Delivery' ? '2px solid #059669' : '1.5px solid #e2e8f0',
-                backgroundColor: paymentMethod === 'Cash on Delivery' ? '#f0fdf4' : '#ffffff',
+                border: paymentMethod === 'Cash on Delivery' ? '2px solid #2563eb' : '1.5px solid #e2e8f0',
+                backgroundColor: paymentMethod === 'Cash on Delivery' ? '#eff6ff' : '#ffffff',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '14px',
@@ -687,7 +664,7 @@ export const CheckoutView = () => {
                   value="Cash on Delivery"
                   checked={paymentMethod === 'Cash on Delivery'}
                   onChange={() => setPaymentMethod('Cash on Delivery')}
-                  style={{ accentColor: '#059669', width: '18px', height: '18px' }}
+                  style={{ accentColor: '#2563eb', width: '18px', height: '18px' }}
                 />
                 <div style={{
                   backgroundColor: '#fff7ed',
@@ -702,10 +679,10 @@ export const CheckoutView = () => {
                 </div>
                 <div>
                   <strong style={{ fontSize: '14.5px', color: '#0f172a', fontWeight: '800', display: 'block' }}>
-                    Cash on Delivery (COD)
+                    {t('checkout.codTitle', 'Cash on Delivery (COD)')}
                   </strong>
                   <span style={{ display: 'block', fontSize: '12px', color: '#64748b' }}>
-                    Pay in cash directly to your trusted village vendor on doorstep delivery
+                    {t('checkout.codDesc', 'Pay in cash directly to your trusted village vendor on doorstep delivery')}
                   </span>
                 </div>
               </label>
@@ -717,16 +694,17 @@ export const CheckoutView = () => {
         <div>
           <div className="vs-card" style={{ padding: '26px', borderRadius: '24px', position: 'sticky', top: '90px', backgroundColor: '#ffffff' }}>
             <h3 style={{ fontSize: '18px', fontWeight: '900', color: '#0f172a', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #e2e8f0' }}>
-              Order Breakdown ({cart.length} {cart.length === 1 ? 'item' : 'items'})
+              {t('checkout.orderSummary', 'Order Summary')} ({cart.length} {cart.length === 1 ? 'item' : 'items'})
             </h3>
 
             <div style={{ maxHeight: '220px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '18px' }}>
               {cart.map(item => {
                 const isOos = outOfStockItems.some(oos => oos.product.id === item.product.id);
+                const iName = getLocalizedProductName(item.product, selectedLanguage);
                 return (
                   <div key={item.product.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13.5px', color: isOos ? '#b91c1c' : '#334155', backgroundColor: isOos ? '#fef2f2' : 'transparent', padding: isOos ? '6px 10px' : '0', borderRadius: '10px' }}>
                     <div>
-                      <span>{item.quantity} x {item.product.shortName || item.product.name}</span>
+                      <span>{item.quantity} x {iName}</span>
                       {isOos && (
                         <span style={{ display: 'block', fontSize: '11px', color: '#dc2626', fontWeight: '800' }}>
                           🔴 Out of Stock at Vendor
@@ -763,24 +741,24 @@ export const CheckoutView = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '9px', fontSize: '13.5px', color: '#475569', borderTop: '1px solid #e2e8f0', paddingTop: '14px', marginBottom: '22px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Subtotal</span>
+                <span>{t('cart.itemsSubtotal', 'Subtotal')}</span>
                 <span style={{ fontWeight: '700', color: '#0f172a' }}>₹{subtotal}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Delivery Fee {subtotal > 300 && '(FREE above ₹300)'}</span>
-                <span>{deliveryFee === 0 ? <strong style={{ color: '#059669' }}>FREE</strong> : `₹${deliveryFee}`}</span>
+                <span>{t('cart.deliveryFee', 'Delivery Fee')} {subtotal > 300 && '(FREE above ₹300)'}</span>
+                <span>{deliveryFee === 0 ? <strong style={{ color: '#2563eb' }}>{t('cart.free', 'FREE')}</strong> : `₹${deliveryFee}`}</span>
               </div>
               <div style={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 
                 fontSize: '20px', 
                 fontWeight: '900', 
-                color: '#064e3b', 
+                color: '#0f172a', 
                 paddingTop: '10px', 
                 borderTop: '1px dashed #cbd5e1' 
               }}>
-                <span>Payable Total</span>
-                <span style={{ color: '#059669' }}>₹{total}</span>
+                <span>{t('cart.grandTotal', 'Payable Total')}</span>
+                <span style={{ color: '#2563eb' }}>₹{total}</span>
               </div>
             </div>
 
@@ -795,7 +773,7 @@ export const CheckoutView = () => {
                 borderRadius: '16px',
                 fontSize: '16px',
                 letterSpacing: '0.01em',
-                backgroundColor: hasOutOfStockItems ? '#94a3b8' : (paymentMethod === 'Card' ? '#635bff' : '#059669'),
+                backgroundColor: hasOutOfStockItems ? '#94a3b8' : (paymentMethod === 'Card' ? '#635bff' : '#2563eb'),
                 cursor: hasOutOfStockItems ? 'not-allowed' : 'pointer'
               }}
             >
@@ -817,14 +795,14 @@ export const CheckoutView = () => {
               ) : (
                 <>
                   <CheckCircle2 size={20} />
-                  <span>CONFIRM & PLACE ORDER (COD)</span>
+                  <span>{t('checkout.placeOrder', 'CONFIRM & PLACE ORDER (COD)')}</span>
                 </>
               )}
             </AsyncButton>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px', color: '#64748b', marginTop: '14px' }}>
-              <ShieldCheck size={16} color="#059669" />
-              <span>100% NPCI Bharat UPI & Stripe 256-Bit SSL Protection</span>
+              <ShieldCheck size={16} color="#2563eb" />
+              <span>{t('checkout.secureGuarantee', '100% Safe & Secure Rural Commerce Guarantee')}</span>
             </div>
           </div>
         </div>

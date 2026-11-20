@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import { LANGUAGES, FEATURE_EXPLANATIONS } from '../data/featureExplanations';
 import { 
@@ -14,8 +14,24 @@ import {
   Globe, 
   Layers,
   HelpCircle,
-  ArrowRight
+  ArrowRight,
+  ArrowLeft,
+  FastForward,
+  Compass
 } from 'lucide-react';
+
+const TOUR_SEQUENCE = [
+  'website-overview',
+  'how-to-order',
+  'categories',
+  'nearby-vendors',
+  'voice-search-guide',
+  'payments',
+  'order-tracking',
+  'vendor-portal-guide',
+  'language-translation-guide',
+  'weather'
+];
 
 export const VoiceAssistanceModal = () => {
   const { 
@@ -24,35 +40,50 @@ export const VoiceAssistanceModal = () => {
     selectedLanguage, 
     changeLanguage, 
     selectedVoiceFeature, 
-    setSelectedVoiceFeature 
+    setSelectedVoiceFeature,
+    t
   } = useApp();
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [isTourMode, setIsTourMode] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('all'); // all | vendor | customer | core
   const [highlightWordIndex, setHighlightWordIndex] = useState(-1);
+  const [availableVoices, setAvailableVoices] = useState([]);
 
-  const utteranceRef = useRef(null);
   const timerRef = useRef(null);
+  const tourActiveRef = useRef(false);
 
   const featureKeys = Object.keys(FEATURE_EXPLANATIONS);
-  const currentFeature = FEATURE_EXPLANATIONS[selectedVoiceFeature] || FEATURE_EXPLANATIONS['gps-route'];
+  const currentFeature = FEATURE_EXPLANATIONS[selectedVoiceFeature] || FEATURE_EXPLANATIONS['website-overview'] || FEATURE_EXPLANATIONS['gps-route'];
   const currentLangObj = LANGUAGES.find(l => l.code === selectedLanguage) || LANGUAGES[0];
   const explanationText = currentFeature.explanation[selectedLanguage] || currentFeature.explanation['en'];
   const featureTitle = currentFeature.title[selectedLanguage] || currentFeature.title['en'];
 
-  const audioRef = useRef(null);
+  // Initialize and load system voices
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
-  // Clean speech synthesis & timers on cleanup or close
-  const stopSpeech = () => {
-    if (audioRef.current) {
-      try {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      } catch (e) {}
-      audioRef.current = null;
-    }
-    if (window.speechSynthesis) {
+    const loadVoices = () => {
+      const v = window.speechSynthesis.getVoices();
+      if (v && v.length > 0) {
+        setAvailableVoices(v);
+      }
+    };
+
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    return () => {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, []);
+
+  // Stop active speech and reset animation
+  const stopSpeech = useCallback(() => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
     if (timerRef.current) {
@@ -62,31 +93,17 @@ export const VoiceAssistanceModal = () => {
     setIsPlaying(false);
     setIsPaused(false);
     setHighlightWordIndex(-1);
-  };
+  }, []);
 
-  useEffect(() => {
-    if (!isVoiceAssistanceOpen) {
-      stopSpeech();
-    } else {
-      // Auto play explanation when modal opens or feature/language changes
-      speakExplanation();
-    }
-
-    return () => {
-      stopSpeech();
-    };
-  }, [isVoiceAssistanceOpen, selectedVoiceFeature, selectedLanguage]);
-
-  const speakExplanation = () => {
+  // Speech Synthesis Execution
+  const speakText = useCallback((textToSpeak, onEndCallback = null) => {
     stopSpeech();
-
-    const textToSpeak = explanationText;
-    if (!textToSpeak) return;
+    if (!textToSpeak || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
     setIsPlaying(true);
     setIsPaused(false);
 
-    // Simulate word highlight timer for audio wave & visual text syncing
+    // Visual word-highlight progression
     const words = textToSpeak.split(' ');
     let currentIdx = 0;
     timerRef.current = setInterval(() => {
@@ -97,116 +114,112 @@ export const VoiceAssistanceModal = () => {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-    }, 320);
+    }, 280);
 
-    // Audio playback for Kannada & multilingual TTS
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = currentLangObj.speechLang;
+    utterance.rate = selectedLanguage === 'kn' ? 0.85 : 0.90; // Natural, clear pacing
+    utterance.pitch = 1.0;
+
+    const voices = availableVoices.length > 0 ? availableVoices : window.speechSynthesis.getVoices();
+
     if (selectedLanguage === 'kn') {
-      try {
-        // High quality Kannada TTS audio stream (using client=gtx without referrer to prevent 404)
-        const cleanQuery = textToSpeak.replace(/[\n\r]+/g, ' ').slice(0, 160).trim();
-        const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanQuery)}&tl=kn&client=gtx`;
-        const audio = new Audio();
-        audio.referrerPolicy = 'no-referrer';
-        audio.setAttribute('referrerpolicy', 'no-referrer');
-        audio.src = audioUrl;
-        audioRef.current = audio;
-
-        audio.onended = () => {
-          setIsPlaying(false);
-          setIsPaused(false);
-          setHighlightWordIndex(-1);
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
-        };
-
-        audio.onerror = () => {
-          console.warn("Kannada audio stream error, falling back to Web Speech API");
-          fallbackWebSpeech(textToSpeak);
-        };
-
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(err => {
-            console.warn("Kannada audio stream play notice:", err);
-            fallbackWebSpeech(textToSpeak);
-          });
-        }
-        return;
-      } catch (err) {
-        console.warn("Kannada audio init exception:", err);
-      }
+      const knVoice = voices.find(v => 
+        v.lang === 'kn-IN' || 
+        v.lang.startsWith('kn') || 
+        (v.name && v.name.toLowerCase().includes('kannada'))
+      );
+      if (knVoice) utterance.voice = knVoice;
+    } else if (selectedLanguage === 'hi') {
+      const hiVoice = voices.find(v => 
+        v.lang === 'hi-IN' || 
+        v.lang.startsWith('hi') || 
+        (v.name && v.name.toLowerCase().includes('hindi'))
+      );
+      if (hiVoice) utterance.voice = hiVoice;
+    } else {
+      const enVoice = voices.find(v => 
+        v.lang === 'en-IN' || 
+        v.lang === 'en-US' || 
+        v.lang.startsWith('en')
+      );
+      if (enVoice) utterance.voice = enVoice;
     }
 
-    fallbackWebSpeech(textToSpeak);
-  };
-
-  const fallbackWebSpeech = (textToSpeak) => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utteranceRef.current = utterance;
-
-      utterance.lang = currentLangObj.speechLang;
-      utterance.rate = 0.88; // clear accessibility rate
-      utterance.pitch = 1.0;
-
-      const voices = window.speechSynthesis.getVoices();
-      
-      // Strict voice matching: do NOT assign Hindi or English voice to Kannada text
-      if (selectedLanguage === 'kn') {
-        const knVoice = voices.find(v => 
-          v.lang === 'kn-IN' || 
-          v.lang.startsWith('kn') || 
-          (v.name && v.name.toLowerCase().includes('kannada'))
-        );
-        if (knVoice) {
-          utterance.voice = knVoice;
-        }
-        // If no explicit Kannada voice, leave utterance.voice unset so Chrome's network TTS synthesizes kn-IN
-      } else {
-        const matchingVoice = voices.find(v => 
-          v.lang === currentLangObj.speechLang || 
-          v.lang.startsWith(selectedLanguage) ||
-          (v.name && v.name.toLowerCase().includes(currentLangObj.label.toLowerCase()))
-        ) || (selectedLanguage === 'hi' ? voices.find(v => v.lang.includes('hi')) : voices.find(v => v.lang.includes('en')));
-
-        if (matchingVoice) {
-          utterance.voice = matchingVoice;
-        }
+    utterance.onend = () => {
+      setIsPlaying(false);
+      setIsPaused(false);
+      setHighlightWordIndex(-1);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
       }
+      if (typeof onEndCallback === 'function') {
+        onEndCallback();
+      }
+    };
 
-      utterance.onend = () => {
-        setIsPlaying(false);
-        setIsPaused(false);
-        setHighlightWordIndex(-1);
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
-      };
+    utterance.onerror = (e) => {
+      console.warn("SpeechSynthesis notice:", e);
+      setIsPlaying(false);
+      setIsPaused(false);
+      setHighlightWordIndex(-1);
+    };
 
-      utterance.onerror = (e) => {
-        console.warn("Web Speech API notice:", e);
-        setIsPlaying(false);
-        setIsPaused(false);
-        setHighlightWordIndex(-1);
-      };
+    window.speechSynthesis.speak(utterance);
+  }, [availableVoices, currentLangObj.speechLang, selectedLanguage, stopSpeech]);
 
-      window.speechSynthesis.speak(utterance);
+  // Advance to next tour feature
+  const advanceTour = useCallback(() => {
+    if (!tourActiveRef.current) return;
+    const currentIndex = TOUR_SEQUENCE.indexOf(selectedVoiceFeature);
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex < TOUR_SEQUENCE.length) {
+      const nextKey = TOUR_SEQUENCE[nextIndex];
+      setSelectedVoiceFeature(nextKey);
+    } else {
+      setIsTourMode(false);
+      tourActiveRef.current = false;
     }
+  }, [selectedVoiceFeature, setSelectedVoiceFeature]);
+
+  // Speak currently selected feature
+  const speakCurrentFeature = useCallback(() => {
+    const text = explanationText;
+    speakText(text, () => {
+      if (tourActiveRef.current) {
+        setTimeout(() => {
+          advanceTour();
+        }, 800);
+      }
+    });
+  }, [explanationText, speakText, advanceTour]);
+
+  // Auto-play when modal opens or feature/language changes
+  useEffect(() => {
+    if (!isVoiceAssistanceOpen) {
+      stopSpeech();
+      setIsTourMode(false);
+      tourActiveRef.current = false;
+    } else {
+      speakCurrentFeature();
+    }
+
+    return () => {
+      stopSpeech();
+    };
+  }, [isVoiceAssistanceOpen, selectedVoiceFeature, selectedLanguage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Tour mode toggle
+  const startFullTour = () => {
+    setIsTourMode(true);
+    tourActiveRef.current = true;
+    setSelectedVoiceFeature('website-overview');
   };
 
   const handlePause = () => {
-    if (audioRef.current && isPlaying && !isPaused) {
-      audioRef.current.pause();
-      if (timerRef.current) clearInterval(timerRef.current);
-      setIsPaused(true);
-      setIsPlaying(false);
-      return;
-    }
-    if (window.speechSynthesis && isPlaying && !isPaused) {
+    if (window.speechSynthesis && isPlaying) {
       window.speechSynthesis.pause();
       if (timerRef.current) clearInterval(timerRef.current);
       setIsPaused(true);
@@ -214,24 +227,40 @@ export const VoiceAssistanceModal = () => {
     }
   };
 
-  const handleResumeOrPlay = () => {
-    if (audioRef.current && isPaused) {
-      audioRef.current.play().catch(e => console.warn(e));
-      setIsPaused(false);
-      setIsPlaying(true);
-      return;
-    }
+  const handleResume = () => {
     if (window.speechSynthesis && isPaused) {
       window.speechSynthesis.resume();
       setIsPaused(false);
       setIsPlaying(true);
     } else {
-      speakExplanation();
+      speakCurrentFeature();
     }
   };
 
   const handleReplay = () => {
-    speakExplanation();
+    speakCurrentFeature();
+  };
+
+  const handleNextFeature = () => {
+    const currentIndex = TOUR_SEQUENCE.indexOf(selectedVoiceFeature);
+    if (currentIndex >= 0 && currentIndex < TOUR_SEQUENCE.length - 1) {
+      setSelectedVoiceFeature(TOUR_SEQUENCE[currentIndex + 1]);
+    } else {
+      const allIndex = featureKeys.indexOf(selectedVoiceFeature);
+      const nextIndex = (allIndex + 1) % featureKeys.length;
+      setSelectedVoiceFeature(featureKeys[nextIndex]);
+    }
+  };
+
+  const handlePrevFeature = () => {
+    const currentIndex = TOUR_SEQUENCE.indexOf(selectedVoiceFeature);
+    if (currentIndex > 0) {
+      setSelectedVoiceFeature(TOUR_SEQUENCE[currentIndex - 1]);
+    } else {
+      const allIndex = featureKeys.indexOf(selectedVoiceFeature);
+      const prevIndex = (allIndex - 1 + featureKeys.length) % featureKeys.length;
+      setSelectedVoiceFeature(featureKeys[prevIndex]);
+    }
   };
 
   if (!isVoiceAssistanceOpen) return null;
@@ -245,8 +274,9 @@ export const VoiceAssistanceModal = () => {
     <div style={{
       position: 'fixed',
       inset: 0,
-      backgroundColor: 'rgba(15, 23, 42, 0.8)',
-      backdropFilter: 'blur(6px)',
+      backgroundColor: 'rgba(15, 23, 42, 0.82)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
       zIndex: 2500,
       display: 'flex',
       alignItems: 'center',
@@ -255,63 +285,94 @@ export const VoiceAssistanceModal = () => {
     }}>
       <div className="vs-card animate-fade-in" style={{
         width: '100%',
-        maxWidth: '680px',
+        maxWidth: '720px',
         maxHeight: 'calc(100dvh - 32px)',
         backgroundColor: '#ffffff',
-        borderRadius: '24px',
-        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)',
+        borderRadius: '26px',
+        boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.4)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        position: 'relative'
+        position: 'relative',
+        border: '1.5px solid #bfdbfe'
       }}>
-        {/* Header */}
+        {/* Header with Cool Ocean Gradient */}
         <div style={{
-          backgroundColor: '#15803d',
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%)',
           color: '#ffffff',
-          padding: '16px 20px',
+          padding: '16px 22px',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
             <div style={{
               backgroundColor: '#ffffff',
-              color: '#15803d',
-              width: '40px',
-              height: '40px',
-              borderRadius: '12px',
+              color: '#2563eb',
+              width: '42px',
+              height: '42px',
+              borderRadius: '14px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
               flexShrink: 0
             }}>
-              <Mic size={22} />
+              <Mic size={22} color="#2563eb" />
             </div>
             <div style={{ minWidth: 0 }}>
-              <h3 style={{ fontSize: '18px', fontWeight: '800', margin: 0, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                VendorSaathi Voice Assistance 🎙️
-              </h3>
-              <span style={{ fontSize: '12px', color: '#bbf7d0', fontWeight: '600' }}>
-                Multi-lingual Voice Guide • ಕನ್ನಡ | हिंदी | English
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '900', margin: 0, lineHeight: 1.2, color: '#ffffff' }}>
+                  {t('voiceAssistantModal.title', 'Smart Voice Assistance')}
+                </h3>
+                <span style={{
+                  backgroundColor: '#38bdf8',
+                  color: '#0f172a',
+                  fontSize: '10px',
+                  fontWeight: '900',
+                  padding: '2px 8px',
+                  borderRadius: '10px',
+                  letterSpacing: '0.5px'
+                }}>
+                  LIVE AUDIO
+                </span>
+              </div>
+              <span style={{ fontSize: '12px', color: '#bfdbfe', fontWeight: '600', display: 'block', marginTop: '2px' }}>
+                {t('voiceAssistantModal.subtitle', 'Complete voice explanation and interactive guide for every feature of VendorSaathi')}
               </span>
             </div>
           </div>
 
           <button
             type="button"
-            onClick={() => setIsVoiceAssistanceOpen(false)}
+            onClick={() => {
+              stopSpeech();
+              setIsVoiceAssistanceOpen(false);
+            }}
             className="btn-close-modal-light touch-target-44"
             aria-label="Close Voice Assistance"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.15)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '38px',
+              height: '38px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ffffff',
+              cursor: 'pointer'
+            }}
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* Language Selector Toolbar */}
+        {/* Language Selector & Tour Toolbar */}
         <div style={{
           backgroundColor: '#f8fafc',
-          padding: '12px 24px',
+          padding: '12px 22px',
           borderBottom: '1px solid #e2e8f0',
           display: 'flex',
           alignItems: 'center',
@@ -319,72 +380,144 @@ export const VoiceAssistanceModal = () => {
           gap: '12px',
           flexWrap: 'wrap'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#334155' }}>
-            <Globe size={16} color="#16a34a" />
-            <span>Select Voice Language:</span>
+          {/* Language Switcher Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12.5px', fontWeight: '700', color: '#334155' }}>
+              <Globe size={15} color="#2563eb" />
+              <span>Language:</span>
+            </span>
+
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {LANGUAGES.map(lang => {
+                const isSelected = selectedLanguage === lang.code;
+                return (
+                  <button
+                    key={lang.code}
+                    type="button"
+                    onClick={() => {
+                      changeLanguage(lang.code);
+                    }}
+                    style={{
+                      padding: '5px 12px',
+                      borderRadius: '18px',
+                      fontSize: '12.5px',
+                      fontWeight: '800',
+                      border: isSelected ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                      backgroundColor: isSelected ? '#eff6ff' : '#ffffff',
+                      color: isSelected ? '#1d4ed8' : '#475569',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      transition: 'all 0.2s ease',
+                      boxShadow: isSelected ? '0 2px 6px rgba(37, 99, 235, 0.15)' : 'none'
+                    }}
+                  >
+                    <span>{lang.flag}</span>
+                    <span>{lang.nativeLabel}</span>
+                    {isSelected && <CheckCircle2 size={13} color="#2563eb" />}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
-            {LANGUAGES.map(lang => {
-              const isSelected = selectedLanguage === lang.code;
-              return (
-                <button
-                  key={lang.code}
-                  onClick={() => changeLanguage(lang.code)}
-                  style={{
-                    padding: '6px 14px',
-                    borderRadius: '20px',
-                    fontSize: '13px',
-                    fontWeight: '700',
-                    border: isSelected ? '2px solid #16a34a' : '1px solid #cbd5e1',
-                    backgroundColor: isSelected ? '#f0fdf4' : '#ffffff',
-                    color: isSelected ? '#15803d' : '#475569',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <span>{lang.flag}</span>
-                  <span>{lang.nativeLabel}</span>
-                  {isSelected && <CheckCircle2 size={14} color="#16a34a" />}
-                </button>
-              );
-            })}
-          </div>
+          {/* Full Guided Website Tour Button */}
+          <button
+            type="button"
+            onClick={startFullTour}
+            style={{
+              padding: '6px 14px',
+              borderRadius: '20px',
+              fontSize: '12px',
+              fontWeight: '800',
+              border: isTourMode ? '1.5px solid #2563eb' : '1px solid #bfdbfe',
+              background: isTourMode ? 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)' : '#ffffff',
+              color: '#2563eb',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 2px 8px rgba(37, 99, 235, 0.1)'
+            }}
+          >
+            <Compass size={15} color="#2563eb" className={isTourMode ? 'spin' : ''} />
+            <span>{isTourMode ? 'Tour Active (Auto-Advancing)' : t('voiceAssistantModal.playTour', '▶️ Play Full Website Tour')}</span>
+          </button>
         </div>
 
-        {/* Scrollable Body Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+        {/* Scrollable Content Body */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '22px' }}>
           
-          {/* Active Selected Feature Explanation Box */}
-          <div className="vs-card" style={{
-            backgroundColor: '#0f172a',
+          {/* Main Active Feature Voice Audio Card */}
+          <div style={{
+            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
             color: '#ffffff',
-            borderRadius: '20px',
+            borderRadius: '22px',
             padding: '24px',
             marginBottom: '24px',
-            boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.3)',
+            boxShadow: '0 12px 28px -6px rgba(15, 23, 42, 0.35)',
+            border: '1.5px solid #334155',
             position: 'relative'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+            {/* Feature Header Row */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '36px', lineHeight: 1 }}>{currentFeature.icon}</span>
+                <div style={{
+                  fontSize: '32px',
+                  width: '52px',
+                  height: '52px',
+                  borderRadius: '16px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid rgba(255, 255, 255, 0.15)'
+                }}>
+                  {currentFeature.icon}
+                </div>
                 <div>
-                  <span style={{ backgroundColor: 'rgba(34, 197, 94, 0.2)', color: '#4ade80', fontSize: '11px', fontWeight: '800', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>
-                    {currentFeature.badge}
-                  </span>
-                  <h2 style={{ fontSize: '20px', fontWeight: '800', margin: '4px 0 0 0', color: '#ffffff' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ 
+                      backgroundColor: 'rgba(56, 189, 248, 0.2)', 
+                      color: '#38bdf8', 
+                      fontSize: '11px', 
+                      fontWeight: '800', 
+                      padding: '2px 8px', 
+                      borderRadius: '8px', 
+                      textTransform: 'uppercase',
+                      border: '1px solid rgba(56, 189, 248, 0.3)'
+                    }}>
+                      {currentFeature.badge}
+                    </span>
+                    {isTourMode && (
+                      <span style={{ backgroundColor: '#2563eb', color: '#ffffff', fontSize: '10.5px', fontWeight: '800', padding: '2px 7px', borderRadius: '8px' }}>
+                        Step {TOUR_SEQUENCE.indexOf(selectedVoiceFeature) + 1} of {TOUR_SEQUENCE.length}
+                      </span>
+                    )}
+                  </div>
+                  <h2 style={{ fontSize: '20px', fontWeight: '900', margin: '4px 0 0 0', color: '#ffffff' }}>
                     {featureTitle}
                   </h2>
                 </div>
               </div>
 
               {/* Language Indicator Badge */}
-              <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '700', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ 
+                backgroundColor: 'rgba(255,255,255,0.08)', 
+                border: '1px solid rgba(255,255,255,0.18)', 
+                padding: '5px 12px', 
+                borderRadius: '16px', 
+                fontSize: '12px', 
+                fontWeight: '800', 
+                color: '#38bdf8', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px' 
+              }}>
                 <span>{currentLangObj.flag}</span>
-                <span>{currentLangObj.nativeLabel} Voice</span>
+                <span>{currentLangObj.nativeLabel} Voice Audio</span>
               </div>
             </div>
 
@@ -393,91 +526,160 @@ export const VoiceAssistanceModal = () => {
               {currentFeature.shortDesc[selectedLanguage] || currentFeature.shortDesc['en']}
             </p>
 
-            {/* Display Spoken Explanation Text */}
+            {/* Display Spoken Explanation Text with Word Highlighting */}
             <div style={{
-              backgroundColor: '#1e293b',
-              border: '1px solid #334155',
-              padding: '16px 20px',
-              borderRadius: '14px',
-              fontSize: '16px',
-              lineHeight: '1.6',
+              backgroundColor: '#090d16',
+              border: '1.5px solid #1e293b',
+              padding: '18px 22px',
+              borderRadius: '16px',
+              fontSize: '15.5px',
+              lineHeight: '1.65',
               color: '#f8fafc',
               fontWeight: '600',
               marginBottom: '20px',
               position: 'relative'
             }}>
-              <span style={{ color: '#22c55e', marginRight: '6px', fontSize: '18px' }}>🎙️</span>
-              "{explanationText}"
+              <span style={{ color: '#38bdf8', marginRight: '8px', fontSize: '18px' }}>🎙️</span>
+              {explanationText.split(' ').map((word, idx) => (
+                <span
+                  key={idx}
+                  style={{
+                    color: highlightWordIndex === idx ? '#38bdf8' : '#f8fafc',
+                    backgroundColor: highlightWordIndex === idx ? 'rgba(56, 189, 248, 0.25)' : 'transparent',
+                    borderRadius: '4px',
+                    padding: '0 2px',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {word}{' '}
+                </span>
+              ))}
             </div>
 
-            {/* Audio Wave & Status Indicator */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            {/* Audio Wave & Controls Row */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
               
-              {/* Playback Controls: Play / Pause / Replay */}
+              {/* Playback Action Buttons */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 {isPlaying ? (
                   <button
+                    type="button"
                     onClick={handlePause}
-                    className="btn-primary"
                     style={{
-                      backgroundColor: '#f59e0b',
-                      color: '#000000',
-                      padding: '10px 18px',
-                      borderRadius: '12px',
-                      fontSize: '14px',
-                      fontWeight: '800'
+                      background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '10px 20px',
+                      borderRadius: '14px',
+                      fontSize: '13.5px',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: '0 4px 14px rgba(245, 158, 11, 0.35)'
                     }}
                   >
-                    <Pause size={16} /> Pause Voice
+                    <Pause size={16} /> {t('voiceAssistantModal.pause', 'Pause Voice')}
                   </button>
                 ) : (
                   <button
-                    onClick={handleResumeOrPlay}
-                    className="btn-primary"
+                    type="button"
+                    onClick={handleResume}
                     style={{
-                      backgroundColor: '#22c55e',
+                      background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                       color: '#ffffff',
-                      padding: '10px 18px',
-                      borderRadius: '12px',
-                      fontSize: '14px',
-                      fontWeight: '800'
+                      border: 'none',
+                      padding: '10px 22px',
+                      borderRadius: '14px',
+                      fontSize: '13.5px',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 16px rgba(37, 99, 235, 0.4)'
                     }}
                   >
-                    <Play size={16} /> {isPaused ? 'Resume Voice' : 'Listen Voice 🎙️'}
+                    <Play size={16} /> {isPaused ? t('voiceAssistantModal.resume', 'Resume Voice') : 'Listen Voice 🎙️'}
                   </button>
                 )}
 
                 <button
+                  type="button"
                   onClick={handleReplay}
-                  className="btn-secondary"
                   style={{
-                    backgroundColor: '#334155',
-                    color: '#ffffff',
-                    padding: '10px 16px',
-                    borderRadius: '12px',
-                    fontSize: '14px',
-                    border: '1px solid #475569'
+                    backgroundColor: '#1e293b',
+                    color: '#cbd5e1',
+                    border: '1px solid #334155',
+                    padding: '10px 14px',
+                    borderRadius: '14px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
                   }}
-                  title="Replay Voice Explanation"
+                  title="Replay from start"
                 >
-                  <RotateCcw size={16} /> Replay
+                  <RotateCcw size={15} /> Replay
                 </button>
+
+                {/* Step Navigation for Tour */}
+                <div style={{ display: 'flex', gap: '6px', marginLeft: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={handlePrevFeature}
+                    style={{
+                      backgroundColor: '#1e293b',
+                      color: '#cbd5e1',
+                      border: '1px solid #334155',
+                      padding: '10px 12px',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    title="Previous feature"
+                  >
+                    <ArrowLeft size={15} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextFeature}
+                    style={{
+                      backgroundColor: '#1e293b',
+                      color: '#cbd5e1',
+                      border: '1px solid #334155',
+                      padding: '10px 12px',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    title="Next feature"
+                  >
+                    <ArrowRight size={15} />
+                  </button>
+                </div>
               </div>
 
-              {/* Dynamic Sound Wave Animation */}
+              {/* Dynamic Equalizer Wave Animation */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 {isPlaying ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '3px', height: '24px' }}>
-                    <span style={{ width: '4px', height: '16px', backgroundColor: '#22c55e', borderRadius: '2px', animation: 'pulse 0.6s infinite alternate' }}></span>
-                    <span style={{ width: '4px', height: '24px', backgroundColor: '#22c55e', borderRadius: '2px', animation: 'pulse 0.4s infinite alternate 0.2s' }}></span>
-                    <span style={{ width: '4px', height: '12px', backgroundColor: '#22c55e', borderRadius: '2px', animation: 'pulse 0.5s infinite alternate 0.1s' }}></span>
-                    <span style={{ width: '4px', height: '20px', backgroundColor: '#22c55e', borderRadius: '2px', animation: 'pulse 0.7s infinite alternate 0.3s' }}></span>
-                    <span style={{ fontSize: '12px', color: '#4ade80', fontWeight: '700', marginLeft: '6px' }}>
-                      Speaking in {currentLangObj.nativeLabel}...
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', height: '26px' }}>
+                    <span className="equalizer-bar eq-1" style={{ width: '4px' }}></span>
+                    <span className="equalizer-bar eq-2" style={{ width: '4px' }}></span>
+                    <span className="equalizer-bar eq-3" style={{ width: '4px' }}></span>
+                    <span className="equalizer-bar eq-4" style={{ width: '4px' }}></span>
+                    <span className="equalizer-bar eq-5" style={{ width: '4px' }}></span>
+                    <span style={{ fontSize: '12px', color: '#38bdf8', fontWeight: '800', marginLeft: '8px' }}>
+                      {t('voiceAssistantModal.playingNow', 'Speaking in')} {currentLangObj.nativeLabel}...
                     </span>
                   </div>
                 ) : isPaused ? (
-                  <span style={{ fontSize: '12px', color: '#f59e0b', fontWeight: '700' }}>
+                  <span style={{ fontSize: '12px', color: '#f59e0b', fontWeight: '800' }}>
                     ⏸️ Voice Paused
                   </span>
                 ) : (
@@ -489,32 +691,35 @@ export const VoiceAssistanceModal = () => {
             </div>
           </div>
 
-          {/* Selectable List of All 15 Major Features */}
-          <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-            <h4 style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Layers size={18} color="#16a34a" /> Explore All Major Features (15):
+          {/* Section Heading & Category Filters */}
+          <div style={{ marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+            <h4 style={{ fontSize: '15px', fontWeight: '900', color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Layers size={17} color="#2563eb" />
+              <span>{t('voiceAssistantModal.listenPrompt', 'Select any topic to hear details:')}</span>
             </h4>
 
-            {/* Category Filter Pills */}
-            <div style={{ display: 'flex', gap: '6px' }}>
+            {/* Filter Pills */}
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
               {[
-                { id: 'all', label: 'All' },
-                { id: 'vendor', label: 'Vendor Tools' },
-                { id: 'customer', label: 'Customer' },
-                { id: 'core', label: 'Core System' }
+                { id: 'all', label: t('voiceAssistantModal.allFeatures', 'All') },
+                { id: 'core', label: t('voiceAssistantModal.coreFeatures', 'Core System') },
+                { id: 'customer', label: t('voiceAssistantModal.customerFeatures', 'Customer') },
+                { id: 'vendor', label: t('voiceAssistantModal.vendorFeatures', 'Vendor Portal') }
               ].map(cat => (
                 <button
                   key={cat.id}
+                  type="button"
                   onClick={() => setCategoryFilter(cat.id)}
                   style={{
-                    padding: '3px 10px',
-                    borderRadius: '12px',
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    border: 'none',
-                    backgroundColor: categoryFilter === cat.id ? '#16a34a' : '#f1f5f9',
-                    color: categoryFilter === cat.id ? '#ffffff' : '#64748b',
-                    cursor: 'pointer'
+                    padding: '4px 12px',
+                    borderRadius: '14px',
+                    fontSize: '11.5px',
+                    fontWeight: '800',
+                    border: categoryFilter === cat.id ? '1px solid #2563eb' : '1px solid #e2e8f0',
+                    backgroundColor: categoryFilter === cat.id ? '#eff6ff' : '#ffffff',
+                    color: categoryFilter === cat.id ? '#2563eb' : '#64748b',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   {cat.label}
@@ -523,10 +728,10 @@ export const VoiceAssistanceModal = () => {
             </div>
           </div>
 
-          {/* Feature Grid Buttons */}
+          {/* Feature Grid Cards */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
             gap: '12px'
           }}>
             {filteredFeatures.map(key => {
@@ -542,63 +747,90 @@ export const VoiceAssistanceModal = () => {
                   }}
                   className="vs-card"
                   style={{
-                    padding: '12px',
-                    borderRadius: '14px',
+                    padding: '14px',
+                    borderRadius: '16px',
                     cursor: 'pointer',
-                    backgroundColor: isSelected ? '#f0fdf4' : '#ffffff',
-                    border: isSelected ? '2px solid #16a34a' : '1px solid #e2e8f0',
+                    backgroundColor: isSelected ? '#eff6ff' : '#ffffff',
+                    border: isSelected ? '2px solid #2563eb' : '1px solid #e2e8f0',
                     transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px'
+                    boxShadow: isSelected ? '0 6px 18px rgba(37, 99, 235, 0.18)' : '0 2px 6px rgba(15, 23, 42, 0.03)',
+                    transform: isSelected ? 'translateY(-2px)' : 'none'
                   }}
                 >
-                  <span style={{ fontSize: '24px', lineHeight: 1 }}>{feat.icon}</span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <h5 style={{
-                      fontSize: '13px',
-                      fontWeight: isSelected ? '800' : '700',
-                      color: isSelected ? '#15803d' : '#0f172a',
-                      margin: 0,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
-                    }}>
-                      {title}
-                    </h5>
-                    <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '600' }}>
-                      {feat.badge}
-                    </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '24px', lineHeight: 1 }}>{feat.icon}</span>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <span style={{
+                        fontSize: '9.5px',
+                        fontWeight: '800',
+                        backgroundColor: isSelected ? '#bfdbfe' : '#f1f5f9',
+                        color: isSelected ? '#1e40af' : '#64748b',
+                        padding: '1px 6px',
+                        borderRadius: '6px',
+                        textTransform: 'uppercase'
+                      }}>
+                        {feat.badge}
+                      </span>
+                      <strong style={{
+                        fontSize: '13px',
+                        color: isSelected ? '#1e40af' : '#0f172a',
+                        display: 'block',
+                        lineHeight: 1.25,
+                        marginTop: '3px'
+                      }}>
+                        {title}
+                      </strong>
+                    </div>
                   </div>
-                  {isSelected && (
-                    <Volume2 size={16} color="#16a34a" />
-                  )}
+
+                  <p style={{
+                    fontSize: '11px',
+                    color: '#64748b',
+                    margin: 0,
+                    lineHeight: 1.4,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden'
+                  }}>
+                    {feat.shortDesc[selectedLanguage] || feat.shortDesc['en']}
+                  </p>
+
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    marginTop: '8px',
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    color: isSelected ? '#2563eb' : '#94a3b8'
+                  }}>
+                    <Volume2 size={13} color={isSelected ? '#2563eb' : '#94a3b8'} />
+                    <span>{isSelected && isPlaying ? 'Playing Audio' : 'Click to Hear'}</span>
+                  </div>
                 </div>
               );
             })}
           </div>
 
-        </div>
+          {/* Footer Guide Help Notice */}
+          <div style={{
+            marginTop: '20px',
+            backgroundColor: '#eff6ff',
+            border: '1.5px solid #bfdbfe',
+            borderRadius: '16px',
+            padding: '12px 18px',
+            fontSize: '12.5px',
+            color: '#1e40af',
+            fontWeight: '700',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <Sparkles size={16} color="#2563eb" flexShrink={0} />
+            <span>💡 Tap any feature above or select a language to instantly hear its voice explanation. Works in Kannada, Hindi, and English!</span>
+          </div>
 
-        {/* Footer Note */}
-        <div style={{
-          backgroundColor: '#f8fafc',
-          padding: '12px 24px',
-          borderTop: '1px solid #e2e8f0',
-          fontSize: '12px',
-          color: '#64748b',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
-          <span>💡 Tap any feature above to instantly hear its voice explanation in your language.</span>
-          <button
-            onClick={() => setIsVoiceAssistanceOpen(false)}
-            className="btn-secondary"
-            style={{ padding: '6px 14px', fontSize: '12px', borderRadius: '8px' }}
-          >
-            Close Assistant
-          </button>
         </div>
       </div>
     </div>

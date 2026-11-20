@@ -273,7 +273,7 @@ export const ConflictResolutionModal = ({
                     <Clock size={16} color="#0284c7" />
                     <div>
                       <strong style={{ fontSize: '13.5px', color: '#0f172a' }}>{slot.label}</strong>
-                      <span style={{ fontSize: '11.5px', color: '#059669', display: 'block', fontWeight: '700' }}>
+                      <span style={{ fontSize: '11.5px', color: '#2563eb', display: 'block', fontWeight: '700' }}>
                         ✅ Zero competing {competingCategory} vendors
                       </span>
                     </div>
@@ -327,8 +327,8 @@ export const ConflictResolutionModal = ({
                 width: '26px',
                 height: '26px',
                 borderRadius: '8px',
-                backgroundColor: '#f0fdf4',
-                color: '#16a34a',
+                backgroundColor: '#eff6ff',
+                color: '#2563eb',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -355,7 +355,7 @@ export const ConflictResolutionModal = ({
                     padding: '14px',
                     borderRadius: '14px',
                     backgroundColor: '#ffffff',
-                    border: '1.5px solid #bbf7d0',
+                    border: '1.5px solid #bfdbfe',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
@@ -369,17 +369,17 @@ export const ConflictResolutionModal = ({
                         style={{
                           fontSize: '11px',
                           fontWeight: '800',
-                          color: '#065f46',
-                          backgroundColor: '#ecfdf5',
+                          color: '#1e40af',
+                          backgroundColor: '#eff6ff',
                           padding: '2px 8px',
                           borderRadius: '999px',
-                          border: '1px solid #a7f3d0'
+                          border: '1px solid #bfdbfe'
                         }}
                       >
                         {rec.distanceFromCurrentKm} km away
                       </span>
                     </div>
-                    <span style={{ fontSize: '11.5px', color: '#059669', display: 'block', marginTop: '4px', fontWeight: '700' }}>
+                    <span style={{ fontSize: '11.5px', color: '#2563eb', display: 'block', marginTop: '4px', fontWeight: '700' }}>
                       ✨ {rec.reason}
                     </span>
                   </div>
@@ -392,7 +392,7 @@ export const ConflictResolutionModal = ({
                     style={{
                       padding: '8px 14px',
                       borderRadius: '10px',
-                      backgroundColor: '#059669',
+                      backgroundColor: '#2563eb',
                       color: '#ffffff',
                       border: 'none',
                       fontSize: '12.5px',

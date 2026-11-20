@@ -58,18 +58,18 @@ const ViewFallbackLoader = () => (
     alignItems: 'center',
     justifyContent: 'center',
     padding: '40px 20px',
-    color: '#065f46'
+    color: '#1e40af'
   }}>
     <div style={{
       width: '44px',
       height: '44px',
-      border: '3.5px solid #d1fae5',
-      borderTopColor: '#059669',
+      border: '3.5px solid #dbeafe',
+      borderTopColor: '#2563eb',
       borderRadius: '50%',
       animation: 'vsPreloaderSpin 0.75s linear infinite',
       marginBottom: '16px'
     }} />
-    <span style={{ fontSize: '13.5px', fontWeight: '700', color: '#047857' }}>
+    <span style={{ fontSize: '13.5px', fontWeight: '700', color: '#1d4ed8' }}>
       Loading fresh produce...
     </span>
     <style>{`@keyframes vsPreloaderSpin { to { transform: rotate(360deg); } }`}</style>
@@ -77,13 +77,39 @@ const ViewFallbackLoader = () => (
 );
 
 const MainContent = () => {
-  const { currentView, currentViewParams } = useApp();
+  const { currentView, currentViewParams, user, setIsAuthModalOpen } = useApp();
 
   // Scroll to top and dynamically update page SEO metadata on route change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     updatePageSEO(currentView, currentViewParams);
   }, [currentView, currentViewParams]);
+
+  // Site-wide Scroll-triggered Sign-In Prompt for New / Unauthenticated Users
+  useEffect(() => {
+    if (user?.isLoggedIn && user?.uid) return;
+
+    if (sessionStorage.getItem('vendorsaathi_scroll_signin_shown') || 
+        sessionStorage.getItem('signin_popup_dismissed') || 
+        sessionStorage.getItem('vs_signin_dismissed')) {
+      return;
+    }
+
+    let triggered = false;
+    const handleScroll = () => {
+      if (window.scrollY > 100 && !triggered && (!user || !user.isLoggedIn)) {
+        triggered = true;
+        try {
+          sessionStorage.setItem('vendorsaathi_scroll_signin_shown', 'true');
+          sessionStorage.setItem('signin_popup_dismissed', 'true');
+        } catch (e) {}
+        setIsAuthModalOpen(true);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [user, setIsAuthModalOpen]);
 
   const renderView = () => {
     switch (currentView) {

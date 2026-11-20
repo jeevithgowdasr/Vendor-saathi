@@ -150,7 +150,7 @@ export const OrderTrackingView = () => {
   const etaMinutes = Math.max(1, Math.round(distanceKm * 4));
 
   // Vendor available products for add-on
-  const vendorProducts = products.filter(p => p.vendorId === (activeOrder.vendorId || 'v1'));
+  const vendorProducts = products.filter(p => activeOrder.vendorId && p.vendorId === activeOrder.vendorId);
 
   // Action: Submit Additional Item Request
   const handleRequestAddon = async () => {
@@ -190,8 +190,8 @@ export const OrderTrackingView = () => {
     try {
       await submitOrderRatingToFirebase({
         orderId: activeOrder.id,
-        vendorId: activeOrder.vendorId || 'v1',
-        customerId: user?.uid || activeOrder.customerId || 'c1',
+        vendorId: activeOrder.vendorId || '',
+        customerId: user?.uid || activeOrder.customerId || '',
         customerName: user?.name || activeOrder.customerName || 'Customer',
         score: ratingScore,
         feedbackText: ratingFeedback
@@ -216,15 +216,15 @@ export const OrderTrackingView = () => {
           onClick={() => navigateTo('my-orders')}
           style={{
             fontSize: '13.5px',
-            color: '#059669',
+            color: '#2563eb',
             fontWeight: '800',
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            backgroundColor: '#ecfdf5',
+            backgroundColor: '#eff6ff',
             padding: '7px 16px',
             borderRadius: '12px',
-            border: '1px solid #a7f3d0',
+            border: '1px solid #bfdbfe',
             cursor: 'pointer'
           }}
         >
@@ -236,9 +236,9 @@ export const OrderTrackingView = () => {
           display: 'inline-flex',
           alignItems: 'center',
           gap: '6px',
-          backgroundColor: isNearby ? '#fef3c7' : '#f0fdf4',
-          color: isNearby ? '#b45309' : '#047857',
-          border: `1.5px solid ${isNearby ? '#fde68a' : '#bbf7d0'}`,
+          backgroundColor: isNearby ? '#fef3c7' : '#eff6ff',
+          color: isNearby ? '#b45309' : '#1d4ed8',
+          border: `1.5px solid ${isNearby ? '#fde68a' : '#bfdbfe'}`,
           padding: '6px 14px',
           borderRadius: '20px',
           fontSize: '12.5px',
@@ -272,7 +272,7 @@ export const OrderTrackingView = () => {
               width: '10px',
               height: '10px',
               borderRadius: '50%',
-              backgroundColor: isCompleted ? '#10b981' : isCancelled ? '#ef4444' : '#f59e0b',
+              backgroundColor: isCompleted ? '#2563eb' : isCancelled ? '#ef4444' : '#f59e0b',
               animation: 'pulseGlowRing 2s infinite'
             }} />
           </div>
@@ -345,7 +345,7 @@ export const OrderTrackingView = () => {
         {/* Module 7: 7-Step Lifecycle State Machine Timeline */}
         <div className="vs-card" style={{ padding: '24px', borderRadius: '24px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0' }}>
           <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 20px 0' }}>
-            <Radio size={17} color="#10b981" />
+            <Radio size={17} color="#2563eb" />
             <span>Order Lifecycle Checkpoints</span>
           </h3>
 
@@ -363,7 +363,7 @@ export const OrderTrackingView = () => {
                       top: '26px',
                       bottom: '-16px',
                       width: '2px',
-                      backgroundColor: isPastOrCurrent && idx < activeStepIdx ? '#10b981' : '#e2e8f0',
+                      backgroundColor: isPastOrCurrent && idx < activeStepIdx ? '#2563eb' : '#e2e8f0',
                       transition: 'background-color 0.3s ease'
                     }} />
                   )}
@@ -373,7 +373,7 @@ export const OrderTrackingView = () => {
                       width: '28px',
                       height: '28px',
                       borderRadius: '50%',
-                      backgroundColor: isPastOrCurrent ? '#10b981' : '#f1f5f9',
+                      backgroundColor: isPastOrCurrent ? '#2563eb' : '#f1f5f9',
                       color: isPastOrCurrent ? '#ffffff' : '#94a3b8',
                       display: 'flex',
                       alignItems: 'center',
@@ -381,7 +381,7 @@ export const OrderTrackingView = () => {
                       fontSize: '12px',
                       fontWeight: '900',
                       zIndex: 2,
-                      boxShadow: isCurrent ? '0 0 0 4px rgba(16, 185, 129, 0.25)' : 'none',
+                      boxShadow: isCurrent ? '0 0 0 4px rgba(37, 99, 235, 0.25)' : 'none',
                       transition: 'all 0.3s ease'
                     }}>
                       {isPastOrCurrent ? '✓' : idx + 1}
@@ -397,7 +397,7 @@ export const OrderTrackingView = () => {
                         {step.label}
                       </strong>
                       {isCurrent && (
-                        <span style={{ fontSize: '11px', color: '#059669', fontWeight: '800' }}>
+                        <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: '800' }}>
                           ● Current Stage
                         </span>
                       )}
@@ -416,8 +416,8 @@ export const OrderTrackingView = () => {
         {/* Module 8: Live Vector Route Animated Map & Proximity */}
         <div className="vs-card" style={{ padding: '20px', borderRadius: '24px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0', position: 'relative' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <span style={{ fontSize: '13.5px', fontWeight: '800', color: '#064e3b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Satellite size={16} color="#059669" /> Live GPS Satellite Telemetry
+            <span style={{ fontSize: '13.5px', fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Satellite size={16} color="#2563eb" /> Live GPS Satellite Telemetry
             </span>
             <span className="badge badge-info" style={{ fontSize: '11px' }}>
               {activeOrder?.vendorName || 'Local Vendor'} ⇄ Your Delivery Point
@@ -436,14 +436,14 @@ export const OrderTrackingView = () => {
             boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.5)'
           }}>
             <svg width="100%" height="100%" viewBox="0 0 400 240" style={{ position: 'absolute', inset: 0 }}>
-              <path d="M 60 180 Q 200 70, 340 60" fill="none" stroke="rgba(16, 185, 129, 0.25)" strokeWidth="12" strokeLinecap="round" />
+              <path d="M 60 180 Q 200 70, 340 60" fill="none" stroke="rgba(37, 99, 235, 0.25)" strokeWidth="12" strokeLinecap="round" />
               <path d="M 60 180 Q 200 70, 340 60" fill="none" stroke="#334155" strokeWidth="6" strokeLinecap="round" />
-              <path d="M 60 180 Q 200 70, 340 60" fill="none" stroke="#10b981" strokeWidth="4" strokeDasharray="8 6" strokeLinecap="round" />
+              <path d="M 60 180 Q 200 70, 340 60" fill="none" stroke="#2563eb" strokeWidth="4" strokeDasharray="8 6" strokeLinecap="round" />
 
               {/* Vendor Starting Point */}
               <g transform="translate(60, 180)">
-                <circle r="18" fill="rgba(16, 185, 129, 0.3)" />
-                <circle r="14" fill="#059669" />
+                <circle r="18" fill="rgba(37, 99, 235, 0.3)" />
+                <circle r="14" fill="#2563eb" />
                 <text x="-7" y="5" fill="#ffffff" fontSize="13">🏪</text>
               </g>
 
@@ -490,8 +490,8 @@ export const OrderTrackingView = () => {
               <a
                 href={`tel:${activeOrder.vendorPhone || '+919876543210'}`}
                 style={{
-                  backgroundColor: '#ecfdf5',
-                  color: '#059669',
+                  backgroundColor: '#eff6ff',
+                  color: '#2563eb',
                   padding: '6px 12px',
                   borderRadius: '10px',
                   fontSize: '12px',
@@ -512,8 +512,8 @@ export const OrderTrackingView = () => {
       {/* Module 7: Interactive Additional Item Request Section */}
       {canRequestAddon && (
         <div style={{
-          backgroundColor: '#f0fdf4',
-          border: '1.5px solid #a7f3d0',
+          backgroundColor: '#eff6ff',
+          border: '1.5px solid #bfdbfe',
           borderRadius: '24px',
           padding: '20px 24px',
           marginBottom: '24px',
@@ -528,11 +528,11 @@ export const OrderTrackingView = () => {
               <span className="badge badge-success" style={{ fontSize: '11px', textTransform: 'uppercase' }}>
                 On-The-Way Add-On
               </span>
-              <strong style={{ fontSize: '15px', color: '#065f46' }}>
+              <strong style={{ fontSize: '15px', color: '#1e40af' }}>
                 Forgot an ingredient? Add an extra item from vendor's stock!
               </strong>
             </div>
-            <p style={{ fontSize: '12.5px', color: '#047857', margin: 0 }}>
+            <p style={{ fontSize: '12.5px', color: '#1d4ed8', margin: 0 }}>
               While the vendor is en-route, you can request an additional item directly from their remaining inventory.
             </p>
           </div>
@@ -545,13 +545,13 @@ export const OrderTrackingView = () => {
               gap: '6px',
               padding: '10px 18px',
               borderRadius: '14px',
-              backgroundColor: '#059669',
+              backgroundColor: '#2563eb',
               color: '#ffffff',
               border: 'none',
               fontWeight: '800',
               fontSize: '13px',
               cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(5, 150, 105, 0.25)'
+              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)'
             }}
           >
             <Plus size={16} /> Request Additional Item
@@ -627,8 +627,8 @@ export const OrderTrackingView = () => {
           </h3>
 
           {isRatingSubmitted ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#065f46', fontWeight: '800', fontSize: '14px', marginTop: '10px' }}>
-              <CheckCircle2 size={18} color="#059669" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1e40af', fontWeight: '800', fontSize: '14px', marginTop: '10px' }}>
+              <CheckCircle2 size={18} color="#2563eb" />
               <span>Review submitted! Rating score: {ratingScore} Stars. Thank you!</span>
             </div>
           ) : (
@@ -707,7 +707,7 @@ export const OrderTrackingView = () => {
       }}>
         <div>
           <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', display: 'block' }}>Total Amount</span>
-          <strong style={{ fontSize: '22px', fontWeight: '900', color: '#059669' }}>
+          <strong style={{ fontSize: '22px', fontWeight: '900', color: '#2563eb' }}>
             ₹{activeOrder.totalAmount || activeOrder.total || 140}
           </strong>
         </div>
@@ -765,8 +765,8 @@ export const OrderTrackingView = () => {
                       justifyContent: 'space-between',
                       padding: '10px 14px',
                       borderRadius: '14px',
-                      border: isSelected ? '2px solid #10b981' : '1px solid #e2e8f0',
-                      backgroundColor: isSelected ? '#ecfdf5' : '#ffffff',
+                      border: isSelected ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                      backgroundColor: isSelected ? '#eff6ff' : '#ffffff',
                       cursor: 'pointer'
                     }}
                   >
@@ -774,10 +774,10 @@ export const OrderTrackingView = () => {
                       <img src={p.image} alt={p.name} style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover' }} />
                       <div>
                         <strong style={{ fontSize: '13.5px', color: '#0f172a', display: 'block' }}>{p.name}</strong>
-                        <span style={{ fontSize: '12px', color: '#059669', fontWeight: '700' }}>₹{p.price} / {p.unit}</span>
+                        <span style={{ fontSize: '12px', color: '#2563eb', fontWeight: '700' }}>₹{p.price} / {p.unit}</span>
                       </div>
                     </div>
-                    {isSelected && <Check size={18} color="#059669" />}
+                    {isSelected && <Check size={18} color="#2563eb" />}
                   </div>
                 );
               })}
@@ -798,7 +798,7 @@ export const OrderTrackingView = () => {
                   <button
                     type="button"
                     onClick={() => setAddonQty(addonQty + 1)}
-                    style={{ width: '30px', height: '30px', borderRadius: '8px', border: 'none', backgroundColor: '#10b981', color: '#fff', cursor: 'pointer' }}
+                    style={{ width: '30px', height: '30px', borderRadius: '8px', border: 'none', backgroundColor: '#2563eb', color: '#fff', cursor: 'pointer' }}
                   >
                     +
                   </button>
@@ -818,7 +818,7 @@ export const OrderTrackingView = () => {
                 type="button"
                 onClick={handleRequestAddon}
                 disabled={!selectedAddonProduct || isSubmittingAddon}
-                style={{ flex: 1, padding: '11px', borderRadius: '12px', border: 'none', backgroundColor: selectedAddonProduct ? '#059669' : '#cbd5e1', color: '#ffffff', fontWeight: '800', cursor: selectedAddonProduct ? 'pointer' : 'not-allowed' }}
+                style={{ flex: 1, padding: '11px', borderRadius: '12px', border: 'none', backgroundColor: selectedAddonProduct ? '#2563eb' : '#cbd5e1', color: '#ffffff', fontWeight: '800', cursor: selectedAddonProduct ? 'pointer' : 'not-allowed' }}
               >
                 {isSubmittingAddon ? 'Sending...' : 'Confirm Request'}
               </button>

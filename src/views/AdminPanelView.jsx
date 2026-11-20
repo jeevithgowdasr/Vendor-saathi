@@ -95,85 +95,7 @@ export const AdminPanelView = () => {
     try {
       // 1. Fetch Users
       const usersRes = await getAllUsersFromFirebase();
-      if (usersRes.success && usersRes.users.length > 0) {
-        setUsersList(usersRes.users);
-      } else {
-        setUsersList([
-          {
-            uid: 'v1',
-            name: 'Suresh Kumar',
-            email: 'suresh.vendor@vendorsaathi.com',
-            phone: '+91 98451 23456',
-            role: 'vendor',
-            status: 'active',
-            isVerified: true,
-            businessName: 'Green Valley Fresh Produce',
-            category: 'Vegetables & Greens',
-            operatingAreas: ['Mijar', 'Moodbidri Town', 'Vijayanagar'],
-            vehicleDetails: 'Ape Piaggio Auto (KA-19-M-4821)',
-            rating: 4.8
-          },
-          {
-            uid: 'v2',
-            name: 'Basappa Fresh',
-            email: 'basappa@gmail.com',
-            phone: '+91 98452 34567',
-            role: 'vendor',
-            status: 'active',
-            isVerified: true,
-            businessName: 'Basappa Fresh Veggies',
-            category: 'Vegetables',
-            operatingAreas: ['Vijayanagar', 'Alva’s Gate'],
-            vehicleDetails: 'TVS XL Heavy Duty (KA-19-K-1092)',
-            rating: 4.6
-          },
-          {
-            uid: 'v3_pending',
-            name: 'Ramesh Gowda',
-            email: 'ramesh.fruits@gmail.com',
-            phone: '+91 98453 98765',
-            role: 'vendor',
-            status: 'pending',
-            isVerified: false,
-            businessName: 'Malnad Organic Fruits Cart',
-            category: 'Fresh Fruits',
-            operatingAreas: ['Kallabettu', 'Moodbidri East'],
-            vehicleDetails: 'Mahindra Bolero Pickup (KA-19-B-7712)',
-            rating: 4.9,
-            appliedAt: 'Today, 10:30 AM'
-          },
-          {
-            uid: 'c1',
-            name: 'Ananya Sharma',
-            email: 'ananya.customer@gmail.com',
-            phone: '+91 98765 43210',
-            role: 'customer',
-            status: 'active',
-            primaryLocation: { address: 'Mijar Village, Moodbidri - 574225' },
-            preferredCategories: ['Vegetables', 'Fruits', 'Dairy'],
-            preferredAreas: ['Mijar', 'Moodbidri']
-          },
-          {
-            uid: 'c2',
-            name: 'Karthik Shenoy',
-            email: 'karthik.s@gmail.com',
-            phone: '+91 98765 11223',
-            role: 'customer',
-            status: 'pending',
-            primaryLocation: { address: 'Vijayanagar Layout, Moodbidri' },
-            preferredCategories: ['Vegetables', 'Pooja Flowers'],
-            preferredAreas: ['Vijayanagar']
-          },
-          {
-            uid: 'adm1',
-            name: 'Principal Platform Admin',
-            email: 'admin@vendorsaathi.com',
-            phone: '+91 99000 00001',
-            role: 'admin',
-            status: 'active'
-          }
-        ]);
-      }
+      setUsersList(usersRes.success && Array.isArray(usersRes.users) ? usersRes.users : []);
 
       // 2. Fetch Categories
       const catRes = await getCategoriesFromFirebase();
@@ -192,24 +114,7 @@ export const AdminPanelView = () => {
 
       // 3. Fetch Complaints
       const compRes = await getAllComplaintsFromFirebase();
-      if (compRes.success && compRes.complaints.length > 0) {
-        setComplaintsList(compRes.complaints);
-      } else {
-        setComplaintsList([
-          {
-            id: 'cmp_101',
-            complaintId: 'cmp_101',
-            customerName: 'Ananya Sharma',
-            customerId: 'c1',
-            vendorName: 'Basappa Fresh Veggies',
-            vendorId: 'v2',
-            orderId: 'VS10215',
-            description: 'Arrival was 15 minutes later than the scheduled 9:30 AM arrival window.',
-            status: 'pending',
-            createdAt: '11 Oct 2026, 11:15 AM'
-          }
-        ]);
-      }
+      setComplaintsList(compRes.success && Array.isArray(compRes.complaints) ? compRes.complaints : []);
     } catch (err) {
       console.warn('Admin load error:', err.message);
     } finally {
@@ -662,12 +567,12 @@ export const AdminPanelView = () => {
         <div className="vs-card" style={{ padding: '22px', borderRadius: '20px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(15, 23, 42, 0.04)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Active Users</span>
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Users size={18} color="#059669" />
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Users size={18} color="#2563eb" />
             </div>
           </div>
           <div style={{ fontSize: '30px', fontWeight: '900', color: '#0f172a', marginTop: '8px' }}>{totalCustomers + totalVendors}</div>
-          <span style={{ fontSize: '12px', color: '#059669', fontWeight: '700' }}>{totalCustomers} customers • {totalVendors} vendors</span>
+          <span style={{ fontSize: '12px', color: '#2563eb', fontWeight: '700' }}>{totalCustomers} customers • {totalVendors} vendors</span>
         </div>
 
         <div className="vs-card" style={{ padding: '22px', borderRadius: '20px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(15, 23, 42, 0.04)' }}>
@@ -693,7 +598,7 @@ export const AdminPanelView = () => {
           <div style={{ fontSize: '30px', fontWeight: '900', color: '#0f172a', marginTop: '8px' }}>
             ₹{grossRevenue > 0 ? grossRevenue.toLocaleString() : '2,450'}
           </div>
-          <span style={{ fontSize: '12px', color: '#059669', fontWeight: '700' }}>
+          <span style={{ fontSize: '12px', color: '#2563eb', fontWeight: '700' }}>
             Instant UPI & Cash on Delivery
           </span>
         </div>
@@ -790,7 +695,7 @@ export const AdminPanelView = () => {
               borderRadius: '20px',
               border: '1.5px dashed #cbd5e1'
             }}>
-              <CheckCircle2 size={40} color="#059669" style={{ margin: '0 auto 12px auto' }} />
+              <CheckCircle2 size={40} color="#2563eb" style={{ margin: '0 auto 12px auto' }} />
               <strong style={{ fontSize: '16px', color: '#0f172a', display: 'block' }}>
                 Onboarding Queue Clear
               </strong>
@@ -871,7 +776,7 @@ export const AdminPanelView = () => {
                         flex: 1,
                         padding: '10px',
                         borderRadius: '12px',
-                        backgroundColor: '#059669',
+                        backgroundColor: '#2563eb',
                         color: '#ffffff',
                         border: 'none',
                         fontSize: '13px',
@@ -1010,15 +915,15 @@ export const AdminPanelView = () => {
                       <div style={{
                         padding: '4px 10px',
                         borderRadius: '12px',
-                        backgroundColor: isSuspended ? '#fee2e2' : '#ecfdf5',
-                        color: isSuspended ? '#b91c1c' : '#047857',
+                        backgroundColor: isSuspended ? '#fee2e2' : '#eff6ff',
+                        color: isSuspended ? '#b91c1c' : '#1d4ed8',
                         fontSize: '11px',
                         fontWeight: '800',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '4px'
                       }}>
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: isSuspended ? '#ef4444' : '#10b981' }}></span>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: isSuspended ? '#ef4444' : '#2563eb' }}></span>
                         <span>{isSuspended ? 'Suspended' : 'Live on Map'}</span>
                       </div>
                     </div>
@@ -1089,7 +994,7 @@ export const AdminPanelView = () => {
 
                     {/* Interactive Toggle Switch to Activate / Deactivate Listing */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: '800', color: isSuspended ? '#dc2626' : '#059669' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '800', color: isSuspended ? '#dc2626' : '#2563eb' }}>
                         {isSuspended ? 'OFF' : 'LIVE'}
                       </span>
                       <button
@@ -1099,7 +1004,7 @@ export const AdminPanelView = () => {
                           width: '42px',
                           height: '24px',
                           borderRadius: '12px',
-                          backgroundColor: isSuspended ? '#cbd5e1' : '#10b981',
+                          backgroundColor: isSuspended ? '#cbd5e1' : '#2563eb',
                           position: 'relative',
                           border: 'none',
                           cursor: 'pointer',
@@ -1213,8 +1118,8 @@ export const AdminPanelView = () => {
                           borderRadius: '6px',
                           fontSize: '11px',
                           fontWeight: '800',
-                          backgroundColor: u.role === 'vendor' ? '#eff6ff' : u.role === 'admin' ? '#0f172a' : '#f0fdf4',
-                          color: u.role === 'vendor' ? '#2563eb' : u.role === 'admin' ? '#ffffff' : '#059669',
+                          backgroundColor: u.role === 'vendor' ? '#eff6ff' : u.role === 'admin' ? '#0f172a' : '#eff6ff',
+                          color: u.role === 'vendor' ? '#2563eb' : u.role === 'admin' ? '#ffffff' : '#2563eb',
                           textTransform: 'uppercase'
                         }}>
                           {u.role}
@@ -1244,9 +1149,9 @@ export const AdminPanelView = () => {
                           borderRadius: '12px',
                           fontSize: '11.5px',
                           fontWeight: '800',
-                          backgroundColor: isActive ? '#ecfdf5' : isBlocked ? '#fef2f2' : '#fffbeb',
-                          color: isActive ? '#065f46' : isBlocked ? '#991b1b' : '#b45309',
-                          border: `1px solid ${isActive ? '#a7f3d0' : isBlocked ? '#fecaca' : '#fde68a'}`
+                          backgroundColor: isActive ? '#eff6ff' : isBlocked ? '#fef2f2' : '#fffbeb',
+                          color: isActive ? '#1e40af' : isBlocked ? '#991b1b' : '#b45309',
+                          border: `1px solid ${isActive ? '#bfdbfe' : isBlocked ? '#fecaca' : '#fde68a'}`
                         }}>
                           {isActive ? '🟢 Active' : isBlocked ? '🔴 Blocked' : '⏳ Pending'}
                         </span>
@@ -1276,9 +1181,9 @@ export const AdminPanelView = () => {
                               style={{
                                 padding: '6px 12px',
                                 borderRadius: '10px',
-                                backgroundColor: '#ecfdf5',
-                                color: '#059669',
-                                border: '1px solid #a7f3d0',
+                                backgroundColor: '#eff6ff',
+                                color: '#2563eb',
+                                border: '1px solid #bfdbfe',
                                 fontWeight: '800',
                                 fontSize: '11.5px',
                                 cursor: 'pointer'
@@ -1362,7 +1267,7 @@ export const AdminPanelView = () => {
 
                   <div style={{ fontSize: '13px', color: '#334155', display: 'flex', flexDirection: 'column', gap: '6px', margin: '14px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <MapPin size={14} color="#059669" />
+                      <MapPin size={14} color="#2563eb" />
                       <span><strong>Area:</strong> {sched.area?.areaName || sched.areaName || 'Moodbidri'}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1428,10 +1333,14 @@ export const AdminPanelView = () => {
                 </tr>
               </thead>
               <tbody>
-                {(ordersList.length > 0 ? ordersList : [
-                  { id: 'ORD-9912', orderId: 'ORD-9912', customerName: 'Ananya Sharma', vendorName: 'Suresh Kumar - Green Valley', totalAmount: 180, status: 'confirmed' },
-                  { id: 'ORD-9913', orderId: 'ORD-9913', customerName: 'Karthik Shenoy', vendorName: 'Basappa Fresh Veggies', totalAmount: 320, status: 'pending' }
-                ]).map((ord, i) => (
+                {ordersList.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} style={{ padding: '36px 18px', textAlign: 'center', color: '#64748b' }}>
+                      No platform orders recorded yet.
+                    </td>
+                  </tr>
+                ) : (
+                  ordersList.map((ord, i) => (
                   <tr key={ord.id || i} style={{ borderBottom: '1px solid #f1f5f9' }}>
                     <td style={{ padding: '14px 18px', fontWeight: '800', color: '#0f172a' }}>
                       #{ord.orderId || ord.id}
@@ -1439,7 +1348,7 @@ export const AdminPanelView = () => {
                     <td style={{ padding: '14px 18px', color: '#334155' }}>
                       {ord.customerName || ord.customerId || 'Customer'}
                     </td>
-                    <td style={{ padding: '14px 18px', color: '#059669', fontWeight: '700' }}>
+                    <td style={{ padding: '14px 18px', color: '#2563eb', fontWeight: '700' }}>
                       {ord.vendorName || ord.vendorId || 'Vendor'}
                     </td>
                     <td style={{ padding: '14px 18px', fontWeight: '800', color: '#0f172a' }}>
@@ -1449,8 +1358,8 @@ export const AdminPanelView = () => {
                       <span style={{
                         padding: '4px 10px',
                         borderRadius: '12px',
-                        backgroundColor: ord.status === 'confirmed' ? '#ecfdf5' : '#eff6ff',
-                        color: ord.status === 'confirmed' ? '#065f46' : '#2563eb',
+                        backgroundColor: ord.status === 'confirmed' ? '#eff6ff' : '#eff6ff',
+                        color: ord.status === 'confirmed' ? '#1e40af' : '#2563eb',
                         fontSize: '11px',
                         fontWeight: '800',
                         textTransform: 'uppercase'
@@ -1459,7 +1368,8 @@ export const AdminPanelView = () => {
                       </span>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -1536,7 +1446,7 @@ export const AdminPanelView = () => {
                   </div>
                   <div>
                     <strong style={{ fontSize: '14.5px', color: '#0f172a', display: 'block' }}>{cat.name}</strong>
-                    <span style={{ fontSize: '11.5px', color: cat.isActive !== false ? '#059669' : '#94a3b8', fontWeight: '700' }}>
+                    <span style={{ fontSize: '11.5px', color: cat.isActive !== false ? '#2563eb' : '#94a3b8', fontWeight: '700' }}>
                       {cat.isActive !== false ? '🟢 Active' : '⚪ Inactive'}
                     </span>
                   </div>
@@ -1604,7 +1514,7 @@ export const AdminPanelView = () => {
                   padding: '20px',
                   borderRadius: '20px',
                   backgroundColor: '#ffffff',
-                  border: comp.status === 'resolved' ? '1px solid #a7f3d0' : '1.5px solid #fed7aa'
+                  border: comp.status === 'resolved' ? '1px solid #bfdbfe' : '1.5px solid #fed7aa'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
@@ -1622,8 +1532,8 @@ export const AdminPanelView = () => {
                     borderRadius: '12px',
                     fontSize: '11px',
                     fontWeight: '800',
-                    backgroundColor: comp.status === 'resolved' ? '#ecfdf5' : '#fff7ed',
-                    color: comp.status === 'resolved' ? '#065f46' : '#c2410c'
+                    backgroundColor: comp.status === 'resolved' ? '#eff6ff' : '#fff7ed',
+                    color: comp.status === 'resolved' ? '#1e40af' : '#c2410c'
                   }}>
                     {comp.status === 'resolved' ? '✅ Resolved' : '⏳ Pending'}
                   </span>
@@ -1772,9 +1682,9 @@ export const AdminPanelView = () => {
                             style={{
                               padding: '6px 12px',
                               borderRadius: '8px',
-                              backgroundColor: prod.is_available === false ? '#fffbeb' : '#ecfdf5',
-                              border: `1px solid ${prod.is_available === false ? '#fde68a' : '#a7f3d0'}`,
-                              color: prod.is_available === false ? '#b45309' : '#059669',
+                              backgroundColor: prod.is_available === false ? '#fffbeb' : '#eff6ff',
+                              border: `1px solid ${prod.is_available === false ? '#fde68a' : '#bfdbfe'}`,
+                              color: prod.is_available === false ? '#b45309' : '#2563eb',
                               fontSize: '11.5px',
                               fontWeight: '800',
                               cursor: 'pointer'

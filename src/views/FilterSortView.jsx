@@ -24,16 +24,16 @@ export const FilterSortView = () => {
         onClick={() => navigateTo('home')}
         style={{ 
           fontSize: '13.5px', 
-          color: '#059669', 
+          color: '#2563eb', 
           fontWeight: '800', 
           display: 'inline-flex', 
           alignItems: 'center', 
           gap: '6px', 
           marginBottom: '20px',
-          backgroundColor: '#ecfdf5',
+          backgroundColor: '#eff6ff',
           padding: '6px 14px',
           borderRadius: '12px',
-          border: '1px solid #a7f3d0'
+          border: '1px solid #bfdbfe'
         }}
       >
         <ArrowLeft size={16} /> Back to Catalog
@@ -51,7 +51,7 @@ export const FilterSortView = () => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Filter size={16} color="#059669" />
+          <Filter size={16} color="#2563eb" />
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
@@ -91,7 +91,7 @@ export const FilterSortView = () => {
                     type="checkbox"
                     checked={selectedCatId === cat.id}
                     onChange={() => setSelectedCatId(cat.id === selectedCatId ? '' : cat.id)}
-                    style={{ accentColor: '#10b981', width: '16px', height: '16px' }}
+                    style={{ accentColor: '#2563eb', width: '16px', height: '16px' }}
                   />
                   <span>{cat.icon} {cat.name}</span>
                 </label>
@@ -103,7 +103,7 @@ export const FilterSortView = () => {
           <div style={{ marginBottom: '22px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <strong style={{ fontSize: '13px', color: '#334155', fontWeight: '800' }}>Max Price</strong>
-              <span style={{ fontSize: '13px', color: '#059669', fontWeight: '900' }}>₹{maxPrice}</span>
+              <span style={{ fontSize: '13px', color: '#2563eb', fontWeight: '900' }}>₹{maxPrice}</span>
             </div>
             <input
               type="range"
@@ -111,7 +111,7 @@ export const FilterSortView = () => {
               max="500"
               value={maxPrice}
               onChange={(e) => setMaxPrice(Number(e.target.value))}
-              style={{ width: '100%', accentColor: '#10b981' }}
+              style={{ width: '100%', accentColor: '#2563eb' }}
             />
           </div>
 
@@ -119,7 +119,7 @@ export const FilterSortView = () => {
           <div style={{ marginBottom: '24px' }}>
             <strong style={{ fontSize: '13px', color: '#334155', display: 'block', marginBottom: '10px', fontWeight: '800' }}>Availability</strong>
             <label style={{ fontSize: '13.5px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '8px', fontWeight: '600', color: '#334155' }}>
-              <input type="checkbox" checked={inStockOnly} onChange={(e) => setInStockOnly(e.target.checked)} style={{ accentColor: '#10b981', width: '16px', height: '16px' }} />
+              <input type="checkbox" checked={inStockOnly} onChange={(e) => setInStockOnly(e.target.checked)} style={{ accentColor: '#2563eb', width: '16px', height: '16px' }} />
               <span>🟢 In Stock Today</span>
             </label>
           </div>
@@ -151,7 +151,7 @@ export const FilterSortView = () => {
                     </div>
                     <h4 style={{ fontSize: '14.5px', fontWeight: '800', color: '#0f172a', lineHeight: 1.25 }}>{product.shortName || product.name}</h4>
                     <span style={{ fontSize: '11.5px', color: '#64748b', display: 'block', marginTop: '2px' }}>📍 {product.vendorName}</span>
-                    <strong style={{ fontSize: '16px', fontWeight: '900', color: '#059669', display: 'block', margin: '8px 0' }}>₹{product.price} / {product.unit}</strong>
+                    <strong style={{ fontSize: '16px', fontWeight: '900', color: '#2563eb', display: 'block', margin: '8px 0' }}>₹{product.price} / {product.unit}</strong>
                   </div>
 
                   <button

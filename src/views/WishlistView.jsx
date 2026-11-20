@@ -18,16 +18,16 @@ export const WishlistView = () => {
         onClick={() => navigateTo('profile')}
         style={{ 
           fontSize: '13.5px', 
-          color: '#059669', 
+          color: '#2563eb', 
           fontWeight: '800', 
           display: 'inline-flex', 
           alignItems: 'center', 
           gap: '6px', 
           marginBottom: '20px',
-          backgroundColor: '#ecfdf5',
+          backgroundColor: '#eff6ff',
           padding: '6px 14px',
           borderRadius: '12px',
-          border: '1px solid #a7f3d0'
+          border: '1px solid #bfdbfe'
         }}
       >
         <ArrowLeft size={16} /> Back to Profile
@@ -96,7 +96,7 @@ export const WishlistView = () => {
                 </div>
                 <h4 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', lineHeight: 1.25 }}>{product.shortName || product.name}</h4>
                 <span style={{ fontSize: '12px', color: '#64748b', display: 'block', marginTop: '2px' }}>📍 {product.vendorName}</span>
-                <strong style={{ fontSize: '18px', fontWeight: '900', color: '#059669', display: 'block', margin: '8px 0' }}>₹{product.price} / {product.unit}</strong>
+                <strong style={{ fontSize: '18px', fontWeight: '900', color: '#2563eb', display: 'block', margin: '8px 0' }}>₹{product.price} / {product.unit}</strong>
               </div>
 
               <button

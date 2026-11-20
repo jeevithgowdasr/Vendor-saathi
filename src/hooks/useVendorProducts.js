@@ -162,7 +162,8 @@ export function useVendorProducts({ token, onToast } = {}) {
 
   // Real-time Firebase Firestore product synchronization
   useEffect(() => {
-    const vendorId = effectiveToken && !effectiveToken.startsWith('vs_') && !effectiveToken.includes('_session_') ? effectiveToken : 'v1';
+    const vendorId = effectiveToken && !effectiveToken.startsWith('vs_') && !effectiveToken.includes('_session_') ? effectiveToken : '';
+    if (!vendorId) return;
     const unsubscribe = subscribeToVendorProducts(vendorId, (firebaseProducts) => {
       if (firebaseProducts && firebaseProducts.length > 0) {
         setProducts(firebaseProducts);

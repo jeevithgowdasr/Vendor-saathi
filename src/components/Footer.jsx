@@ -3,7 +3,21 @@ import { ShoppingBag, ShieldCheck, Truck, RefreshCw, Heart, Phone, Mail, MapPin,
 import { useApp } from '../context/AppContext';
 
 export const Footer = () => {
-  const { navigateTo } = useApp();
+  const { navigateTo, t, vendors } = useApp();
+
+  const registeredVendors = (vendors || []).filter(v =>
+    v &&
+    v.id !== 'v1' &&
+    v.id !== 'v2' &&
+    v.id !== 'v3' &&
+    v.id !== 'v4' &&
+    !v.name?.toLowerCase().includes('green valley') &&
+    !v.name?.toLowerCase().includes('basappa') &&
+    !v.name?.toLowerCase().includes('kaveri') &&
+    !v.name?.toLowerCase().includes('suresh provision') &&
+    !v.name?.toLowerCase().includes('mahesh kirana') &&
+    !v.owner?.toLowerCase().includes('suresh kumar')
+  );
 
   return (
     <footer style={{ 
@@ -33,12 +47,12 @@ export const Footer = () => {
             borderRadius: '16px',
             border: '1px solid rgba(255,255,255,0.06)'
           }}>
-            <div style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1))', color: '#34d399', padding: '12px', borderRadius: '14px', border: '1px solid rgba(52, 211, 153, 0.2)' }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0.1))', color: '#38bdf8', padding: '12px', borderRadius: '14px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
               <ShieldCheck size={26} />
             </div>
             <div>
-              <h4 style={{ color: '#ffffff', fontSize: '14px', fontWeight: '800' }}>100% Quality Fresh</h4>
-              <p style={{ fontSize: '12px', color: '#94a3b8' }}>Farm to table local guarantee</p>
+              <h4 style={{ color: '#ffffff', fontSize: '14px', fontWeight: '800' }}>{t('footer.qualityTitle', '100% Quality Fresh')}</h4>
+              <p style={{ fontSize: '12px', color: '#94a3b8' }}>{t('footer.qualityDesc', 'Farm to table local guarantee')}</p>
             </div>
           </div>
 
@@ -51,12 +65,12 @@ export const Footer = () => {
             borderRadius: '16px',
             border: '1px solid rgba(255,255,255,0.06)'
           }}>
-            <div style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1))', color: '#34d399', padding: '12px', borderRadius: '14px', border: '1px solid rgba(52, 211, 153, 0.2)' }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0.1))', color: '#38bdf8', padding: '12px', borderRadius: '14px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
               <Truck size={26} />
             </div>
             <div>
-              <h4 style={{ color: '#ffffff', fontSize: '14px', fontWeight: '800' }}>20–30 Mins Express</h4>
-              <p style={{ fontSize: '12px', color: '#94a3b8' }}>Delivered directly to doorstep</p>
+              <h4 style={{ color: '#ffffff', fontSize: '14px', fontWeight: '800' }}>{t('footer.expressTitle', '20–30 Mins Express')}</h4>
+              <p style={{ fontSize: '12px', color: '#94a3b8' }}>{t('footer.expressDesc', 'Delivered directly to doorstep')}</p>
             </div>
           </div>
 
@@ -69,12 +83,12 @@ export const Footer = () => {
             borderRadius: '16px',
             border: '1px solid rgba(255,255,255,0.06)'
           }}>
-            <div style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1))', color: '#34d399', padding: '12px', borderRadius: '14px', border: '1px solid rgba(52, 211, 153, 0.2)' }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0.1))', color: '#38bdf8', padding: '12px', borderRadius: '14px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
               <RefreshCw size={26} />
             </div>
             <div>
-              <h4 style={{ color: '#ffffff', fontSize: '14px', fontWeight: '800' }}>Instant Store Replacement</h4>
-              <p style={{ fontSize: '12px', color: '#94a3b8' }}>Direct support from local vendor</p>
+              <h4 style={{ color: '#ffffff', fontSize: '14px', fontWeight: '800' }}>{t('footer.replacementTitle', 'Instant Store Replacement')}</h4>
+              <p style={{ fontSize: '12px', color: '#94a3b8' }}>{t('footer.replacementDesc', 'Direct support from local vendor')}</p>
             </div>
           </div>
 
@@ -87,12 +101,12 @@ export const Footer = () => {
             borderRadius: '16px',
             border: '1px solid rgba(255,255,255,0.06)'
           }}>
-            <div style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1))', color: '#34d399', padding: '12px', borderRadius: '14px', border: '1px solid rgba(52, 211, 153, 0.2)' }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0.1))', color: '#38bdf8', padding: '12px', borderRadius: '14px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
               <Heart size={26} />
             </div>
             <div>
-              <h4 style={{ color: '#ffffff', fontSize: '14px', fontWeight: '800' }}>Empowering Kirana</h4>
-              <p style={{ fontSize: '12px', color: '#94a3b8' }}>100% money goes to local vendors</p>
+              <h4 style={{ color: '#ffffff', fontSize: '14px', fontWeight: '800' }}>{t('footer.empowerTitle', 'Empowering Kirana')}</h4>
+              <p style={{ fontSize: '12px', color: '#94a3b8' }}>{t('footer.empowerDesc', '100% money goes to local vendors')}</p>
             </div>
           </div>
         </div>
@@ -108,7 +122,7 @@ export const Footer = () => {
           {/* Brand Info */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-              <div style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', padding: '8px', borderRadius: '10px' }}>
+              <div style={{ background: 'linear-gradient(135deg, #2563eb 0%, #2563eb 100%)', color: '#ffffff', padding: '8px', borderRadius: '10px' }}>
                 <ShoppingBag size={20} />
               </div>
               <span style={{ fontSize: '22px', fontWeight: '900', color: '#ffffff', letterSpacing: '-0.5px' }}>
@@ -116,53 +130,55 @@ export const Footer = () => {
               </span>
             </div>
             <p style={{ fontSize: '13px', lineHeight: 1.65, color: '#94a3b8', marginBottom: '18px' }}>
-              Bridging local farmers and kirana store owners with rural and urban customers across Karnataka with smart voice assistance & instant delivery.
+              {t('footer.aboutDesc', 'Bridging local farmers and kirana store owners with rural and urban customers across Karnataka with smart voice assistance & instant delivery.')}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: '#cbd5e1' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <MapPin size={14} color="#34d399" /> Fast Hyperlocal Grocery Delivery, Karnataka
+                <MapPin size={14} color="#38bdf8" /> Fast Hyperlocal Grocery Delivery, Karnataka
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Phone size={14} color="#34d399" /> +91 98450 12345
+                <Phone size={14} color="#38bdf8" /> +91 98450 12345
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Mail size={14} color="#34d399" /> help@vendorsaathi.com
+                <Mail size={14} color="#38bdf8" /> help@vendorsaathi.com
               </span>
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 style={{ color: '#ffffff', fontSize: '15px', fontWeight: '800', marginBottom: '16px', letterSpacing: '0.2px' }}>Categories</h4>
+            <h4 style={{ color: '#ffffff', fontSize: '15px', fontWeight: '800', marginBottom: '16px', letterSpacing: '0.2px' }}>{t('footer.categoriesHeading', 'Categories')}</h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
-              <li><button onClick={() => navigateTo('product-listing', { category: 'vegetables' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>🥦 Fresh Farm Vegetables</button></li>
-              <li><button onClick={() => navigateTo('product-listing', { category: 'fruits' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>🍎 Seasonal Coastal Fruits</button></li>
-              <li><button onClick={() => navigateTo('product-listing', { category: 'spices' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>🌶️ Byadgi Spices & Masala</button></li>
-              <li><button onClick={() => navigateTo('product-listing', { category: 'grains' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>🥜 Dry Fruits & Grains</button></li>
-              <li><button onClick={() => navigateTo('product-listing', { category: 'daily-essentials' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>🥛 Nandini Dairy & Essentials</button></li>
+              <li><button onClick={() => navigateTo('product-listing', { category: 'vegetables' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>🥦 {t('categories.vegetables', 'Fresh Farm Vegetables')}</button></li>
+              <li><button onClick={() => navigateTo('product-listing', { category: 'fruits' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>🍎 {t('categories.fruits', 'Seasonal Coastal Fruits')}</button></li>
+              <li><button onClick={() => navigateTo('product-listing', { category: 'greens' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>🥬 {t('categories.greens', 'Green Vegetables (Greens / Soppu)')}</button></li>
+              <li><button onClick={() => navigateTo('product-listing', { category: 'flowers' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>🌸 {t('categories.flowers', 'Fresh Flowers')}</button></li>
             </ul>
           </div>
 
-          {/* Vendors */}
-          <div>
-            <h4 style={{ color: '#ffffff', fontSize: '15px', fontWeight: '800', marginBottom: '16px' }}>Partner Stores</h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
-              <li><button onClick={() => navigateTo('product-listing', { vendor: 'v1' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>📍 Green Valley Fresh Produce</button></li>
-              <li><button onClick={() => navigateTo('product-listing', { vendor: 'v2' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>📍 Suresh Provision</button></li>
-              <li><button onClick={() => navigateTo('product-listing', { vendor: 'v3' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>📍 Mahesh Kirana</button></li>
-              <li><button onClick={() => navigateTo('product-listing', { vendor: 'v4' })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>📍 Lakshmi General Store</button></li>
-            </ul>
-          </div>
+          {/* Registered Partner Stores (Only displayed when real partners are registered) */}
+          {registeredVendors.length > 0 && (
+            <div>
+              <h4 style={{ color: '#ffffff', fontSize: '15px', fontWeight: '800', marginBottom: '16px' }}>{t('footer.partnerStoresHeading', 'Partner Stores')}</h4>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
+                {registeredVendors.slice(0, 5).map(v => (
+                  <li key={v.id || v.uid}>
+                    <button onClick={() => navigateTo('product-listing', { vendor: v })} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
+                      📍 {v.name || v.businessName}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Customer Care */}
           <div>
-            <h4 style={{ color: '#ffffff', fontSize: '15px', fontWeight: '800', marginBottom: '16px' }}>Customer Service</h4>
+            <h4 style={{ color: '#ffffff', fontSize: '15px', fontWeight: '800', marginBottom: '16px' }}>{t('footer.customerServiceHeading', 'Customer Service')}</h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
-              <li><button onClick={() => navigateTo('my-orders')} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>📦 My Orders & Live Tracking</button></li>
-              <li><button onClick={() => navigateTo('wishlist')} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>❤️ Saved Wishlist Items</button></li>
-              <li><button onClick={() => navigateTo('offers')} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>🏷️ Offers & Discount Coupons</button></li>
-              <li><button onClick={() => navigateTo('saved-addresses-support')} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>📍 Help, FAQs & Delivery Addresses</button></li>
-              <li><button onClick={() => navigateTo('profile')} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>👤 My Account & Profile</button></li>
+              <li><button onClick={() => navigateTo('my-orders')} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>📦 {t('nav.myOrders', 'My Orders & Live Tracking')}</button></li>
+              <li><button onClick={() => navigateTo('wishlist')} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>❤️ {t('nav.wishlist', 'Saved Wishlist Items')}</button></li>
+              <li><button onClick={() => navigateTo('profile')} style={{ color: '#cbd5e1', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>👤 {t('nav.myAccount', 'My Account & Settings')}</button></li>
             </ul>
           </div>
         </div>
@@ -179,13 +195,13 @@ export const Footer = () => {
           color: '#94a3b8'
         }}>
           <div>
-            © 2026 <strong>VendorSaathi</strong>. Rural Grocery Network. Built for rural empowerment.
+            {t('footer.copyright', '© 2026 VendorSaathi. Rural Grocery Network. Built for rural empowerment.')}
           </div>
 
           {/* Payment Methods Badges */}
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <span style={{ fontWeight: '600', color: '#cbd5e1' }}>Accepted:</span>
-            <span style={{ backgroundColor: '#1e293b', border: '1px solid #334155', padding: '4px 9px', borderRadius: '6px', color: '#34d399', fontWeight: '800', fontSize: '11px' }}>UPI</span>
+            <span style={{ fontWeight: '600', color: '#cbd5e1' }}>{t('footer.acceptedPayments', 'Accepted Payments:')}</span>
+            <span style={{ backgroundColor: '#1e293b', border: '1px solid #334155', padding: '4px 9px', borderRadius: '6px', color: '#38bdf8', fontWeight: '800', fontSize: '11px' }}>UPI</span>
             <span style={{ backgroundColor: '#1e293b', border: '1px solid #334155', padding: '4px 9px', borderRadius: '6px', color: '#60a5fa', fontWeight: '800', fontSize: '11px' }}>GPay</span>
             <span style={{ backgroundColor: '#1e293b', border: '1px solid #334155', padding: '4px 9px', borderRadius: '6px', color: '#fbbf24', fontWeight: '800', fontSize: '11px' }}>PhonePe</span>
             <span style={{ backgroundColor: '#1e293b', border: '1px solid #334155', padding: '4px 9px', borderRadius: '6px', color: '#ffffff', fontWeight: '800', fontSize: '11px' }}>Cash on Delivery</span>

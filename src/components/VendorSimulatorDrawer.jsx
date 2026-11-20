@@ -78,8 +78,8 @@ export const VendorSimulatorDrawer = () => {
             justifyContent: 'center',
             gap: '6px'
           }}>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#064e3b' }} />
-            <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#10b981', animation: 'pulseGlowRing 2s infinite' }} />
+            <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#0f172a' }} />
+            <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#2563eb', animation: 'pulseGlowRing 2s infinite' }} />
           </div>
           <button 
             type="button"
@@ -95,24 +95,24 @@ export const VendorSimulatorDrawer = () => {
 
         {/* Vendor Partner App Header */}
         <div style={{
-          background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
+          background: 'linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%)',
           color: '#ffffff',
           padding: '14px 18px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          boxShadow: '0 4px 12px rgba(6, 95, 70, 0.3)'
+          boxShadow: '0 4px 12px rgba(30, 64, 175, 0.3)'
         }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Store size={18} color="#fbbf24" />
               <strong style={{ fontSize: '15px', letterSpacing: '-0.01em' }}>{user?.businessName || user?.name || 'Local Partner Store'}</strong>
             </div>
-            <span style={{ fontSize: '11px', color: '#a7f3d0', display: 'block', marginTop: '1px' }}>
+            <span style={{ fontSize: '11px', color: '#bfdbfe', display: 'block', marginTop: '1px' }}>
               📍 Mijar Village • Partner Portal v2.4
             </span>
           </div>
-          <span className="badge badge-success" style={{ backgroundColor: '#ffffff', color: '#065f46', fontSize: '10px' }}>
+          <span className="badge badge-success" style={{ backgroundColor: '#ffffff', color: '#1e40af', fontSize: '10px' }}>
             🟢 LIVE SYNC
           </span>
         </div>
@@ -144,7 +144,7 @@ export const VendorSimulatorDrawer = () => {
             }}
             style={{
               width: '100%',
-              backgroundColor: '#064e3b',
+              backgroundColor: '#0f172a',
               color: '#ffffff',
               border: 'none',
               padding: '10px 14px',
@@ -241,7 +241,7 @@ export const VendorSimulatorDrawer = () => {
                     fontSize: '14px' 
                   }}>
                     <span>Total ({currentOrder.paymentMethod})</span>
-                    <span style={{ color: '#059669' }}>₹{currentOrder.total}</span>
+                    <span style={{ color: '#2563eb' }}>₹{currentOrder.total}</span>
                   </div>
                 </div>
               </div>
@@ -258,13 +258,13 @@ export const VendorSimulatorDrawer = () => {
                     className="btn-primary"
                     style={{
                       background: currentOrder.status === 'Accepted' 
-                        ? 'linear-gradient(135deg, #047857 0%, #064e3b 100%)' 
-                        : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        ? 'linear-gradient(135deg, #1d4ed8 0%, #0f172a 100%)' 
+                        : 'linear-gradient(135deg, #2563eb 0%, #2563eb 100%)',
                       padding: '11px 16px',
                       fontSize: '13px',
                       borderRadius: '12px',
                       justifyContent: 'flex-start',
-                      boxShadow: currentOrder.status === 'Accepted' ? '0 0 0 2px #34d399' : 'none'
+                      boxShadow: currentOrder.status === 'Accepted' ? '0 0 0 2px #38bdf8' : 'none'
                     }}
                   >
                     <Check size={17} />
@@ -312,13 +312,13 @@ export const VendorSimulatorDrawer = () => {
                     className="btn-primary"
                     style={{
                       background: currentOrder.status === 'Delivered' 
-                        ? 'linear-gradient(135deg, #065f46 0%, #022c22 100%)' 
-                        : 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                        ? 'linear-gradient(135deg, #1e40af 0%, #030712 100%)' 
+                        : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                       padding: '11px 16px',
                       fontSize: '13px',
                       borderRadius: '12px',
                       justifyContent: 'flex-start',
-                      boxShadow: currentOrder.status === 'Delivered' ? '0 0 0 2px #34d399' : 'none'
+                      boxShadow: currentOrder.status === 'Delivered' ? '0 0 0 2px #38bdf8' : 'none'
                     }}
                   >
                     <CheckCircle2 size={17} />

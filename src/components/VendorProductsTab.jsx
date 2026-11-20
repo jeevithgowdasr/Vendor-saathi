@@ -93,9 +93,9 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
             <span
               className="badge"
               style={{
-                backgroundColor: '#ecfdf5',
-                color: '#065f46',
-                border: '1px solid #a7f3d0',
+                backgroundColor: '#eff6ff',
+                color: '#1e40af',
+                border: '1px solid #bfdbfe',
                 fontSize: '11.5px',
                 fontWeight: '800'
               }}
@@ -141,7 +141,7 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
             style={{
               padding: '11px 20px',
               borderRadius: '14px',
-              background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+              background: 'linear-gradient(135deg, #2563eb 0%, #2563eb 100%)',
               color: '#ffffff',
               border: 'none',
               fontSize: '13.5px',
@@ -150,7 +150,7 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              boxShadow: '0 6px 18px -4px rgba(16, 185, 129, 0.45)',
+              boxShadow: '0 6px 18px -4px rgba(37, 99, 235, 0.45)',
               transition: 'transform 0.15s ease'
             }}
             onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.98)')}
@@ -224,8 +224,8 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
               width: '42px',
               height: '42px',
               borderRadius: '12px',
-              backgroundColor: '#ecfdf5',
-              color: '#059669',
+              backgroundColor: '#eff6ff',
+              color: '#2563eb',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -237,7 +237,7 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
             <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>
               In Stock & Active
             </span>
-            <div style={{ fontSize: '22px', fontWeight: '900', color: '#059669', lineHeight: 1.1 }}>
+            <div style={{ fontSize: '22px', fontWeight: '900', color: '#2563eb', lineHeight: 1.1 }}>
               {stats.inStock}
             </div>
           </div>
@@ -382,7 +382,7 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
                 transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = '#10b981';
+                e.target.style.borderColor = '#2563eb';
                 e.target.style.backgroundColor = '#ffffff';
               }}
               onBlur={(e) => {
@@ -444,9 +444,9 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
                   fontWeight: '800',
                   border: 'none',
                   cursor: 'pointer',
-                  backgroundColor: stockFilter === 'in-stock' ? '#ecfdf5' : 'transparent',
-                  color: stockFilter === 'in-stock' ? '#065f46' : '#64748b',
-                  boxShadow: stockFilter === 'in-stock' ? '0 2px 6px rgba(16,185,129,0.15)' : 'none',
+                  backgroundColor: stockFilter === 'in-stock' ? '#eff6ff' : 'transparent',
+                  color: stockFilter === 'in-stock' ? '#1e40af' : '#64748b',
+                  boxShadow: stockFilter === 'in-stock' ? '0 2px 6px rgba(37, 99, 235,0.15)' : 'none',
                   transition: 'all 0.15s ease'
                 }}
               >
@@ -558,12 +558,12 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
                   fontSize: '12px',
                   fontWeight: isSelected ? '800' : '600',
                   cursor: 'pointer',
-                  border: isSelected ? '1.5px solid #10b981' : '1.5px solid #e2e8f0',
-                  backgroundColor: isSelected ? '#ecfdf5' : '#ffffff',
-                  color: isSelected ? '#065f46' : '#475569',
+                  border: isSelected ? '1.5px solid #2563eb' : '1.5px solid #e2e8f0',
+                  backgroundColor: isSelected ? '#eff6ff' : '#ffffff',
+                  color: isSelected ? '#1e40af' : '#475569',
                   whiteSpace: 'nowrap',
                   transition: 'all 0.15s ease',
-                  boxShadow: isSelected ? '0 2px 8px rgba(16, 185, 129, 0.15)' : 'none'
+                  boxShadow: isSelected ? '0 2px 8px rgba(37, 99, 235, 0.15)' : 'none'
                 }}
               >
                 {cat}
@@ -584,7 +584,7 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
             borderRadius: '20px'
           }}
         >
-          <RefreshCw size={36} color="#10b981" className="animate-spin" style={{ margin: '0 auto 12px auto' }} />
+          <RefreshCw size={36} color="#2563eb" className="animate-spin" style={{ margin: '0 auto 12px auto' }} />
           <strong style={{ fontSize: '16px', color: '#0f172a', display: 'block' }}>
             Loading Vendor Products...
           </strong>
@@ -609,13 +609,13 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
               width: '72px',
               height: '72px',
               borderRadius: '50%',
-              backgroundColor: '#f0fdf4',
-              color: '#059669',
+              backgroundColor: '#eff6ff',
+              color: '#2563eb',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 16px auto',
-              boxShadow: '0 8px 24px rgba(16, 185, 129, 0.15)'
+              boxShadow: '0 8px 24px rgba(37, 99, 235, 0.15)'
             }}
           >
             <Package size={36} />
@@ -790,7 +790,7 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
                       {/* Price / Unit */}
                       <td style={{ padding: '14px 18px' }}>
                         <div>
-                          <span style={{ fontSize: '15px', fontWeight: '900', color: '#059669' }}>
+                          <span style={{ fontSize: '15px', fontWeight: '900', color: '#2563eb' }}>
                             ₹{product.price}
                           </span>
                           <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', marginLeft: '4px' }}>
@@ -855,7 +855,7 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
                               width: '46px',
                               height: '24px',
                               borderRadius: '12px',
-                              backgroundColor: isAvailable ? '#10b981' : '#cbd5e1',
+                              backgroundColor: isAvailable ? '#2563eb' : '#cbd5e1',
                               border: 'none',
                               cursor: 'pointer',
                               transition: 'background-color 0.2s ease',
@@ -881,7 +881,7 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
                             style={{
                               fontSize: '12px',
                               fontWeight: '800',
-                              color: isAvailable ? '#059669' : '#94a3b8'
+                              color: isAvailable ? '#2563eb' : '#94a3b8'
                             }}
                           >
                             {isAvailable ? 'In Stock' : 'Out of Stock'}
@@ -1028,7 +1028,7 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
                       position: 'absolute',
                       top: '10px',
                       right: '10px',
-                      backgroundColor: isAvailable ? '#059669' : '#dc2626',
+                      backgroundColor: isAvailable ? '#2563eb' : '#dc2626',
                       color: '#ffffff',
                       padding: '3px 8px',
                       borderRadius: '8px',
@@ -1048,7 +1048,7 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
                       {product.name}
                     </strong>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <span style={{ fontSize: '16px', fontWeight: '900', color: '#059669' }}>
+                      <span style={{ fontSize: '16px', fontWeight: '900', color: '#2563eb' }}>
                         ₹{product.price}
                       </span>
                       <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '600', display: 'block' }}>
@@ -1103,9 +1103,9 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
                           borderRadius: '10px',
                           fontSize: '12px',
                           fontWeight: '800',
-                          border: isAvailable ? '1.5px solid #a7f3d0' : '1.5px solid #fecaca',
-                          backgroundColor: isAvailable ? '#ecfdf5' : '#fee2e2',
-                          color: isAvailable ? '#065f46' : '#991b1b',
+                          border: isAvailable ? '1.5px solid #bfdbfe' : '1.5px solid #fecaca',
+                          backgroundColor: isAvailable ? '#eff6ff' : '#fee2e2',
+                          color: isAvailable ? '#1e40af' : '#991b1b',
                           cursor: 'pointer',
                           transition: 'all 0.15s ease'
                         }}
@@ -1268,7 +1268,7 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
                     marginBottom: '8px'
                   }}
                 >
-                  <Sparkles size={14} color="#059669" /> Quick Produce Presets:
+                  <Sparkles size={14} color="#2563eb" /> Quick Produce Presets:
                 </span>
                 <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
                   {QUICK_PRODUCT_TEMPLATES.map((tmpl) => (
@@ -1425,7 +1425,7 @@ export const VendorProductsTab = ({ token, vendorId, onToast, vendorName = 'My S
                     width: '50px',
                     height: '26px',
                     borderRadius: '13px',
-                    backgroundColor: formData.is_available ? '#10b981' : '#cbd5e1',
+                    backgroundColor: formData.is_available ? '#2563eb' : '#cbd5e1',
                     border: 'none',
                     cursor: 'pointer',
                     transition: 'background-color 0.2s ease',

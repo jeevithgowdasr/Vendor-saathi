@@ -857,7 +857,7 @@ export const logConflictToFirebase = async (conflictData) => {
 /**
  * Upload product image to Firebase Storage with resilient fallback to base64 DataURL
  */
-export const uploadProductImageToStorage = async (file, vendorId = 'v1') => {
+export const uploadProductImageToStorage = async (file, vendorId = 'store') => {
   try {
     if (storage && file && file.name) {
       const sanitizedName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
@@ -1548,108 +1548,19 @@ export const findLocalRegisteredUser = (identifier, role = null) => {
     } catch {}
   }
 
-  // 2. Check seed DEFAULT_VENDORS for vendor logins
-  if (!match && (role === 'vendor' || clean.includes('vendor') || clean.includes('produce') || clean.includes('farm') || clean.includes('suresh') || clean.includes('ramesh') || clean.includes('basappa') || clean.includes('kaveri') || clean === '9845123456' || clean === '9876543210' || clean === '9845234567' || clean === '9845398765' || digits === '9845123456' || digits === '9876543210')) {
-    const matchedVendor = DEFAULT_VENDORS.find(v => {
-      const vPhone = (v.phone || '').replace(/\D/g, '');
-      const vName = (v.name || '').toLowerCase();
-      const vOwner = (v.owner || '').toLowerCase();
-      return (
-        (digits && vPhone.endsWith(digits.slice(-10))) ||
-        (digits && digits.endsWith(vPhone.slice(-10))) ||
-        (clean && (vName.includes(clean) || vOwner.includes(clean)))
-      );
-    }) || DEFAULT_VENDORS[0];
-
-    if (matchedVendor) {
-      match = {
-        uid: matchedVendor.uid || matchedVendor.id || 'v1',
-        id: matchedVendor.id || 'v1',
-        role: 'vendor',
-        name: matchedVendor.owner || matchedVendor.name,
-        businessName: matchedVendor.name,
-        email: clean.includes('@') ? clean : `${(matchedVendor.phone || '9845123456').replace(/\D/g, '')}@vendorsaathi.in`,
-        phone: matchedVendor.phone,
-        category: (matchedVendor.categories && matchedVendor.categories[0]) || 'Vegetables',
-        categories: matchedVendor.categories || ['Vegetables', 'Fruits'],
-        operatingAreas: matchedVendor.operatingAreas || ['Mijar', 'Moodbidri Town'],
-        vehicleDetails: matchedVendor.vehicleDetails,
-        status: 'active',
-        statusLabel: '🟢 Open Now',
-        isOpen: true,
-        rating: matchedVendor.rating || 4.8,
-        ratingCount: matchedVendor.reviewCount || 38,
-        location: matchedVendor.location || 'Mijar Village, Moodbidri',
-        address: matchedVendor.address || 'Near Alva’s Engineering College, Mijar',
-        coordinates: matchedVendor.coordinates || { lat: 13.0682, lng: 74.9961 }
-      };
-    }
+  // 2. Only allow predefined platform administrator or real registered users
+  if (!match && (clean === 'admin' || clean === 'admin@vendorsaathi.com' || clean === 'admin@vendorsaathi.in')) {
+    match = {
+      uid: 'admin_master_001',
+      id: 'admin_master_001',
+      role: 'admin',
+      name: 'Platform Administrator',
+      email: clean.includes('@') ? clean : 'admin@vendorsaathi.in',
+      status: 'active'
+    };
   }
 
-  // 3. Pre-seed or synthesize active profile matching identifier and requested role
-  if (!match) {
-    const isVendorRole = role === 'vendor' || clean.includes('vendor') || clean.includes('farmer') || clean === '9876543210' || clean === '9845123456';
-    const isAdminRole = role === 'admin' || clean.includes('admin');
-
-    if (isVendorRole) {
-      const namePart = clean.includes('@') ? clean.split('@')[0].replace(/[._]/g, ' ') : `Vendor Partner ${digits.slice(-4) || 'Fresh'}`;
-      const capitalized = namePart.charAt(0).toUpperCase() + namePart.slice(1);
-      match = {
-        uid: 'v1',
-        id: 'v1',
-        role: 'vendor',
-        name: capitalized,
-        businessName: `${capitalized} Produce & Farm Essentials`,
-        email: clean.includes('@') ? clean : `${digits || 'vendor'}@vendorsaathi.in`,
-        phone: digits || '',
-        category: 'Vegetables',
-        categories: ['Vegetables', 'Fruits', 'Green Vegetables (Greens / Soppu)', 'Flowers'],
-        operatingAreas: ['Mijar', 'Moodbidri Town'],
-        status: 'active',
-        statusLabel: '🟢 Open Now',
-        isOpen: true,
-        rating: 4.8,
-        ratingCount: 24,
-        location: 'Mijar, Moodbidri',
-        address: 'Mijar Market Road, Moodbidri',
-        coordinates: { lat: 13.0682, lng: 74.9961 }
-      };
-    } else if (isAdminRole) {
-      match = {
-        uid: 'admin_master_001',
-        id: 'admin_master_001',
-        role: 'admin',
-        name: 'Platform Administrator',
-        email: clean.includes('@') ? clean : 'admin@vendorsaathi.in',
-        status: 'active'
-      };
-    } else {
-      // Default: Customer Profile
-      const rawName = clean.includes('@') ? clean.split('@')[0].replace(/[._]/g, ' ') : `Customer ${digits.slice(-4) || 'Shopper'}`;
-      const capitalized = rawName.charAt(0).toUpperCase() + rawName.slice(1);
-      match = {
-        uid: `cust_${digits || Math.random().toString(36).substring(2, 9)}`,
-        id: `cust_${digits || Math.random().toString(36).substring(2, 9)}`,
-        role: 'customer',
-        name: capitalized,
-        email: clean.includes('@') ? clean : `${digits || 'customer'}@vendorsaathi.in`,
-        phone: digits || '',
-        status: 'active',
-        primaryLocation: {
-          address: 'Mijar Village, Moodbidri - 574225',
-          village: 'Mijar',
-          town: 'Moodbidri',
-          district: 'Dakshina Kannada',
-          pincode: '574225',
-          coordinates: { lat: 13.0682, lng: 74.9961 }
-        },
-        preferredCategories: ['Vegetables', 'Fruits', 'Green Vegetables (Greens / Soppu)', 'Flowers'],
-        preferredAreas: ['Mijar', 'Moodbidri']
-      };
-    }
-  }
-
-  return match;
+  return match || null;
 };
 
 /**

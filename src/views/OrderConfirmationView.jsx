@@ -68,7 +68,7 @@ export const OrderConfirmationView = () => {
         <button
           onClick={() => navigateTo('home')}
           style={{
-            backgroundColor: '#059669',
+            backgroundColor: '#2563eb',
             color: '#ffffff',
             padding: '12px 24px',
             borderRadius: '14px',
@@ -94,20 +94,20 @@ export const OrderConfirmationView = () => {
           backgroundColor: '#ffffff', 
           textAlign: 'center',
           boxShadow: '0 20px 40px -10px rgba(15, 23, 42, 0.08)',
-          border: '1.5px solid #d1fae5'
+          border: '1.5px solid #dbeafe'
         }}>
           {/* Celebration Animated Green Check Icon */}
           <div style={{
             width: '92px',
             height: '92px',
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            background: 'linear-gradient(135deg, #2563eb 0%, #2563eb 100%)',
             color: '#ffffff',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 22px auto',
-            boxShadow: '0 12px 32px -4px rgba(16, 185, 129, 0.45)',
+            boxShadow: '0 12px 32px -4px rgba(37, 99, 235, 0.45)',
             position: 'relative'
           }}>
             <CheckCircle2 size={56} />
@@ -115,7 +115,7 @@ export const OrderConfirmationView = () => {
               position: 'absolute',
               inset: '-8px',
               borderRadius: '50%',
-              border: '2.5px solid rgba(16, 185, 129, 0.35)',
+              border: '2.5px solid rgba(37, 99, 235, 0.35)',
               animation: 'pulseGlowRing 2s infinite'
             }} />
           </div>
@@ -124,7 +124,7 @@ export const OrderConfirmationView = () => {
             <Sparkles size={15} color="#f59e0b" /> ORDER CONFIRMED & DISPATCHING
           </span>
 
-          <h1 style={{ fontSize: '32px', fontWeight: '900', color: '#064e3b', marginBottom: '10px', letterSpacing: '-0.025em' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: '900', color: '#0f172a', marginBottom: '10px', letterSpacing: '-0.025em' }}>
             Order Placed Successfully!
           </h1>
 
@@ -134,8 +134,8 @@ export const OrderConfirmationView = () => {
 
           {/* Order ID & Date Box */}
           <div style={{
-            backgroundColor: '#f0fdf4',
-            border: '1.5px solid #bbf7d0',
+            backgroundColor: '#eff6ff',
+            border: '1.5px solid #bfdbfe',
             borderRadius: '20px',
             padding: '18px 24px',
             display: 'flex',
@@ -144,19 +144,19 @@ export const OrderConfirmationView = () => {
             marginBottom: '26px'
           }}>
             <div style={{ textAlign: 'left' }}>
-              <span style={{ fontSize: '12px', color: '#047857', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>Order Reference</span>
+              <span style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>Order Reference</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '2px' }}>
-                <strong style={{ fontSize: '22px', fontWeight: '900', color: '#064e3b' }}>#{order.id}</strong>
+                <strong style={{ fontSize: '22px', fontWeight: '900', color: '#0f172a' }}>#{order.id}</strong>
                 <button 
                   onClick={handleCopyId}
                   style={{ 
                     background: '#ffffff', 
-                    border: '1.5px solid #a7f3d0', 
+                    border: '1.5px solid #bfdbfe', 
                     borderRadius: '10px', 
                     padding: '5px 10px', 
                     fontSize: '12.5px', 
                     fontWeight: '800', 
-                    color: '#059669',
+                    color: '#2563eb',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '5px'
@@ -226,7 +226,7 @@ export const OrderConfirmationView = () => {
             textAlign: 'left'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <img src={vendor.avatar} alt={vendor.name} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2.5px solid #a7f3d0' }} />
+              <img src={vendor.avatar} alt={vendor.name} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2.5px solid #bfdbfe' }} />
               <div>
                 <strong style={{ fontSize: '17px', color: '#0f172a', fontWeight: '800', display: 'block' }}>{vendor.name}</strong>
                 <span style={{ fontSize: '13px', color: '#64748b', display: 'block', marginTop: '2px' }}>
@@ -265,19 +265,19 @@ export const OrderConfirmationView = () => {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Express Rural Delivery</span>
-                <span>{order.deliveryFee === 0 ? <strong style={{ color: '#059669' }}>FREE</strong> : `₹${order.deliveryFee}`}</span>
+                <span>{order.deliveryFee === 0 ? <strong style={{ color: '#2563eb' }}>FREE</strong> : `₹${order.deliveryFee}`}</span>
               </div>
               <div style={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 
                 fontSize: '22px', 
                 fontWeight: '900', 
-                color: '#064e3b', 
+                color: '#0f172a', 
                 paddingTop: '12px', 
                 borderTop: '1.5px dashed #cbd5e1' 
               }}>
                 <span>Total Amount Paid</span>
-                <span style={{ color: '#059669' }}>₹{order.total}</span>
+                <span style={{ color: '#2563eb' }}>₹{order.total}</span>
               </div>
             </div>
 
@@ -298,7 +298,7 @@ export const OrderConfirmationView = () => {
                 </div>
                 <strong style={{ fontSize: '14px', color: '#0f172a', marginTop: '3px', display: 'block' }}>{order.paymentMethod}</strong>
                 {order.upiRefId && (
-                  <span style={{ fontSize: '11px', color: '#059669', fontFamily: 'monospace', fontWeight: '800', display: 'block', marginTop: '2px' }}>
+                  <span style={{ fontSize: '11px', color: '#2563eb', fontFamily: 'monospace', fontWeight: '800', display: 'block', marginTop: '2px' }}>
                     UTR Ref: #{order.upiRefId}
                   </span>
                 )}
@@ -308,9 +308,9 @@ export const OrderConfirmationView = () => {
                   </span>
                 )}
               </div>
-              <div style={{ padding: '14px', borderRadius: '16px', backgroundColor: '#f0fdf4', border: '1.5px solid #bbf7d0' }}>
-                <span style={{ fontSize: '11.5px', color: '#047857', fontWeight: '800', textTransform: 'uppercase', display: 'block' }}>Estimated Arrival</span>
-                <strong style={{ fontSize: '14.5px', color: '#059669', marginTop: '2px', display: 'block' }}>⚡ ~20 mins Express Delivery</strong>
+              <div style={{ padding: '14px', borderRadius: '16px', backgroundColor: '#eff6ff', border: '1.5px solid #bfdbfe' }}>
+                <span style={{ fontSize: '11.5px', color: '#1d4ed8', fontWeight: '800', textTransform: 'uppercase', display: 'block' }}>Estimated Arrival</span>
+                <strong style={{ fontSize: '14.5px', color: '#2563eb', marginTop: '2px', display: 'block' }}>⚡ ~20 mins Express Delivery</strong>
               </div>
             </div>
           </div>

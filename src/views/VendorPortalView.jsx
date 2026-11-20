@@ -72,7 +72,7 @@ export const VendorPortalView = () => {
   const { updateVendorOrderState, broadcastRiderLocation, broadcastStoreStatus } = useVendorSync();
 
   // Active vendor selection (Defaults to authenticated user.uid)
-  const [selectedVendorId, setSelectedVendorId] = useState(user?.uid || 'v1');
+  const [selectedVendorId, setSelectedVendorId] = useState(user?.uid || '');
   const [activeTab, setActiveTab] = useState(currentViewParams?.tab === 'inventory' ? 'inventory' : 'orders'); // 'orders' | 'inventory' | 'schedule' | 'gps' | 'chat'
 
   useEffect(() => {
@@ -116,7 +116,7 @@ export const VendorPortalView = () => {
   };
 
   // Toggle device GPS streaming for vendor schedule trip
-  const handleToggleHardwareGps = (scheduleId = 'sch_demo_01') => {
+  const handleToggleHardwareGps = (scheduleId = 'live_schedule') => {
     if (activeGpsWatchId) {
       stopVendorLiveLocationStream(activeGpsWatchId);
       setActiveGpsWatchId(null);
@@ -374,7 +374,7 @@ export const VendorPortalView = () => {
       label: 'Unit Price',
       width: '130px',
       render: (val, product) => (
-        <span style={{ fontSize: '14px', fontWeight: '900', color: '#059669' }}>
+        <span style={{ fontSize: '14px', fontWeight: '900', color: '#2563eb' }}>
           ₹{val} <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600' }}>/ {product.unit}</span>
         </span>
       )
@@ -394,9 +394,9 @@ export const VendorPortalView = () => {
             fontSize: '12px',
             fontWeight: '800',
             cursor: 'pointer',
-            backgroundColor: status === 'in-stock' ? '#ecfdf5' : '#fee2e2',
-            color: status === 'in-stock' ? '#065f46' : '#991b1b',
-            border: status === 'in-stock' ? '1.5px solid #a7f3d0' : '1.5px solid #fecaca',
+            backgroundColor: status === 'in-stock' ? '#eff6ff' : '#fee2e2',
+            color: status === 'in-stock' ? '#1e40af' : '#991b1b',
+            border: status === 'in-stock' ? '1.5px solid #bfdbfe' : '1.5px solid #fecaca',
             transition: 'all 0.2s ease'
           }}
           aria-label={`Toggle stock status for ${product.name}, currently ${status}`}
@@ -444,12 +444,12 @@ export const VendorPortalView = () => {
     <div className="container animate-fade-in" style={{ padding: '28px 0 60px 0', width: '100%' }}>
       {/* Top Banner & Mode Switcher */}
       <div style={{
-        background: 'linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%)',
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e40af 50%, #1d4ed8 100%)',
         color: '#ffffff',
         borderRadius: '24px',
         padding: '24px 28px',
         marginBottom: '28px',
-        boxShadow: '0 16px 36px -8px rgba(6, 78, 59, 0.4)',
+        boxShadow: '0 16px 36px -8px rgba(15, 23, 42, 0.4)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -479,7 +479,7 @@ export const VendorPortalView = () => {
                 🟢 LIVE CONNECTED
               </span>
             </div>
-            <span style={{ fontSize: '13.5px', color: '#a7f3d0', display: 'block', marginTop: '3px' }}>
+            <span style={{ fontSize: '13.5px', color: '#bfdbfe', display: 'block', marginTop: '3px' }}>
               Two-Way Realtime Order Terminal, Stock Manager & Live Delivery Dispatch
             </span>
           </div>
@@ -506,7 +506,7 @@ export const VendorPortalView = () => {
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'}
           >
-            <ShoppingBag size={16} color="#6ee7b7" />
+            <ShoppingBag size={16} color="#93c5fd" />
             <span>Switch to Customer Website</span>
           </button>
         </div>
@@ -539,8 +539,8 @@ export const VendorPortalView = () => {
               border: '1.5px solid #cbd5e1',
               fontSize: '14px',
               fontWeight: '800',
-              color: '#064e3b',
-              backgroundColor: '#f0fdf4',
+              color: '#0f172a',
+              backgroundColor: '#eff6ff',
               cursor: 'pointer',
               outline: 'none'
             }}
@@ -564,7 +564,7 @@ export const VendorPortalView = () => {
               fontSize: '12.5px',
               fontWeight: '800',
               cursor: 'pointer',
-              backgroundColor: currentVendor.status === 'online' ? '#10b981' : '#f1f5f9',
+              backgroundColor: currentVendor.status === 'online' ? '#2563eb' : '#f1f5f9',
               color: currentVendor.status === 'online' ? '#ffffff' : '#64748b',
               border: 'none',
               transition: 'all 0.2s ease'
@@ -620,7 +620,7 @@ export const VendorPortalView = () => {
             <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Today's Trip Status</span>
             <span style={{ fontSize: '18px' }}>🛵</span>
           </div>
-          <div style={{ fontSize: '20px', fontWeight: '900', color: isSimulatingGps ? '#0284c7' : '#059669', marginTop: '6px' }}>
+          <div style={{ fontSize: '20px', fontWeight: '900', color: isSimulatingGps ? '#0284c7' : '#2563eb', marginTop: '6px' }}>
             {isSimulatingGps ? '🛵 In Transit (Live GPS)' : currentVendor.isOpen ? '🟢 Ready for Route' : '🔴 Closed / Offline'}
           </div>
           <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '700', display: 'block', marginTop: '2px' }}>
@@ -648,10 +648,10 @@ export const VendorPortalView = () => {
             <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Revenue Summary</span>
             <span style={{ fontSize: '18px' }}>💰</span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: '900', color: '#059669', marginTop: '6px' }}>
+          <div style={{ fontSize: '24px', fontWeight: '900', color: '#2563eb', marginTop: '6px' }}>
             ₹{totalRevenue}
           </div>
-          <span style={{ fontSize: '11.5px', color: '#10b981', fontWeight: '700', display: 'block', marginTop: '2px' }}>
+          <span style={{ fontSize: '11.5px', color: '#2563eb', fontWeight: '700', display: 'block', marginTop: '2px' }}>
             ↑ 100% direct instant payout
           </span>
         </div>
@@ -696,10 +696,10 @@ export const VendorPortalView = () => {
               fontSize: '14px',
               fontWeight: '800',
               cursor: 'pointer',
-              border: activeTab === tab.id ? '2px solid #10b981' : '1px solid #e2e8f0',
-              backgroundColor: activeTab === tab.id ? '#ecfdf5' : '#ffffff',
-              color: activeTab === tab.id ? '#064e3b' : '#64748b',
-              boxShadow: activeTab === tab.id ? '0 4px 12px rgba(16, 185, 129, 0.15)' : 'none',
+              border: activeTab === tab.id ? '2px solid #2563eb' : '1px solid #e2e8f0',
+              backgroundColor: activeTab === tab.id ? '#eff6ff' : '#ffffff',
+              color: activeTab === tab.id ? '#0f172a' : '#64748b',
+              boxShadow: activeTab === tab.id ? '0 4px 12px rgba(37, 99, 235, 0.15)' : 'none',
               transition: 'all 0.2s ease',
               whiteSpace: 'nowrap'
             }}
@@ -805,7 +805,7 @@ export const VendorPortalView = () => {
                     </div>
 
                     <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontSize: '20px', fontWeight: '900', color: '#059669' }}>₹{order.total}</span>
+                      <span style={{ fontSize: '20px', fontWeight: '900', color: '#2563eb' }}>₹{order.total}</span>
                       <span style={{ fontSize: '11.5px', color: '#64748b', display: 'block' }}>({order.items.length} items)</span>
                     </div>
                   </div>
@@ -831,7 +831,7 @@ export const VendorPortalView = () => {
                       <strong style={{ color: '#0f172a', display: 'block' }}>📍 Delivery Address & GPS Coordinates:</strong>
                       <span>{order.deliveryAddress}</span>
                       {order.customerGPS && (
-                        <div style={{ marginTop: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', padding: '2px 8px', borderRadius: '8px', fontSize: '11.5px', color: '#065f46', fontWeight: '700' }}>
+                        <div style={{ marginTop: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', padding: '2px 8px', borderRadius: '8px', fontSize: '11.5px', color: '#1e40af', fontWeight: '700' }}>
                           <span>🛰️ GPS Lock: {order.customerGPS.lat}° N, {order.customerGPS.lng}° E</span>
                         </div>
                       )}
@@ -857,14 +857,14 @@ export const VendorPortalView = () => {
                         <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff', padding: '10px 14px', borderRadius: '12px', border: '1px solid #fde68a', marginTop: '6px', flexWrap: 'wrap', gap: '8px' }}>
                           <div>
                             <strong style={{ fontSize: '13.5px', color: '#0f172a' }}>{addonItem.name}</strong>
-                            <span style={{ fontSize: '12px', color: '#059669', display: 'block' }}>
+                            <span style={{ fontSize: '12px', color: '#2563eb', display: 'block' }}>
                               Quantity: {addonItem.quantity} {addonItem.unit} • +₹{addonItem.price * addonItem.quantity}
                             </span>
                           </div>
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <button
                               onClick={() => handleRespondToAddon(order.id, addonItem.productId || addonItem.id, 'accepted')}
-                              style={{ padding: '6px 12px', borderRadius: '8px', backgroundColor: '#10b981', color: '#fff', border: 'none', fontWeight: '800', fontSize: '12px', cursor: 'pointer' }}
+                              style={{ padding: '6px 12px', borderRadius: '8px', backgroundColor: '#2563eb', color: '#fff', border: 'none', fontWeight: '800', fontSize: '12px', cursor: 'pointer' }}
                             >
                               ✓ Accept (+₹{addonItem.price * addonItem.quantity})
                             </button>
@@ -887,12 +887,12 @@ export const VendorPortalView = () => {
                     </strong>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '8px' }}>
                       {order.items.map((item, idx) => (
-                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '10px', backgroundColor: item.isAdditionalRequest ? '#ecfdf5' : '#f1f5f9', border: item.isAdditionalRequest ? '1px solid #a7f3d0' : 'none', fontSize: '13px' }}>
-                          <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#10b981', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '800' }}>
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '10px', backgroundColor: item.isAdditionalRequest ? '#eff6ff' : '#f1f5f9', border: item.isAdditionalRequest ? '1px solid #bfdbfe' : 'none', fontSize: '13px' }}>
+                          <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#2563eb', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '800' }}>
                             {item.quantity}
                           </span>
                           <span style={{ fontWeight: '700', color: '#1e293b', flex: 1 }}>{item.name} {item.isAdditionalRequest ? '*(Add-on)*' : ''}</span>
-                          <span style={{ color: '#059669', fontWeight: '800' }}>₹{item.price * item.quantity}</span>
+                          <span style={{ color: '#2563eb', fontWeight: '800' }}>₹{item.price * item.quantity}</span>
                         </div>
                       ))}
                     </div>
@@ -915,7 +915,7 @@ export const VendorPortalView = () => {
                           borderRadius: '12px',
                           fontSize: '13px',
                           fontWeight: '800',
-                          backgroundColor: order.status === 'Accepted' ? '#047857' : '#10b981',
+                          backgroundColor: order.status === 'Accepted' ? '#1d4ed8' : '#2563eb',
                           color: '#ffffff',
                           opacity: (order.status === 'Preparing' || order.status === 'Out for Delivery' || order.status === 'Delivered') ? 0.5 : 1
                         }}
@@ -978,7 +978,7 @@ export const VendorPortalView = () => {
                           borderRadius: '12px',
                           fontSize: '13px',
                           fontWeight: '800',
-                          backgroundColor: order.status === 'Delivered' ? '#064e3b' : '#059669',
+                          backgroundColor: order.status === 'Delivered' ? '#0f172a' : '#2563eb',
                           color: '#ffffff'
                         }}
                       >
@@ -1090,13 +1090,13 @@ export const VendorPortalView = () => {
                   fontSize: '13.5px',
                   fontWeight: '800',
                   cursor: 'pointer',
-                  backgroundColor: isSimulatingGps ? '#ef4444' : '#10b981',
+                  backgroundColor: isSimulatingGps ? '#ef4444' : '#2563eb',
                   color: '#ffffff',
                   border: 'none',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)'
+                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
                 }}
               >
                 <Radio size={16} className={isSimulatingGps ? 'animate-pulse' : ''} />
@@ -1116,10 +1116,10 @@ export const VendorPortalView = () => {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Navigation size={18} color="#34d399" />
+                <Navigation size={18} color="#38bdf8" />
                 <strong style={{ fontSize: '14.5px' }}>Active Route: Mijar Store → Alva’s Campus Gate</strong>
               </div>
-              <span className="badge badge-success" style={{ backgroundColor: '#064e3b', color: '#a7f3d0' }}>
+              <span className="badge badge-success" style={{ backgroundColor: '#0f172a', color: '#bfdbfe' }}>
                 {isSimulatingGps ? '🟢 TRANSMITTING LIVE GPS' : '⏸️ GPS IDLE'}
               </span>
             </div>
@@ -1127,12 +1127,12 @@ export const VendorPortalView = () => {
             {/* Simulated Road Track */}
             <div style={{ position: 'relative', height: '80px', backgroundColor: '#1e293b', borderRadius: '16px', padding: '0 24px', display: 'flex', alignItems: 'center' }}>
               <div style={{ position: 'absolute', left: '20px', right: '20px', height: '4px', backgroundColor: '#334155', borderRadius: '2px' }}>
-                <div style={{ width: `${gpsProgress * 100}%`, height: '100%', backgroundColor: '#10b981', borderRadius: '2px', transition: 'width 0.8s ease' }} />
+                <div style={{ width: `${gpsProgress * 100}%`, height: '100%', backgroundColor: '#2563eb', borderRadius: '2px', transition: 'width 0.8s ease' }} />
               </div>
 
               {/* Start Store Point */}
               <div style={{ position: 'absolute', left: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>
                   🏪
                 </div>
                 <span style={{ fontSize: '10px', color: '#94a3b8', marginTop: '4px' }}>Store</span>
@@ -1192,12 +1192,12 @@ export const VendorPortalView = () => {
       {activeTab === 'chat' && (
         <div className="vs-card" style={{ padding: '24px', borderRadius: '24px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0', maxWidth: '640px', margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '16px', borderBottom: '1px solid #e2e8f0', marginBottom: '16px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '50%', backgroundColor: '#10b981', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '50%', backgroundColor: '#2563eb', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900' }}>
               C
             </div>
             <div>
               <strong style={{ fontSize: '16px', color: '#0f172a', display: 'block' }}>Direct Customer Chat</strong>
-              <span style={{ fontSize: '12px', color: '#059669' }}>📍 Mijar Village • Active Orders</span>
+              <span style={{ fontSize: '12px', color: '#2563eb' }}>📍 Mijar Village • Active Orders</span>
             </div>
           </div>
 
@@ -1208,7 +1208,7 @@ export const VendorPortalView = () => {
                 key={idx}
                 style={{
                   alignSelf: msg.sender === 'vendor' ? 'flex-end' : 'flex-start',
-                  backgroundColor: msg.sender === 'vendor' ? '#065f46' : '#f1f5f9',
+                  backgroundColor: msg.sender === 'vendor' ? '#1e40af' : '#f1f5f9',
                   color: msg.sender === 'vendor' ? '#ffffff' : '#0f172a',
                   padding: '10px 16px',
                   borderRadius: msg.sender === 'vendor' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',

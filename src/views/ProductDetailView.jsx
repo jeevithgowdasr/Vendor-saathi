@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { getLocalizedProductName, getLocalizedUnit } from '../utils/productLocalization';
 import { 
   Star, 
   MapPin, 
@@ -31,7 +32,9 @@ export const ProductDetailView = () => {
     toggleWishlist, 
     wishlist,
     showToast,
-    setIsVendorChatOpen
+    setIsVendorChatOpen,
+    t,
+    selectedLanguage
   } = useApp();
 
   const product = selectedProduct || products[0];
@@ -60,7 +63,7 @@ export const ProductDetailView = () => {
         <button
           onClick={() => navigateTo('product-listing')}
           style={{
-            backgroundColor: '#059669',
+            backgroundColor: '#2563eb',
             color: '#ffffff',
             padding: '12px 24px',
             borderRadius: '14px',
@@ -97,37 +100,39 @@ export const ProductDetailView = () => {
   };
 
   const relatedProducts = (products || []).filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
+  const prodName = getLocalizedProductName(product, selectedLanguage);
+  const prodUnit = getLocalizedUnit(product.unit, selectedLanguage);
 
   return (
     <div className="container animate-fade-in" style={{ padding: '32px 0 60px 0', width: '100%' }}>
       {/* Interconnected Breadcrumbs & Back Button */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#64748b', fontWeight: '600' }}>
-          <button onClick={() => navigateTo('home')} style={{ color: '#059669', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: '700' }}>Home</button>
+          <button onClick={() => navigateTo('home')} style={{ color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: '700' }}>Home</button>
           <span>/</span>
-          <button onClick={() => navigateTo('categories')} style={{ color: '#059669', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: '700' }}>Categories</button>
+          <button onClick={() => navigateTo('categories')} style={{ color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: '700' }}>Categories</button>
           <span>/</span>
-          <button onClick={() => navigateTo('product-listing', { category: product.category })} style={{ color: '#059669', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: '700', textTransform: 'capitalize' }}>{product.category}</button>
+          <button onClick={() => navigateTo('product-listing', { category: product.category })} style={{ color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: '700', textTransform: 'capitalize' }}>{product.category}</button>
           <span>/</span>
-          <span style={{ color: '#0f172a', fontWeight: '800' }}>{product.name}</span>
+          <span style={{ color: '#0f172a', fontWeight: '800' }}>{prodName}</span>
         </div>
 
         <button 
           onClick={() => navigateTo('product-listing')}
           style={{ 
             fontSize: '13px', 
-            color: '#059669', 
+            color: '#2563eb', 
             fontWeight: '800', 
             display: 'inline-flex', 
             alignItems: 'center', 
             gap: '6px', 
             padding: '6px 14px',
             borderRadius: '12px',
-            backgroundColor: '#ecfdf5',
-            border: '1px solid #a7f3d0'
+            backgroundColor: '#eff6ff',
+            border: '1px solid #bfdbfe'
           }}
         >
-          <ArrowLeft size={15} /> All Products
+          <ArrowLeft size={15} /> {t('productListing.allProducts', 'All Products')}
         </button>
       </div>
 
@@ -148,7 +153,7 @@ export const ProductDetailView = () => {
         }}>
           <img
             src={product.image}
-            alt={product.name}
+            alt={prodName}
             style={{ 
               width: '100%', 
               height: '100%',
@@ -193,19 +198,19 @@ export const ProductDetailView = () => {
             </div>
 
             <h1 style={{ fontSize: '32px', fontWeight: '900', color: '#0f172a', lineHeight: 1.2, marginBottom: '14px' }}>
-              {product.name}
+              {prodName}
             </h1>
 
             {/* Price & Unit */}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '20px' }}>
-              <span style={{ fontSize: '32px', fontWeight: '900', color: '#059669' }}>
+              <span style={{ fontSize: '32px', fontWeight: '900', color: '#2563eb' }}>
                 ₹{product.price}
               </span>
               <span style={{ fontSize: '18px', color: '#94a3b8', textDecoration: 'line-through' }}>
                 ₹{Math.round(product.price * 1.3)}
               </span>
               <span style={{ fontSize: '15px', color: '#64748b', fontWeight: '600' }}>
-                / {product.unit}
+                / {prodUnit}
               </span>
               <span className="badge badge-warning" style={{ marginLeft: '8px' }}>
                 Save 25% Today
@@ -228,69 +233,71 @@ export const ProductDetailView = () => {
               marginBottom: '28px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: '#334155', fontWeight: '700' }}>
-                <ShieldCheck size={18} color="#059669" /> 100% Fresh Farm Sourced
+                <ShieldCheck size={18} color="#2563eb" /> {t('productDetail.freshGuarantee', '100% Fresh Farm Sourced')}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: '#334155', fontWeight: '700' }}>
-                <Clock size={18} color="#059669" /> 20-30 Mins Express Delivery
+                <Clock size={18} color="#2563eb" /> {t('productDetail.expressTime', '20-30 Mins Express Delivery')}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: '#334155', fontWeight: '700' }}>
-                <Store size={18} color="#059669" /> Local Store Guarantee
+                <Store size={18} color="#2563eb" /> {t('productDetail.storeGuarantee', 'Local Store Guarantee')}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: '#334155', fontWeight: '700' }}>
                 <Zap size={18} color="#f59e0b" /> Cash on Delivery Available
               </div>
             </div>
 
-            {/* Vendor Card Preview */}
-            <div style={{
-              padding: '16px',
-              borderRadius: '18px',
-              backgroundColor: '#f0fdf4',
-              border: '1px solid #bbf7d0',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '28px',
-              flexWrap: 'wrap',
-              gap: '12px'
-            }}>
-              <div 
-                onClick={() => vendor && navigateTo('product-listing', { vendor })}
-                style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
-              >
-                <img
-                  src={vendor?.avatar || vendor?.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=120&q=80'}
-                  alt={vendor?.name || product.vendorName || 'Vendor'}
-                  style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid #a7f3d0' }}
-                />
-                <div>
-                  <strong style={{ fontSize: '14.5px', color: '#064e3b', display: 'block' }}>{vendor?.name || product.vendorName || 'Verified Local Vendor'}</strong>
-                  <span style={{ fontSize: '12px', color: '#059669' }}>📍 {vendor?.distance || 'Local area'} • ⭐ {vendor?.rating || '4.8'} ({vendor?.reviewCount || '0'} reviews)</span>
+            {/* Vendor Card Preview (Only shown when a registered partner owns this product) */}
+            {vendor && (
+              <div style={{
+                padding: '16px',
+                borderRadius: '18px',
+                backgroundColor: '#eff6ff',
+                border: '1px solid #bfdbfe',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '28px',
+                flexWrap: 'wrap',
+                gap: '12px'
+              }}>
+                <div 
+                  onClick={() => navigateTo('product-listing', { vendor })}
+                  style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                >
+                  <img
+                    src={vendor.avatar || vendor.image || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(vendor.name || 'Store')}&backgroundColor=2563eb`}
+                    alt={vendor.name}
+                    style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid #bfdbfe' }}
+                  />
+                  <div>
+                    <strong style={{ fontSize: '14.5px', color: '#0f172a', display: 'block' }}>{vendor.name}</strong>
+                    <span style={{ fontSize: '12px', color: '#2563eb' }}>📍 {vendor.location || 'Local area'} • ⭐ {vendor.rating || '4.8'}</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => navigateTo('product-listing', { vendor })}
+                    className="btn-outline"
+                    style={{ fontSize: '12px', padding: '6px 12px', borderRadius: '10px' }}
+                  >
+                    <Store size={14} /> Store
+                  </button>
+                  <button
+                    onClick={() => setIsVendorChatOpen(true)}
+                    className="btn-primary"
+                    style={{ fontSize: '12px', padding: '6px 12px', borderRadius: '10px' }}
+                  >
+                    💬 Chat
+                  </button>
                 </div>
               </div>
-
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  onClick={() => navigateTo('product-listing', { vendor })}
-                  className="btn-outline"
-                  style={{ fontSize: '12px', padding: '6px 12px', borderRadius: '10px' }}
-                >
-                  <Store size={14} /> Store
-                </button>
-                <button
-                  onClick={() => setIsVendorChatOpen(true)}
-                  className="btn-primary"
-                  style={{ fontSize: '12px', padding: '6px 12px', borderRadius: '10px' }}
-                >
-                  💬 Chat
-                </button>
-              </div>
-            </div>
+            )}
 
             {/* Quantity Selector & Action Buttons */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <span style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a' }}>Quantity:</span>
+                <span style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a' }}>{t('productDetail.quantity', 'Quantity:')}</span>
                 <div style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -302,7 +309,7 @@ export const ProductDetailView = () => {
                 }}>
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    style={{ color: '#059669', padding: '4px' }}
+                    style={{ color: '#2563eb', padding: '4px' }}
                   >
                     <Minus size={16} />
                   </button>
@@ -311,13 +318,13 @@ export const ProductDetailView = () => {
                   </strong>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    style={{ color: '#059669', padding: '4px' }}
+                    style={{ color: '#2563eb', padding: '4px' }}
                   >
                     <Plus size={16} />
                   </button>
                 </div>
                 <span style={{ fontSize: '14px', color: '#64748b' }}>
-                  Total: <strong style={{ color: '#059669', fontSize: '16px' }}>₹{product.price * quantity}</strong>
+                  {t('productDetail.totalAmount', 'Total:')} <strong style={{ color: '#2563eb', fontSize: '16px' }}>₹{product.price * quantity}</strong>
                 </span>
               </div>
 
@@ -327,8 +334,8 @@ export const ProductDetailView = () => {
                   className="btn-secondary"
                   style={{ padding: '14px', borderRadius: '14px', fontSize: '14.5px', fontWeight: '800' }}
                 >
-                  <ShoppingBag size={18} color="#059669" />
-                  <span>Add to Cart</span>
+                  <ShoppingBag size={18} color="#2563eb" />
+                  <span>{t('productDetail.addToCart', 'Add to Cart')}</span>
                 </button>
 
                 <button
@@ -337,7 +344,7 @@ export const ProductDetailView = () => {
                   style={{ padding: '14px', borderRadius: '14px', fontSize: '14.5px' }}
                 >
                   <Zap size={18} color="#fef08a" />
-                  <span>Buy Express Now</span>
+                  <span>{t('productDetail.buyNow', 'Buy Express Now')}</span>
                 </button>
               </div>
             </div>
@@ -349,10 +356,12 @@ export const ProductDetailView = () => {
       {relatedProducts.length > 0 && (
         <section style={{ marginTop: '40px', paddingTop: '32px', borderTop: '1px solid #e2e8f0' }}>
           <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', marginBottom: '20px' }}>
-            Similar Fresh Items
+            {t('productDetail.similarProducts', 'Similar Fresh Items')}
           </h3>
           <div className="product-grid">
-            {relatedProducts.map(prod => (
+            {relatedProducts.map(prod => {
+              const rProdName = getLocalizedProductName(prod, selectedLanguage);
+              return (
               <div
                 key={prod.id}
                 onClick={() => navigateTo('product-detail', { product: prod })}
@@ -362,17 +371,17 @@ export const ProductDetailView = () => {
                 <div style={{ height: '170px', borderRadius: '14px', overflow: 'hidden', marginBottom: '12px' }}>
                   <img
                     src={prod.image}
-                    alt={prod.name}
+                    alt={rProdName}
                     style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
                   />
                 </div>
-                <h4 style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a' }}>{prod.name}</h4>
+                <h4 style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a' }}>{rProdName}</h4>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-                  <span style={{ fontSize: '16px', fontWeight: '900', color: '#059669' }}>₹{prod.price}</span>
+                  <span style={{ fontSize: '16px', fontWeight: '900', color: '#2563eb' }}>₹{prod.price}</span>
                   <span className="badge badge-success">View</span>
                 </div>
               </div>
-            ))}
+            );})}
           </div>
         </section>
       )}

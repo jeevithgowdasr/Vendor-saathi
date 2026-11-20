@@ -21,7 +21,10 @@ import {
   LogOut,
   CheckCircle2,
   Radio,
-  Layers
+  Layers,
+  Volume2,
+  Check,
+  ShieldCheck
 } from 'lucide-react';
 import { playPopSound } from '../utils/audio';
 
@@ -44,8 +47,10 @@ export const Navbar = () => {
     setIsVoiceSearchOpen,
     selectedLanguage,
     changeLanguage,
+    t,
     isVoiceAssistanceOpen,
     setIsVoiceAssistanceOpen,
+    openVoiceAssistanceForFeature,
     secureLogout,
     updateUserProfile,
     showToast
@@ -53,6 +58,7 @@ export const Navbar = () => {
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotifDropdownOpen, setIsNotifDropdownOpen] = useState(false);
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
 
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -76,9 +82,9 @@ export const Navbar = () => {
       borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
       boxShadow: '0 4px 20px -2px rgba(15, 23, 42, 0.05)'
     }}>
-      {/* Top Banner Announcement & Live Cloud Status */}
+      {/* Top Banner Announcement & Live Voice Guide Button */}
       <div style={{ 
-        background: 'linear-gradient(90deg, #064e3b 0%, #047857 50%, #065f46 100%)', 
+        background: 'linear-gradient(90deg, #0f172a 0%, #1d4ed8 50%, #1e40af 100%)', 
         color: '#ffffff', 
         fontSize: '12.5px', 
         padding: '7px 16px', 
@@ -97,14 +103,98 @@ export const Navbar = () => {
               letterSpacing: '0.3px',
               fontWeight: '800'
             }}>
-              ⚡ EXPRESS DELIVERY
+              ⚡ EXPRESS
             </span>
             <span style={{ fontSize: '12px' }}>
-              Connecting local stores & customers in <strong>{currentLocation?.village || currentLocation?.name?.split(',')[0] || user?.village || 'Your Locality'}</strong>
+              {t('nav.expressBanner')} <strong>{currentLocation?.village || currentLocation?.name?.split(',')[0] || user?.village || 'Your Locality'}</strong>
             </span>
           </div>
 
-          <div></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* Quick Language Switcher Pills in Top Announcement Bar */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              backgroundColor: 'rgba(255, 255, 255, 0.14)',
+              borderRadius: '20px',
+              padding: '2px',
+              border: '1px solid rgba(255, 255, 255, 0.22)'
+            }}>
+              {[
+                { code: 'en', label: 'EN' },
+                { code: 'kn', label: 'ಕನ್ನಡ' },
+                { code: 'hi', label: 'हिंदी' }
+              ].map(item => (
+                <button
+                  key={item.code}
+                  type="button"
+                  onClick={() => {
+                    changeLanguage(item.code);
+                    playPopSound();
+                    showToast(`🌐 Language set to ${item.label}`);
+                  }}
+                  style={{
+                    border: 'none',
+                    backgroundColor: selectedLanguage === item.code ? '#ffffff' : 'transparent',
+                    color: selectedLanguage === item.code ? '#1d4ed8' : '#ffffff',
+                    fontWeight: selectedLanguage === item.code ? '900' : '600',
+                    fontSize: '11px',
+                    padding: '2px 9px',
+                    borderRadius: '16px',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title={`Switch language to ${item.label}`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Prominent Voice Assistance Action at Top of Nav Bar */}
+            <button
+              type="button"
+              onClick={() => openVoiceAssistanceForFeature('website-overview')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '7px',
+                backgroundColor: 'rgba(255, 255, 255, 0.16)',
+                border: '1.5px solid rgba(56, 189, 248, 0.5)',
+                color: '#ffffff',
+                padding: '4px 14px',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                transition: 'all 0.2s ease',
+                backdropFilter: 'blur(8px)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)';
+                e.currentTarget.style.borderColor = '#38bdf8';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.16)';
+                e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.5)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+              title="Hear a spoken explanation of all features and details on this website"
+            >
+              <span style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: '#38bdf8',
+                boxShadow: '0 0 0 0 rgba(56, 189, 248, 0.8)',
+                animation: 'pulseGlowRing 1.8s infinite'
+              }} />
+              <Volume2 size={14} color="#38bdf8" />
+              <span>{t('nav.voiceGuide')}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -124,8 +214,8 @@ export const Navbar = () => {
                 height: '44px', 
                 borderRadius: '50%', 
                 objectFit: 'cover', 
-                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)',
-                border: '2px solid #10b981',
+                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+                border: '2px solid #2563eb',
                 transition: 'transform 0.2s ease'
               }}
               onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.06)'}
@@ -136,14 +226,14 @@ export const Navbar = () => {
                 fontFamily: 'var(--font-heading)',
                 fontSize: '22px', 
                 fontWeight: '900', 
-                color: '#064e3b', 
+                color: '#0f172a', 
                 letterSpacing: '-0.5px', 
                 lineHeight: 1 
               }}>
                 Vendor<span style={{ color: '#f59e0b' }}>Saathi</span>
               </span>
-              <span style={{ display: 'block', fontSize: '9.5px', color: '#059669', fontWeight: '800', letterSpacing: '0.6px', marginTop: '2px' }}>
-                SMART RURAL GROCERY
+              <span style={{ display: 'block', fontSize: '9.5px', color: '#2563eb', fontWeight: '800', letterSpacing: '0.6px', marginTop: '2px' }}>
+                {t('nav.logoSubtitle')}
               </span>
             </div>
           </div>
@@ -155,28 +245,28 @@ export const Navbar = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              backgroundColor: '#f0fdf4',
-              border: '1.5px solid #a7f3d0',
+              backgroundColor: '#eff6ff',
+              border: '1.5px solid #bfdbfe',
               padding: '6px 14px',
               borderRadius: '24px',
               cursor: 'pointer',
               fontSize: '12.5px',
               fontWeight: '700',
-              color: '#065f46',
-              boxShadow: '0 2px 6px rgba(16, 185, 129, 0.08)',
+              color: '#1e40af',
+              boxShadow: '0 2px 6px rgba(37, 99, 235, 0.08)',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#dcfce7';
-              e.currentTarget.style.borderColor = '#34d399';
+              e.currentTarget.style.backgroundColor = '#eff6ff';
+              e.currentTarget.style.borderColor = '#38bdf8';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#f0fdf4';
-              e.currentTarget.style.borderColor = '#a7f3d0';
+              e.currentTarget.style.backgroundColor = '#eff6ff';
+              e.currentTarget.style.borderColor = '#bfdbfe';
             }}
           >
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <MapPin size={15} color="#059669" />
+              <MapPin size={15} color="#2563eb" />
               <span style={{
                 position: 'absolute',
                 top: '-2px',
@@ -184,47 +274,120 @@ export const Navbar = () => {
                 width: '6px',
                 height: '6px',
                 borderRadius: '50%',
-                backgroundColor: '#10b981',
+                backgroundColor: '#2563eb',
                 animation: 'pulseGlowRing 2s infinite'
               }}></span>
             </div>
             <span style={{ maxWidth: '130px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {currentLocation.village ? `${currentLocation.village}, ${currentLocation.town}` : currentLocation.name}
+              {currentLocation?.village ? `${currentLocation.village}, ${currentLocation.town}` : (currentLocation?.name || '📍 Select Location')}
             </span>
-            <ChevronDown size={13} color="#059669" />
+            <ChevronDown size={13} color="#2563eb" />
           </button>
 
-          {/* Multilingual Dropdown Selector (English, Kannada, Hindi) */}
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '6px', 
-            backgroundColor: '#f8fafc', 
-            border: '1.5px solid #e2e8f0', 
-            padding: '5px 12px', 
-            borderRadius: '20px',
-            boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)',
-            transition: 'border-color 0.2s ease'
-          }}>
-            <Globe size={14} color="#2563eb" />
-            <select
-              value={selectedLanguage}
-              onChange={(e) => changeLanguage(e.target.value)}
-              aria-label="Select Application Language"
-              style={{
-                border: 'none',
-                backgroundColor: 'transparent',
-                fontSize: '12px',
-                fontWeight: '700',
-                color: '#0f172a',
-                outline: 'none',
-                cursor: 'pointer'
+          {/* Dedicated Multi-Language Button & Menu */}
+          <div style={{ position: 'relative' }}>
+            <button
+              type="button"
+              onClick={() => setIsLangMenuOpen(prev => !prev)}
+              aria-label="Change Website Language"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px', 
+                backgroundColor: '#ffffff', 
+                border: '1.5px solid #2563eb', 
+                padding: '6px 14px', 
+                borderRadius: '20px',
+                boxShadow: '0 2px 6px rgba(37, 99, 235, 0.12)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                color: '#1e40af',
+                fontWeight: '800',
+                fontSize: '12.5px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#eff6ff';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              <option value="en">English (EN)</option>
-              <option value="kn">ಕನ್ನಡ (KN)</option>
-              <option value="hi">हिंदी (HI)</option>
-            </select>
+              <Globe size={15} color="#2563eb" />
+              <span>
+                {selectedLanguage === 'kn' ? 'ಕನ್ನಡ (KN)' : selectedLanguage === 'hi' ? 'हिंदी (HI)' : 'English (EN)'}
+              </span>
+              <ChevronDown size={13} color="#2563eb" style={{ transform: isLangMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
+            </button>
+
+            {/* Language Switch Dropdown Modal / Popover */}
+            {isLangMenuOpen && (
+              <div 
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 8px)',
+                  left: 0,
+                  backgroundColor: '#ffffff',
+                  border: '1.5px solid #cbd5e1',
+                  borderRadius: '16px',
+                  boxShadow: '0 12px 32px rgba(15, 23, 42, 0.18)',
+                  padding: '6px',
+                  minWidth: '190px',
+                  zIndex: 9999,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}
+              >
+                {[
+                  { code: 'en', native: 'English', label: 'English', flag: '🇬🇧' },
+                  { code: 'kn', native: 'ಕನ್ನಡ', label: 'Kannada', flag: '🇮🇳' },
+                  { code: 'hi', native: 'हिंदी', label: 'Hindi', flag: '🇮🇳' }
+                ].map(lang => (
+                  <button
+                    key={lang.code}
+                    type="button"
+                    onClick={() => {
+                      changeLanguage(lang.code);
+                      setIsLangMenuOpen(false);
+                      playPopSound();
+                      showToast(`🌐 Language converted to ${lang.native} (${lang.label})!`);
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '9px 12px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      backgroundColor: selectedLanguage === lang.code ? '#eff6ff' : 'transparent',
+                      color: selectedLanguage === lang.code ? '#1d4ed8' : '#334155',
+                      fontWeight: selectedLanguage === lang.code ? '800' : '600',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'background-color 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedLanguage !== lang.code) e.currentTarget.style.backgroundColor = '#f8fafc';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedLanguage !== lang.code) e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '15px' }}>{lang.flag}</span>
+                      <div>
+                        <span style={{ display: 'block', lineHeight: 1.2 }}>{lang.native}</span>
+                        <span style={{ fontSize: '10px', color: '#64748b' }}>{lang.label}</span>
+                      </div>
+                    </div>
+                    {selectedLanguage === lang.code && <Check size={16} color="#1d4ed8" />}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -248,7 +411,7 @@ export const Navbar = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
-                placeholder="Search fresh vegetables, fruits, local kirana..."
+                placeholder={t('nav.searchPlaceholder')}
                 style={{
                   flex: 1,
                   border: 'none',
@@ -293,7 +456,7 @@ export const Navbar = () => {
                 onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
               >
                 <Mic size={14} />
-                <span>Voice</span>
+                <span>{t('nav.voiceSearch')}</span>
               </button>
             </div>
           </form>
@@ -355,7 +518,7 @@ export const Navbar = () => {
               }} />
               <Mic size={14} color={isVoiceAssistanceOpen ? '#a5b4fc' : '#38bdf8'} style={{ position: 'relative', zIndex: 1 }} />
             </span>
-            <span>Voice Assistant</span>
+            <span>{t('nav.voiceAssistant')}</span>
           </button>
 
           {/* Admin Panel Direct Button (for Admin role) */}
@@ -378,8 +541,8 @@ export const Navbar = () => {
                 boxShadow: '0 4px 12px rgba(15, 23, 42, 0.25)'
               }}
             >
-              <ShieldCheck size={14} color="#34d399" />
-              <span>Admin Console</span>
+              <ShieldCheck size={14} color="#38bdf8" />
+              <span>{t('nav.adminConsole')}</span>
             </button>
           )}
 
@@ -495,12 +658,12 @@ export const Navbar = () => {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
-                  <strong style={{ fontSize: '14px', color: '#0f172a' }}>Notifications</strong>
+                  <strong style={{ fontSize: '14px', color: '#0f172a' }}>{t('nav.notifications')}</strong>
                   <button 
                     onClick={() => { setIsNotifDropdownOpen(false); navigateTo('notifications'); }}
-                    style={{ fontSize: '11.5px', color: '#059669', fontWeight: '700', background: 'none', border: 'none', cursor: 'pointer' }}
+                    style={{ fontSize: '11.5px', color: '#2563eb', fontWeight: '700', background: 'none', border: 'none', cursor: 'pointer' }}
                   >
-                    View All
+                    {t('nav.viewAll')}
                   </button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '240px', overflowY: 'auto' }}>
@@ -519,7 +682,7 @@ export const Navbar = () => {
           <button
             onClick={() => setIsCartDrawerOpen(true)}
             style={{
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              background: 'linear-gradient(135deg, #2563eb 0%, #2563eb 100%)',
               color: '#ffffff',
               padding: '8px 16px',
               borderRadius: '14px',
@@ -530,21 +693,21 @@ export const Navbar = () => {
               fontSize: '13px',
               border: 'none',
               cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
               transition: 'all 0.2s ease',
               position: 'relative'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 18px rgba(16, 185, 129, 0.45)';
+              e.currentTarget.style.boxShadow = '0 6px 18px rgba(37, 99, 235, 0.45)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.35)';
+              e.currentTarget.style.boxShadow = '0 4px 14px rgba(37, 99, 235, 0.35)';
             }}
           >
             <ShoppingBag size={18} />
-            <span>Cart</span>
+            <span>{t('nav.cart')}</span>
             {cartItemCount > 0 && (
               <span style={{
                 backgroundColor: '#f59e0b',
@@ -600,21 +763,21 @@ export const Navbar = () => {
                   gap: '6px',
                   padding: '7px 12px',
                   borderRadius: '16px',
-                  backgroundColor: '#f0fdf4',
-                  color: '#047857',
-                  border: '1.5px solid #a7f3d0',
+                  backgroundColor: '#eff6ff',
+                  color: '#1d4ed8',
+                  border: '1.5px solid #bfdbfe',
                   fontSize: '12px',
                   fontWeight: '800',
                   cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.12)',
+                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.12)',
                   transition: 'all 0.2s ease',
                   whiteSpace: 'nowrap'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#dcfce7'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f0fdf4'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; e.currentTarget.style.transform = 'translateY(0)'; }}
               >
-                <User size={14} color="#059669" />
-                <span>Customer Login</span>
+                <User size={14} color="#2563eb" />
+                <span>{t('nav.customerLogin')}</span>
               </button>
             </div>
           )}
@@ -651,19 +814,19 @@ export const Navbar = () => {
               borderRadius: '16px',
               background: user?.role === 'vendor' 
                 ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' 
-                : 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
               color: '#ffffff',
               border: 'none',
               fontSize: '12px',
               fontWeight: '800',
               cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(5, 150, 105, 0.25)',
+              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
               transition: 'all 0.2s ease',
               whiteSpace: 'nowrap'
             }}
           >
             <Store size={14} color="#ffffff" />
-            <span>{user?.role === 'vendor' ? 'Vendor Portal' : '🏪 Vendor Portal'}</span>
+            <span>{user?.role === 'vendor' ? t('nav.vendorPortal') : `🏪 ${t('nav.vendorPortal')}`}</span>
           </button>
 
           {/* Google Profile Button & Dropdown Menu */}
@@ -711,7 +874,7 @@ export const Navbar = () => {
                   width: '28px',
                   height: '28px',
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                   color: '#ffffff',
                   display: 'flex',
                   alignItems: 'center',
@@ -735,7 +898,7 @@ export const Navbar = () => {
                   {user?.isLoggedIn ? (user.name ? user.name.split(' ')[0] : 'Account') : 'Sign In with Google'}
                 </span>
                 {user?.isLoggedIn && (
-                  <span style={{ fontSize: '9px', color: user.role === 'admin' ? '#0f172a' : user.role === 'vendor' ? '#2563eb' : '#059669', fontWeight: '800' }}>
+                  <span style={{ fontSize: '9px', color: user.role === 'admin' ? '#0f172a' : user.role === 'vendor' ? '#2563eb' : '#2563eb', fontWeight: '800' }}>
                     {user.role === 'admin' ? '🛡️ Admin' : user.role === 'vendor' ? '🏪 Vendor' : '🌾 Verified'}
                   </span>
                 )}
@@ -771,15 +934,15 @@ export const Navbar = () => {
                       fontWeight: '800',
                       padding: '2px 8px',
                       borderRadius: '10px',
-                      backgroundColor: user.role === 'vendor' ? '#eff6ff' : '#ecfdf5',
-                      color: user.role === 'vendor' ? '#2563eb' : '#059669',
-                      border: `1px solid ${user.role === 'vendor' ? '#bfdbfe' : '#a7f3d0'}`
+                      backgroundColor: '#eff6ff',
+                      color: '#2563eb',
+                      border: '1px solid #bfdbfe'
                     }}>
-                      {user.role === 'vendor' ? '🏪 VENDOR' : '🛒 CUSTOMER'}
+                      {user.role === 'vendor' ? t('nav.roleVendor') : t('nav.roleCustomer')}
                     </span>
                   </div>
                   <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>{user.email}</span>
-                  <span style={{ fontSize: '11px', color: '#059669', fontWeight: '800', display: 'block', marginTop: '2px' }}>
+                  <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: '800', display: 'block', marginTop: '2px' }}>
                     📍 {user.village || currentLocation?.village || currentLocation?.name?.split(',')[0] || 'Local Area'}
                   </span>
                 </div>
@@ -815,7 +978,7 @@ export const Navbar = () => {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                   </svg>
-                  <span>Switch / Sign In Google</span>
+                  <span>{t('nav.switchGoogle')}</span>
                 </button>
 
                 {/* Role-Specific Shortcuts & Role Switcher */}
@@ -826,7 +989,7 @@ export const Navbar = () => {
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
                   >
-                    <ShieldCheck size={16} color="#059669" /> Admin Governance Console
+                    <ShieldCheck size={16} color="#2563eb" /> {t('nav.adminConsole')}
                   </button>
                 ) : user.role === 'vendor' ? (
                   <>
@@ -836,7 +999,7 @@ export const Navbar = () => {
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dbeafe'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#eff6ff'}
                     >
-                      <Store size={16} color="#2563eb" /> Vendor Partner Portal
+                      <Store size={16} color="#2563eb" /> {t('nav.vendorPortal')}
                     </button>
                     <button
                       onClick={() => {
@@ -849,11 +1012,11 @@ export const Navbar = () => {
                         }
                         navigateTo('home');
                       }}
-                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '10px', fontSize: '13px', color: '#047857', fontWeight: '700', textAlign: 'left', border: '1px solid #a7f3d0', background: '#ecfdf5', cursor: 'pointer' }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#d1fae5'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ecfdf5'}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '10px', fontSize: '13px', color: '#1d4ed8', fontWeight: '700', textAlign: 'left', border: '1px solid #bfdbfe', background: '#eff6ff', cursor: 'pointer' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dbeafe'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#eff6ff'}
                     >
-                      <ShoppingBag size={16} color="#059669" /> Switch to Customer View
+                      <ShoppingBag size={16} color="#2563eb" /> {t('nav.switchToCustomer')}
                     </button>
                   </>
                 ) : (
@@ -878,7 +1041,7 @@ export const Navbar = () => {
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dbeafe'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#eff6ff'}
                     >
-                      <Store size={16} color="#2563eb" /> Switch to Vendor View (Portal)
+                      <Store size={16} color="#2563eb" /> {t('nav.switchToVendor')}
                     </button>
                     <button
                       onClick={() => { setIsProfileMenuOpen(false); navigateTo('my-orders'); }}
@@ -886,7 +1049,7 @@ export const Navbar = () => {
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
-                      <Package size={16} color="#059669" /> My Orders & Live Tracking
+                      <Package size={16} color="#2563eb" /> {t('nav.myOrders')}
                     </button>
                   </>
                 )}
@@ -897,7 +1060,7 @@ export const Navbar = () => {
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
-                  <User size={16} color="#059669" /> My Account & Settings
+                  <User size={16} color="#2563eb" /> {t('nav.myAccount')}
                 </button>
 
                 <div style={{ height: '1px', backgroundColor: '#f1f5f9', margin: '4px 0' }} />
@@ -911,7 +1074,7 @@ export const Navbar = () => {
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fee2e2'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
-                  <LogOut size={16} /> Sign Out Securely
+                  <LogOut size={16} /> {t('nav.signOut')}
                 </button>
               </div>
             )}

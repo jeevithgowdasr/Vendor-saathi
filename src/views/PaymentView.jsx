@@ -40,8 +40,8 @@ export const PaymentView = () => {
       total,
       paymentMethod: 'Cash on Delivery (Doorstep)',
       paymentStatus: 'Pending (Cash on Delivery)',
-      deliveryAddress: user?.address || 'Mijar, Moodbidri, Karnataka - 574225',
-      vendorId: cart[0]?.product.vendorId || 'v1',
+      deliveryAddress: user?.address || '',
+      vendorId: cart[0]?.product.vendorId || '',
       vendorName: cart[0]?.product.vendorName || 'Local Partner Store'
     });
   };
@@ -65,8 +65,8 @@ export const PaymentView = () => {
       upiVpa: upiResult.upiVpa,
       upiApp: upiResult.upiApp,
       paymentStatus: upiResult.paymentStatus || `Paid via UPI (UTR #${upiResult.upiRefId})`,
-      deliveryAddress: user?.address || 'Mijar, Moodbidri, Karnataka - 574225',
-      vendorId: cart[0]?.product.vendorId || 'v1',
+      deliveryAddress: user?.address || '',
+      vendorId: cart[0]?.product.vendorId || '',
       vendorName: cart[0]?.product.vendorName || 'Local Partner Store'
     });
   };
@@ -77,16 +77,16 @@ export const PaymentView = () => {
         onClick={() => navigateTo('checkout')}
         style={{ 
           fontSize: '13.5px', 
-          color: '#059669', 
+          color: '#2563eb', 
           fontWeight: '800', 
           display: 'inline-flex', 
           alignItems: 'center', 
           gap: '6px', 
           marginBottom: '20px',
-          backgroundColor: '#ecfdf5',
+          backgroundColor: '#eff6ff',
           padding: '6px 14px',
           borderRadius: '12px',
-          border: '1px solid #a7f3d0'
+          border: '1px solid #bfdbfe'
         }}
       >
         <ArrowLeft size={16} /> Back to Delivery Address
@@ -105,13 +105,13 @@ export const PaymentView = () => {
         boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
       }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#10b981', color: '#ffffff', fontSize: '14px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 4px auto' }}>✓</div>
-          <span style={{ fontSize: '13px', fontWeight: '700', color: '#059669' }}>1. Address & Items</span>
+          <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#2563eb', color: '#ffffff', fontSize: '14px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 4px auto' }}>✓</div>
+          <span style={{ fontSize: '13px', fontWeight: '700', color: '#2563eb' }}>1. Address & Items</span>
         </div>
 
         <div style={{ textAlign: 'center' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#10b981', color: '#ffffff', fontSize: '14px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 4px auto', boxShadow: '0 0 0 4px rgba(16, 185, 129, 0.25)' }}>2</div>
-          <span style={{ fontSize: '13px', fontWeight: '800', color: '#064e3b' }}>2. Payment Authorization</span>
+          <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#2563eb', color: '#ffffff', fontSize: '14px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 4px auto', boxShadow: '0 0 0 4px rgba(37, 99, 235, 0.25)' }}>2</div>
+          <span style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a' }}>2. Payment Authorization</span>
         </div>
 
         <div style={{ textAlign: 'center' }}>
@@ -136,26 +136,26 @@ export const PaymentView = () => {
             <label style={{
               padding: '20px',
               borderRadius: '22px',
-              border: method === 'UPI' ? '2.5px solid #059669' : '1.5px solid #e2e8f0',
-              backgroundColor: method === 'UPI' ? '#f0fdf4' : '#ffffff',
+              border: method === 'UPI' ? '2.5px solid #2563eb' : '1.5px solid #e2e8f0',
+              backgroundColor: method === 'UPI' ? '#eff6ff' : '#ffffff',
               display: 'flex',
               flexDirection: 'column',
               gap: '14px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              boxShadow: method === 'UPI' ? '0 6px 20px -4px rgba(5, 150, 105, 0.18)' : 'none'
+              boxShadow: method === 'UPI' ? '0 6px 20px -4px rgba(37, 99, 235, 0.18)' : 'none'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <input type="radio" name="pay" value="UPI" checked={method === 'UPI'} onChange={() => setMethod('UPI')} style={{ accentColor: '#059669', width: '20px', height: '20px' }} />
+                  <input type="radio" name="pay" value="UPI" checked={method === 'UPI'} onChange={() => setMethod('UPI')} style={{ accentColor: '#2563eb', width: '20px', height: '20px' }} />
                   <div style={{
-                    backgroundColor: '#ecfdf5',
+                    backgroundColor: '#eff6ff',
                     padding: '10px',
                     borderRadius: '14px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#059669'
+                    color: '#2563eb'
                   }}>
                     <Smartphone size={26} />
                   </div>
@@ -163,7 +163,7 @@ export const PaymentView = () => {
                     <strong style={{ fontSize: '16px', color: '#0f172a', display: 'block', fontWeight: '900' }}>
                       UPI / QR Code Instant Payment
                     </strong>
-                    <span style={{ fontSize: '12.5px', color: '#059669', fontWeight: '700' }}>
+                    <span style={{ fontSize: '12.5px', color: '#2563eb', fontWeight: '700' }}>
                       ⚡ 0% Fee • GPay, PhonePe, Paytm, BHIM & All UPI Apps
                     </span>
                   </div>
@@ -187,15 +187,15 @@ export const PaymentView = () => {
             <label style={{
               padding: '18px 20px',
               borderRadius: '20px',
-              border: method === 'Cash on Delivery' ? '2px solid #059669' : '1.5px solid #e2e8f0',
-              backgroundColor: method === 'Cash on Delivery' ? '#f0fdf4' : '#ffffff',
+              border: method === 'Cash on Delivery' ? '2px solid #2563eb' : '1.5px solid #e2e8f0',
+              backgroundColor: method === 'Cash on Delivery' ? '#eff6ff' : '#ffffff',
               display: 'flex',
               alignItems: 'center',
               gap: '14px',
               cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}>
-              <input type="radio" name="pay" value="Cash on Delivery" checked={method === 'Cash on Delivery'} onChange={() => setMethod('Cash on Delivery')} style={{ accentColor: '#059669', width: '18px', height: '18px' }} />
+              <input type="radio" name="pay" value="Cash on Delivery" checked={method === 'Cash on Delivery'} onChange={() => setMethod('Cash on Delivery')} style={{ accentColor: '#2563eb', width: '18px', height: '18px' }} />
               <div style={{
                 backgroundColor: '#fff7ed',
                 padding: '9px',
@@ -247,7 +247,7 @@ export const PaymentView = () => {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Express Rural Delivery</span>
-                <span>{deliveryFee === 0 ? <strong style={{ color: '#059669' }}>FREE</strong> : `₹${deliveryFee}`}</span>
+                <span>{deliveryFee === 0 ? <strong style={{ color: '#2563eb' }}>FREE</strong> : `₹${deliveryFee}`}</span>
               </div>
               <div style={{ 
                 display: 'flex', 
@@ -256,10 +256,10 @@ export const PaymentView = () => {
                 borderTop: '1.5px solid #e2e8f0', 
                 fontSize: '22px', 
                 fontWeight: '900', 
-                color: '#064e3b' 
+                color: '#0f172a' 
               }}>
                 <span>Total Amount</span>
-                <span style={{ color: '#059669' }}>₹{total}</span>
+                <span style={{ color: '#2563eb' }}>₹{total}</span>
               </div>
             </div>
 
@@ -272,7 +272,7 @@ export const PaymentView = () => {
               alignItems: 'center',
               gap: '12px'
             }}>
-              <ShieldCheck size={22} color="#059669" />
+              <ShieldCheck size={22} color="#2563eb" />
               <div>
                 <strong style={{ fontSize: '13.5px', color: '#0f172a', display: 'block' }}>100% NPCI UPI Protected</strong>
                 <span style={{ fontSize: '12px', color: '#64748b' }}>Direct bank-to-bank settlement with instant receipt.</span>

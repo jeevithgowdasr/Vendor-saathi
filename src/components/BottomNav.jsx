@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { Home, Grid, ShoppingBag, Package, User, Mic, Sparkles } from 'lucide-react';
 
 export const BottomNav = () => {
-  const { currentView, navigateTo, cart, setIsVoiceAssistanceOpen } = useApp();
+  const { currentView, navigateTo, cart, openVoiceAssistanceForFeature, t } = useApp();
   const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0);
 
   return (
@@ -35,12 +35,12 @@ export const BottomNav = () => {
           flexDirection: 'column',
           alignItems: 'center',
           gap: '3px',
-          color: currentView === 'home' ? '#059669' : '#475569',
+          color: currentView === 'home' ? '#2563eb' : '#475569',
           fontSize: '11px',
           fontWeight: '700',
           padding: '6px 12px',
           borderRadius: '16px',
-          backgroundColor: currentView === 'home' ? '#ecfdf5' : 'transparent',
+          backgroundColor: currentView === 'home' ? '#eff6ff' : 'transparent',
           border: 'none',
           cursor: 'pointer',
           transition: 'all 0.2s ease'
@@ -48,7 +48,7 @@ export const BottomNav = () => {
         aria-label="Navigate to Home"
       >
         <Home size={20} />
-        <span>Home</span>
+        <span>{t('bottomNav.home', 'Home')}</span>
       </button>
 
       <button
@@ -60,12 +60,12 @@ export const BottomNav = () => {
           flexDirection: 'column',
           alignItems: 'center',
           gap: '3px',
-          color: currentView === 'categories' ? '#059669' : '#475569',
+          color: currentView === 'categories' ? '#2563eb' : '#475569',
           fontSize: '11px',
           fontWeight: '700',
           padding: '6px 12px',
           borderRadius: '16px',
-          backgroundColor: currentView === 'categories' ? '#ecfdf5' : 'transparent',
+          backgroundColor: currentView === 'categories' ? '#eff6ff' : 'transparent',
           border: 'none',
           cursor: 'pointer',
           transition: 'all 0.2s ease'
@@ -73,16 +73,16 @@ export const BottomNav = () => {
         aria-label="Browse Categories"
       >
         <Grid size={20} />
-        <span>Categories</span>
+        <span>{t('bottomNav.categories', 'Categories')}</span>
       </button>
 
       {/* Floating Center Voice AI Button */}
       <button
         type="button"
-        onClick={() => setIsVoiceAssistanceOpen(true)}
+        onClick={() => openVoiceAssistanceForFeature('website-overview')}
         className="touch-target-48"
         style={{
-          background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+          background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
           color: '#ffffff',
           width: '48px',
           height: '48px',
@@ -90,7 +90,7 @@ export const BottomNav = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 6px 18px rgba(16, 185, 129, 0.45)',
+          boxShadow: '0 6px 18px rgba(37, 99, 235, 0.45)',
           marginTop: '-18px',
           border: '3px solid #ffffff',
           position: 'relative',
@@ -114,12 +114,12 @@ export const BottomNav = () => {
           flexDirection: 'column',
           alignItems: 'center',
           gap: '3px',
-          color: currentView === 'cart' ? '#059669' : '#475569',
+          color: currentView === 'cart' ? '#2563eb' : '#475569',
           fontSize: '11px',
           fontWeight: '700',
           padding: '6px 12px',
           borderRadius: '16px',
-          backgroundColor: currentView === 'cart' ? '#ecfdf5' : 'transparent',
+          backgroundColor: currentView === 'cart' ? '#eff6ff' : 'transparent',
           border: 'none',
           cursor: 'pointer',
           position: 'relative',
@@ -128,7 +128,7 @@ export const BottomNav = () => {
         aria-label={`Shopping Cart with ${cartCount} items`}
       >
         <ShoppingBag size={20} />
-        <span>Cart</span>
+        <span>{t('bottomNav.cart', 'Cart')}</span>
         {cartCount > 0 && (
           <span style={{
             position: 'absolute',
@@ -159,12 +159,12 @@ export const BottomNav = () => {
           flexDirection: 'column',
           alignItems: 'center',
           gap: '3px',
-          color: (currentView === 'my-orders' || currentView === 'order-tracking' || currentView === 'order-confirmation') ? '#059669' : '#475569',
+          color: (currentView === 'my-orders' || currentView === 'order-tracking' || currentView === 'order-confirmation') ? '#2563eb' : '#475569',
           fontSize: '11px',
           fontWeight: '700',
           padding: '6px 12px',
           borderRadius: '16px',
-          backgroundColor: (currentView === 'my-orders' || currentView === 'order-tracking' || currentView === 'order-confirmation') ? '#ecfdf5' : 'transparent',
+          backgroundColor: (currentView === 'my-orders' || currentView === 'order-tracking' || currentView === 'order-confirmation') ? '#eff6ff' : 'transparent',
           border: 'none',
           cursor: 'pointer',
           transition: 'all 0.2s ease'
@@ -172,7 +172,7 @@ export const BottomNav = () => {
         aria-label="View My Orders"
       >
         <Package size={20} />
-        <span>Orders</span>
+        <span>{t('bottomNav.orders', 'Orders')}</span>
       </button>
     </div>
   );

@@ -206,8 +206,8 @@ export class ErrorBoundary extends React.Component {
               >
                 {this.state.copied ? (
                   <>
-                    <Check size={14} color="#059669" />
-                    <span style={{ color: '#059669', fontWeight: '700' }}>Diagnostics Copied!</span>
+                    <Check size={14} color="#2563eb" />
+                    <span style={{ color: '#2563eb', fontWeight: '700' }}>Diagnostics Copied!</span>
                   </>
                 ) : (
                   <>

@@ -36,19 +36,21 @@ import {
   decodeQueryParams 
 } from '../utils/urlParams';
 import { cacheManager, CACHE_KEYS } from '../utils/cacheManager';
+import { t as translateHelper } from '../data/translations';
+import { reverseGeocodeGPS } from '../utils/geolocation';
 
 const AppContext = createContext();
 
 const INITIAL_LOCATION = {
-  name: 'Mijar, Moodbidri',
-  village: 'Mijar',
-  town: 'Moodbidri',
-  district: 'Dakshina Kannada',
-  pincode: '574225',
-  lat: 13.0682,
-  lng: 74.9961,
-  accuracy: 12,
-  source: 'GPS_INITIAL'
+  name: 'Select Location',
+  village: '',
+  town: '',
+  district: '',
+  pincode: '',
+  lat: null,
+  lng: null,
+  accuracy: null,
+  source: 'UNSET'
 };
 
 const DEFAULT_USER = {
@@ -60,28 +62,17 @@ const DEFAULT_USER = {
   name: '',
   phone: '',
   email: '',
-  village: 'Mijar',
-  town: 'Moodbidri',
-  district: 'Dakshina Kannada',
-  pincode: '574225',
+  village: '',
+  town: '',
+  district: '',
+  pincode: '',
   address: '',
   landmark: '',
   preferredLanguage: 'en',
   role: 'customer', // 'customer' | 'vendor'
   authProvider: '',
   photoURL: '',
-  gpsLocation: {
-    lat: 13.06824,
-    lng: 74.99612,
-    accuracy: 10,
-    village: 'Mijar',
-    town: 'Moodbidri',
-    district: 'Dakshina Kannada',
-    pincode: '574225',
-    formattedAddress: 'Mijar Village, Moodbidri - 574225',
-    source: 'LIVE_GPS_VERIFIED',
-    capturedAt: new Date().toISOString()
-  },
+  gpsLocation: null,
   addresses: []
 };
 
@@ -127,13 +118,83 @@ export const AppProvider = ({ children }) => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.DYNAMIC_VENDORS);
       const parsed = saved ? JSON.parse(saved) : [];
-      return Array.isArray(parsed) ? parsed : [];
+      if (Array.isArray(parsed)) {
+        return parsed.filter(v =>
+          v &&
+          v.id !== 'v1' &&
+          v.id !== 'v2' &&
+          v.id !== 'v3' &&
+          v.id !== 'v4' &&
+          !v.name?.toLowerCase().includes('green valley') &&
+          !v.name?.toLowerCase().includes('basappa') &&
+          !v.name?.toLowerCase().includes('kaveri') &&
+          !v.name?.toLowerCase().includes('suresh provision') &&
+          !v.name?.toLowerCase().includes('mahesh kirana') &&
+          !v.owner?.toLowerCase().includes('suresh kumar')
+        );
+      }
+      return [];
     } catch (e) {
       return [];
     }
   });
 
-  const [currentLocation, setCurrentLocation] = useState(INITIAL_LOCATION);
+  const [currentLocation, setCurrentLocation] = useState(() => {
+    try {
+      const saved = localStorage.getItem('vendorsaathi_location');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && (parsed.village || parsed.name) && parsed.lat) return parsed;
+      }
+    } catch (e) {}
+    return INITIAL_LOCATION;
+  });
+
+  // Auto-detect exact live GPS location on initial load if supported and not yet locked
+  useEffect(() => {
+    if (!currentLocation?.lat && typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          try {
+            const geocoded = await reverseGeocodeGPS(
+              pos.coords.latitude, 
+              pos.coords.longitude, 
+              Math.round(pos.coords.accuracy || 10)
+            );
+            const detected = {
+              name: `${geocoded.village || geocoded.town}, ${geocoded.town}`,
+              village: geocoded.village,
+              town: geocoded.town,
+              district: geocoded.district,
+              pincode: geocoded.pincode,
+              lat: geocoded.lat,
+              lng: geocoded.lng,
+              accuracy: geocoded.accuracy,
+              formattedAddress: geocoded.formattedAddress,
+              source: 'LIVE_GPS_AUTO'
+            };
+            setCurrentLocation(detected);
+            localStorage.setItem('vendorsaathi_location', JSON.stringify(detected));
+          } catch (e) {
+            console.warn('Auto GPS reverse geocode note:', e);
+          }
+        },
+        (err) => {
+          console.warn('Auto GPS lock not available:', err.message);
+        },
+        { timeout: 8000, enableHighAccuracy: true }
+      );
+    }
+  }, []);
+
+  // Persist live location updates
+  useEffect(() => {
+    if (currentLocation && currentLocation.lat) {
+      try {
+        localStorage.setItem('vendorsaathi_location', JSON.stringify(currentLocation));
+      } catch (e) {}
+    }
+  }, [currentLocation]);
   
   // User state with initial session token validation
   const [user, setUser] = useState(() => {
@@ -203,8 +264,13 @@ export const AppProvider = ({ children }) => {
   const [selectedLanguage, setSelectedLanguage] = useState(() => {
     return localStorage.getItem('preferred_language') || localStorage.getItem('vendorsaathi_language') || 'en';
   });
-  const [selectedVoiceFeature, setSelectedVoiceFeature] = useState('gps-route');
+  const [selectedVoiceFeature, setSelectedVoiceFeature] = useState('website-overview');
   const [isVoiceAssistanceOpen, setIsVoiceAssistanceOpen] = useState(false);
+
+  // Internationalization translation function bound to active language
+  const t = useCallback((key, fallback = '') => {
+    return translateHelper(key, selectedLanguage, fallback);
+  }, [selectedLanguage]);
 
   // Active simulated rider GPS location for real-time tracking
   const [activeRiderLocation, setActiveRiderLocation] = useState({
@@ -355,7 +421,19 @@ export const AppProvider = ({ children }) => {
 
     // Listen to live registered Vendors from Cloud Firestore
     const unsubscribeVendors = subscribeToVendors((firebaseVendors) => {
-      const safeVendors = firebaseVendors || [];
+      const safeVendors = (firebaseVendors || []).filter(v =>
+        v &&
+        v.id !== 'v1' &&
+        v.id !== 'v2' &&
+        v.id !== 'v3' &&
+        v.id !== 'v4' &&
+        !v.name?.toLowerCase().includes('green valley') &&
+        !v.name?.toLowerCase().includes('basappa') &&
+        !v.name?.toLowerCase().includes('kaveri') &&
+        !v.name?.toLowerCase().includes('suresh provision') &&
+        !v.name?.toLowerCase().includes('mahesh kirana') &&
+        !v.owner?.toLowerCase().includes('suresh kumar')
+      );
       setVendors(safeVendors);
       localStorage.setItem(STORAGE_KEYS.DYNAMIC_VENDORS, JSON.stringify(safeVendors));
     });
@@ -794,9 +872,9 @@ export const AppProvider = ({ children }) => {
       date: dateString,
       timestamp: Date.now(),
       createdAt: now.toISOString(),
-      vendorId: orderData.vendorId || cart[0]?.product.vendorId || 'v1',
+      vendorId: orderData.vendorId || cart[0]?.product.vendorId || '',
       vendorName: orderData.vendorName || cart[0]?.product.vendorName || 'Local Partner Store',
-      vendorPhone: orderData.vendorPhone || '+91 98451 23456',
+      vendorPhone: orderData.vendorPhone || '',
       vendorDistance: '1.8 km',
       deliveryType: orderData.deliveryType || 'delivery',
       items: orderData.items || cart.map(i => ({
@@ -818,11 +896,11 @@ export const AppProvider = ({ children }) => {
       upiVpa: orderData.upiVpa || null,
       upiApp: orderData.upiApp || null,
       status: 'Placed',
-      deliveryAddress: orderData.deliveryAddress || user.address || 'Mijar, Moodbidri, Karnataka - 574225',
-      deliveryContact: orderData.deliveryContact || user.phone || '+91 9876543210',
-      customerGPS: orderData.customerGPS || user.gpsLocation || { lat: 13.06824, lng: 74.99612, accuracy: 10 },
+      deliveryAddress: orderData.deliveryAddress || user.address || (currentLocation?.name ? `${currentLocation.name}, Karnataka` : 'Doorstep Delivery Location'),
+      deliveryContact: orderData.deliveryContact || user.phone || '',
+      customerGPS: orderData.customerGPS || user.gpsLocation || (currentLocation?.lat ? { lat: currentLocation.lat, lng: currentLocation.lng, accuracy: currentLocation.accuracy || 10 } : null),
       estimatedDelivery: '20–30 min',
-      riderLocation: { lat: 13.0682, lng: 74.9961, progress: 0.15 },
+      riderLocation: currentLocation?.lat ? { lat: currentLocation.lat, lng: currentLocation.lng, progress: 0.15 } : null,
       timeline: [
         { status: 'Placed', label: 'Order Placed', time: timeString, completed: true },
         { status: 'Accepted', label: 'Vendor Accepted', time: 'Pending', completed: false },
@@ -990,6 +1068,7 @@ export const AppProvider = ({ children }) => {
         setIsVendorSwitchModalOpen,
         selectedLanguage,
         changeLanguage,
+        t,
         selectedVoiceFeature,
         setSelectedVoiceFeature,
         isVoiceAssistanceOpen,

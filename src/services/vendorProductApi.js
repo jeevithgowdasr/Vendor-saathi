@@ -82,7 +82,7 @@ export const broadcastProductChange = (action, productOrId) => {
 export const fetchVendorProducts = async (tokenOrVendorId, { category, search } = {}) => {
   try {
     // 1. Try Firebase Firestore
-    const vendorId = tokenOrVendorId || 'v1';
+    const vendorId = tokenOrVendorId || '';
     const fbResult = await getVendorProductsFromFirebase(vendorId, { category, search });
     
     if (fbResult.success && fbResult.products && fbResult.products.length > 0) {
@@ -137,7 +137,7 @@ export const fetchVendorProductById = async (tokenOrVendorId, id) => {
  */
 export const createVendorProductApi = async (tokenOrVendorId, productData) => {
   const newId = productData.id || productData._id || `p_${Date.now()}`;
-  const vendorId = tokenOrVendorId || productData.vendor_id || productData.vendorId || 'v1';
+  const vendorId = tokenOrVendorId || productData.vendor_id || productData.vendorId || '';
 
   const productPayload = {
     ...productData,

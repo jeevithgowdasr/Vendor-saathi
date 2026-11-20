@@ -5,6 +5,50 @@ export const LANGUAGES = [
 ];
 
 export const FEATURE_EXPLANATIONS = {
+  'website-overview': {
+    id: 'website-overview',
+    icon: '🌟',
+    badge: 'Overview',
+    category: 'core',
+    title: {
+      en: 'Complete Website Overview & Guide',
+      kn: 'ವೆಬ್‌ಸೈಟ್ ಸಂಪೂರ್ಣ ಪರಿಚಯ ಮತ್ತು ಮಾರ್ಗದರ್ಶಿ',
+      hi: 'वेबसाइट का संपूर्ण परिचय और गाइड'
+    },
+    shortDesc: {
+      en: 'Everything you need to know about VendorSaathi, groceries, local vendors & delivery.',
+      kn: 'ವೆಂಡರ್‌ಸಾಥಿ, ದಿನಸಿ ಆರ್ಡರ್ ಮಾಡುವುದು, ಸ್ಥಳೀಯ ವ್ಯಾಪಾರಿಗಳು ಮತ್ತು ಕ್ಷಿಪ್ರ ಡೆಲಿವರಿ ಮಾಹಿತಿ.',
+      hi: 'वेंडरसाथी, किराना ऑर्डर, स्थानीय विक्रेता और एक्सप्रेस डिलीवरी की पूरी जानकारी।'
+    },
+    explanation: {
+      en: 'Welcome to VendorSaathi! VendorSaathi bridges local village farmers and neighbourhood kirana stores with customers. You can browse fresh vegetables, coastal fruits, local greens, and dairy essentials. We provide 20-minute express doorstep delivery with live GPS satellite tracking. Payments are seamless with BHIM UPI, QR code, Google Pay, PhonePe, and Cash on Delivery. You can order using your voice in Kannada, English, or Hindi. Local shop owners and farmers can also access our Vendor Portal to list products, schedule village visits, and manage orders. Explore any section below to hear more!',
+      kn: 'ವೆಂಡರ್‌ಸಾಥಿಗೆ ಆತ್ಮೀಯ ಸುಸ್ವಾಗತ! ವೆಂಡರ್‌ಸಾಥಿಯು ಸ್ಥಳೀಯ ಗ್ರಾಮದ ರೈತರು ಹಾಗೂ ನಿಮ್ಮ ನೆರೆಹೊರೆಯ ಕಿರಾಣಿ ಅಂಗಡಿಗಳನ್ನು ಗ್ರಾಹಕರೊಂದಿಗೆ ನೇರವಾಗಿ ಬೆಸೆಯುವ ಸ್ಮಾರ್ಟ್ ವೇದಿಕೆಯಾಗಿದೆ. ಇಲ್ಲಿ ನೀವು ತಾಜಾ ತೋಟದ ತರಕಾರಿಗಳು, ಕರಾವಳಿ ಹಣ್ಣುಗಳು, ಸೊಪ್ಪುಗಳು ಮತ್ತು ಹಾಲಿನ ದಿನಸಿಗಳನ್ನು ಆರ್ಡರ್ ಮಾಡಬಹುದು. ಕೇವಲ ಇಪ್ಪತ್ತು ನಿಮಿಷಗಳಲ್ಲಿ ನಿಮ್ಮ ಮನೆ ಬಾಗಿಲಿಗೆ ಎಕ್ಸ್‌ಪ್ರೆಸ್ ಡೆಲಿವರಿ ಸಿಗುತ್ತದೆ, ಜೊತೆಗೆ ಲೈವ್ ಜಿಪಿಎಸ್ ಟ್ರ್ಯಾಕಿಂಗ್ ಕೂಡ ಇದೆ. ಪಾವತಿಯನ್ನು ಯುಪಿಐ, ಗೂಗಲ್ ಪೇ, ಫೋನ್ ಪೇ ಅಥವಾ ನಗದು ಮೂಲಕ ಸರಳವಾಗಿ ಮಾಡಬಹುದು. ನೀವು ಕನ್ನಡ, ಇಂಗ್ಲಿಷ್ ಅಥವಾ ಹಿಂದಿಯಲ್ಲಿ ಧ್ವನಿ ಮೂಲಕವೂ ಮಾತನಾಡಬಹುದು. ಸ್ಥಳೀಯ ವ್ಯಾಪಾರಿಗಳು ತಮ್ಮ ವಸ್ತುಗಳನ್ನು ಮಾರಾಟ ಮಾಡಲು ವೆಂಡರ್ ಪೋರ್ಟಲ್ ಅನ್ನು ಬಳಸಬಹುದು. ಹೆಚ್ಚಿನ ವಿವರಗಳನ್ನು ತಿಳಿಯಲು ಕೆಳಗಿನ ಯಾವುದೇ ವಿಷಯವನ್ನು ಒತ್ತಿ!',
+      hi: 'वेंडरसाथी में आपका स्वागत है! वेंडरसाथी स्थानीय गाँव के किसानों और पड़ोस की किराना दुकानों को ग्राहकों से जोड़ता है। यहाँ आप ताज़ी सब्जियाँ, मौसमी फल, हरी पत्तेदार सब्जियाँ और डेयरी उत्पाद आसानी से खरीद सकते हैं। हम लाइव जीपीएस सैटेलाइट ट्रैकिंग के साथ मात्र 20 मिनट में आपके घर तक एक्सप्रेस डिलीवरी उपलब्ध कराते हैं। आप गूगल पे, फोनपे, भीम यूपीआई या कैश ऑन डिलीवरी से सुरक्षित भुगतान कर सकते हैं। आप कन्नड़, अंग्रेजी या हिंदी में बोलकर भी सामान ऑर्डर कर सकते हैं। दुकानदार और किसान अपना सामान बेचने के लिए वेंडर पोर्टल का उपयोग कर सकते हैं। अधिक जानने के लिए नीचे दिए गए किसी भी फ़ीचर को चुनें!'
+    }
+  },
+
+  'how-to-order': {
+    id: 'how-to-order',
+    icon: '🛍️',
+    badge: 'Step-by-Step',
+    category: 'customer',
+    title: {
+      en: 'How to Order Groceries',
+      kn: 'ದಿನಸಿ ಆರ್ಡರ್ ಮಾಡುವುದು ಹೇಗೆ',
+      hi: 'किराना ऑर्डर कैसे करें'
+    },
+    shortDesc: {
+      en: 'Simple 3-step guide: select fresh produce, choose address, and pay via UPI or Cash.',
+      kn: 'ಸರಳ ಹಂತಗಳು: ತರಕಾರಿಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ, ವಿಳಾಸ ನಮೂದಿಸಿ ಮತ್ತು ಯುಪಿಐ ಅಥವಾ ನಗದು ಮೂಲಕ ಪಾವತಿಸಿ.',
+      hi: 'सरल गाइड: ताज़ा सामान चुनें, पता दर्ज करें और यूपीआई या नकद भुगतान करें।'
+    },
+    explanation: {
+      en: 'Ordering is super easy! First, browse categories or search for vegetables and fruits. Second, tap Add to Cart on items you want. Third, open your cart and click Proceed to Checkout. Finally, confirm your delivery address and pay using instant UPI or Cash on Delivery. Your local vendor will immediately pack and deliver to your doorstep in 20 minutes!',
+      kn: 'ಆರ್ಡರ್ ಮಾಡುವುದು ತುಂಬಾನೇ ಸರಳ! ಮೊದಲಿಗೆ, ಕೆಟಗರಿಗಳಲ್ಲಿ ಅಥವಾ ಸರ್ಚ್ ಬಾರ್‌ನಲ್ಲಿ ತರಕಾರಿಗಳನ್ನು ಹುಡುಕಿ. ಎರಡನೆಯದಾಗಿ, ನಿಮಗೆ ಬೇಕಾದ ವಸ್ತುಗಳ ಮೇಲೆ ಆಡ್ ಟು ಕಾರ್ಟ್ ಒತ್ತಿ. ಮೂರನೆಯದಾಗಿ, ಕಾರ್ಟ್ ತೆರೆದು ಚೆಕ್‌ಔಟ್‌ಗೆ ಮುಂದುವರಿಯಿರಿ. ಕೊನೆಯದಾಗಿ, ನಿಮ್ಮ ಗ್ರಾಮದ ವಿಳಾಸವನ್ನು ಆಯ್ಕೆಮಾಡಿ ಯುಪಿಐ ಅಥವಾ ಕ್ಯಾಶ್ ಆನ್ ಡೆಲಿವರಿ ಆರಿಸಿ. ಸ್ಥಳೀಯ ವ್ಯಾಪಾರಿಗಳು ತಕ್ಷಣವೇ ತಾಜಾ ವಸ್ತುಗಳನ್ನು ಪ್ಯಾಕ್ ಮಾಡಿ ನಿಮ್ಮ ಮನೆಗೆ ತಲುಪಿಸುತ್ತಾರೆ!',
+      hi: 'ऑर्डर करना बेहद आसान है! पहले, श्रेणियों में या सर्च करके सब्जियाँ और फल चुनें। दूसरा, जो सामान चाहिए उस पर ऐड टू कार्ट दबाएं। तीसरा, कार्ट खोलकर चेकआउट पर क्लिक करें। अंत में, अपना गाँव का पता चुनें और यूपीआई या कैश ऑन डिलीवरी से भुगतान करें। स्थानीय दुकानदार तुरंत आपका सामान पैक करके 20 मिनट में आपके घर पहुँचा देगा!'
+    }
+  },
+
   'gps-route': {
     id: 'gps-route',
     icon: '📍',

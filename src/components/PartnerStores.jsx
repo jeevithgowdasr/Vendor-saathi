@@ -5,7 +5,7 @@ import { subscribeToVendors } from '../firebase';
 import { getFormattedDistanceAndETA } from '../utils/geolocation';
 
 export const PartnerStores = () => {
-  const { navigateTo, currentLocation, vendors } = useApp();
+  const { navigateTo, currentLocation, vendors, t } = useApp();
   const [liveStores, setLiveStores] = useState(vendors || []);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,8 +22,26 @@ export const PartnerStores = () => {
     };
   }, []);
 
-  // Use either active live stores or context stores (both connected to Firestore)
-  const activeVendors = (liveStores && liveStores.length > 0) ? liveStores : (vendors || []);
+  // Filter out any mock/demo vendors and keep only real registered partners
+  const rawVendors = (liveStores && liveStores.length > 0) ? liveStores : (vendors || []);
+  const activeVendors = rawVendors.filter(v =>
+    v &&
+    v.id !== 'v1' &&
+    v.id !== 'v2' &&
+    v.id !== 'v3' &&
+    v.id !== 'v4' &&
+    !v.name?.toLowerCase().includes('green valley') &&
+    !v.name?.toLowerCase().includes('basappa') &&
+    !v.name?.toLowerCase().includes('kaveri') &&
+    !v.name?.toLowerCase().includes('suresh provision') &&
+    !v.name?.toLowerCase().includes('mahesh kirana') &&
+    !v.owner?.toLowerCase().includes('suresh kumar')
+  );
+
+  // If no partner stores are registered on the website, display nothing
+  if (activeVendors.length === 0) {
+    return null;
+  }
 
   return (
     <section style={{ marginBottom: '52px' }}>
@@ -41,13 +59,13 @@ export const PartnerStores = () => {
             letterSpacing: '0.05em',
             marginBottom: '8px' 
           }}>
-            AUTHENTIC PARTNER STORES
+            {t('partnerStores.tag', 'HYPERLOCAL NETWORK')}
           </span>
           <h2 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.02em', margin: 0 }}>
-            Partner Stores & Local Vendors
+            {t('partnerStores.title', 'Verified Village Kirana & Farm Stores')}
           </h2>
           <p style={{ fontSize: '13.5px', color: '#64748b', marginTop: '4px', marginBottom: 0 }}>
-            Buy directly from authentic, verified neighbourhood vendors & partner stores
+            {t('partnerStores.subtitle', 'Order from trusted neighbourhood store owners with doorstep delivery')}
           </p>
         </div>
         <button 
@@ -67,71 +85,17 @@ export const PartnerStores = () => {
             transition: 'all 0.2s ease'
           }}
         >
-          <span>View All Stores</span>
+          <span>{t('partnerStores.viewAll', 'View All Stores')}</span>
           <ArrowRight size={16} />
         </button>
       </div>
 
-      {activeVendors.length === 0 ? (
-        <div className="p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200" style={{
-          padding: '36px 24px',
-          textAlign: 'center',
-          backgroundColor: '#ffffff',
-          borderRadius: '16px',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 4px 14px rgba(15, 23, 42, 0.03)'
-        }}>
-          <Store size={36} color="#64748b" style={{ margin: '0 auto 12px auto' }} />
-          <p className="font-medium text-slate-700" style={{ fontWeight: '600', color: '#334155', fontSize: '15px', marginBottom: '4px' }}>
-            No partner stores listed yet in your area.
-          </p>
-          <p className="text-sm" style={{ fontSize: '13px', color: '#64748b', margin: '0 0 18px 0' }}>
-            Verified local vendors will appear here soon.
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => navigateTo('nearby-vendors')}
-              style={{
-                padding: '9px 18px',
-                borderRadius: '10px',
-                backgroundColor: '#0f172a',
-                color: '#ffffff',
-                border: 'none',
-                fontSize: '13px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              <Navigation size={14} />
-              <span>Explore Nearby Map</span>
-            </button>
-            <button
-              onClick={() => navigateTo('login', { role: 'vendor', mode: 'register' })}
-              style={{
-                padding: '9px 18px',
-                borderRadius: '10px',
-                backgroundColor: '#ffffff',
-                color: '#2563eb',
-                border: '1.5px solid #bfdbfe',
-                fontSize: '13px',
-                fontWeight: '700',
-                cursor: 'pointer'
-              }}
-            >
-              Register as Store Partner
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '20px'
-        }}>
-          {activeVendors.map(v => {
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: '20px'
+      }}>
+        {activeVendors.map(v => {
             const distInfo = getFormattedDistanceAndETA(currentLocation, v.coordinates || v);
             return (
               <div
@@ -266,7 +230,6 @@ export const PartnerStores = () => {
             );
           })}
         </div>
-      )}
     </section>
   );
 };

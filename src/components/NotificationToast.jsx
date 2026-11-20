@@ -20,7 +20,7 @@ export const NotificationToast = () => {
         ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'
         : isInfo
         ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)'
-        : 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+        : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
       color: '#ffffff',
       padding: '14px 22px',
       borderRadius: '16px',

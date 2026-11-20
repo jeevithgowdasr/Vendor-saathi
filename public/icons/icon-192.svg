@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
   <defs>
     <linearGradient id="bgGrad192" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#064e3b"/>
-      <stop offset="50%" stop-color="#059669"/>
-      <stop offset="100%" stop-color="#047857"/>
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="50%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
     </linearGradient>
     <linearGradient id="goldGrad192" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#fef08a"/>
@@ -19,7 +19,7 @@
   <rect width="192" height="192" rx="42" fill="url(#bgGrad192)"/>
   
   <!-- Subtle Inner Border -->
-  <rect x="3" y="3" width="186" height="186" rx="39" fill="none" stroke="#34d399" stroke-width="2.5" stroke-opacity="0.4"/>
+  <rect x="3" y="3" width="186" height="186" rx="39" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-opacity="0.4"/>
 
   <!-- Main Emblem Group -->
   <g filter="url(#glow192)" transform="translate(24, 24)">
@@ -30,10 +30,10 @@
     <path d="M42 52 C42 22 102 22 102 52" fill="none" stroke="url(#goldGrad192)" stroke-width="9" stroke-linecap="round"/>
     
     <!-- Basket Grid Lines -->
-    <path d="M44 68 H100 M48 88 H96 M54 108 H90" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-opacity="0.4"/>
+    <path d="M44 68 H100 M48 88 H96 M54 108 H90" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-opacity="0.4"/>
 
     <!-- Fresh Sprout / Leaf on Basket -->
-    <path d="M72 16 C88 16 94 32 72 40 C54 32 60 16 72 16 Z" fill="#10b981"/>
+    <path d="M72 16 C88 16 94 32 72 40 C54 32 60 16 72 16 Z" fill="#2563eb"/>
     <path d="M72 40 C72 26 80 20 86 18" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
 
     <!-- Sparkle Accent -->

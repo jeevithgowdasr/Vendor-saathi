@@ -220,11 +220,11 @@ export const UpiPaymentModal = ({
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        border: '1.5px solid #a7f3d0'
+        border: '1.5px solid #bfdbfe'
       }}>
         {/* Modal Header */}
         <div style={{
-          background: 'linear-gradient(135deg, #065f46 0%, #047857 50%, #064e3b 100%)',
+          background: 'linear-gradient(135deg, #1e40af 0%, #1d4ed8 50%, #0f172a 100%)',
           color: '#ffffff',
           padding: '20px 24px',
           display: 'flex',
@@ -234,7 +234,7 @@ export const UpiPaymentModal = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
               backgroundColor: '#ffffff',
-              color: '#065f46',
+              color: '#1e40af',
               width: '42px',
               height: '42px',
               borderRadius: '14px',
@@ -244,7 +244,7 @@ export const UpiPaymentModal = ({
               fontSize: '22px',
               boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
             }}>
-              <Smartphone size={22} color="#059669" />
+              <Smartphone size={22} color="#2563eb" />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
@@ -258,7 +258,7 @@ export const UpiPaymentModal = ({
                   NPCI 2.0
                 </span>
               </div>
-              <span style={{ fontSize: '12px', color: '#a7f3d0', fontWeight: '600' }}>
+              <span style={{ fontSize: '12px', color: '#bfdbfe', fontWeight: '600' }}>
                 0% Transaction Fee • GPay, PhonePe, Paytm, BHIM via Stripe Gateway
               </span>
             </div>
@@ -292,13 +292,13 @@ export const UpiPaymentModal = ({
                 gap: '10px',
                 padding: '15px 18px',
                 borderRadius: '18px',
-                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                 color: '#ffffff',
                 textDecoration: 'none',
                 fontWeight: '900',
                 fontSize: '15px',
                 marginBottom: '18px',
-                boxShadow: '0 6px 20px -3px rgba(5, 150, 105, 0.4)',
+                boxShadow: '0 6px 20px -3px rgba(37, 99, 235, 0.4)',
                 textAlign: 'center'
               }}
             >
@@ -309,8 +309,8 @@ export const UpiPaymentModal = ({
 
           {/* Amount & Timer Summary Bar */}
           <div style={{
-            backgroundColor: '#f0fdf4',
-            border: '1.5px solid #bbf7d0',
+            backgroundColor: '#eff6ff',
+            border: '1.5px solid #bfdbfe',
             borderRadius: '20px',
             padding: '14px 18px',
             display: 'flex',
@@ -319,16 +319,16 @@ export const UpiPaymentModal = ({
             marginBottom: '18px'
           }}>
             <div>
-              <span style={{ fontSize: '11px', color: '#047857', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <span style={{ fontSize: '11px', color: '#1d4ed8', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Amount to Pay via UPI
               </span>
-              <strong style={{ fontSize: '26px', fontWeight: '900', color: '#064e3b', display: 'block', lineHeight: 1.1 }}>
+              <strong style={{ fontSize: '26px', fontWeight: '900', color: '#0f172a', display: 'block', lineHeight: 1.1 }}>
                 ₹{amount}
               </strong>
             </div>
 
             <div style={{ textAlign: 'right' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end', color: timeLeft < 60 ? '#ef4444' : '#059669', fontWeight: '800', fontSize: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end', color: timeLeft < 60 ? '#ef4444' : '#2563eb', fontWeight: '800', fontSize: '14px' }}>
                 <Clock size={15} />
                 <span>{formattedTime}</span>
               </div>
@@ -356,7 +356,7 @@ export const UpiPaymentModal = ({
                 fontWeight: '800',
                 border: 'none',
                 backgroundColor: activeTab === 'qr' ? '#ffffff' : 'transparent',
-                color: activeTab === 'qr' ? '#059669' : '#64748b',
+                color: activeTab === 'qr' ? '#2563eb' : '#64748b',
                 boxShadow: activeTab === 'qr' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
                 cursor: 'pointer',
                 display: 'flex',
@@ -380,7 +380,7 @@ export const UpiPaymentModal = ({
                 fontWeight: '800',
                 border: 'none',
                 backgroundColor: activeTab === 'apps' ? '#ffffff' : 'transparent',
-                color: activeTab === 'apps' ? '#059669' : '#64748b',
+                color: activeTab === 'apps' ? '#2563eb' : '#64748b',
                 boxShadow: activeTab === 'apps' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
                 cursor: 'pointer',
                 display: 'flex',
@@ -404,7 +404,7 @@ export const UpiPaymentModal = ({
                 fontWeight: '800',
                 border: 'none',
                 backgroundColor: activeTab === 'vpa' ? '#ffffff' : 'transparent',
-                color: activeTab === 'vpa' ? '#059669' : '#64748b',
+                color: activeTab === 'vpa' ? '#2563eb' : '#64748b',
                 boxShadow: activeTab === 'vpa' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
                 cursor: 'pointer',
                 display: 'flex',
@@ -447,8 +447,8 @@ export const UpiPaymentModal = ({
                 padding: '16px',
                 backgroundColor: '#ffffff',
                 borderRadius: '24px',
-                border: '2px solid #a7f3d0',
-                boxShadow: '0 8px 24px -4px rgba(16, 185, 129, 0.2)',
+                border: '2px solid #bfdbfe',
+                boxShadow: '0 8px 24px -4px rgba(37, 99, 235, 0.2)',
                 marginBottom: '16px',
                 position: 'relative'
               }}>
@@ -466,7 +466,7 @@ export const UpiPaymentModal = ({
                     excavate: true
                   }}
                 />
-                <span className="badge" style={{ position: 'absolute', bottom: '6px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#059669', color: '#fff', fontSize: '9.5px', fontWeight: '800' }}>
+                <span className="badge" style={{ position: 'absolute', bottom: '6px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#2563eb', color: '#fff', fontSize: '9.5px', fontWeight: '800' }}>
                   Auto-Verifying QR
                 </span>
               </div>
@@ -479,11 +479,11 @@ export const UpiPaymentModal = ({
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '6px',
-                    backgroundColor: '#ecfdf5',
-                    color: '#059669',
+                    backgroundColor: '#eff6ff',
+                    color: '#2563eb',
                     padding: '8px 16px',
                     borderRadius: '12px',
-                    border: '1px solid #a7f3d0',
+                    border: '1px solid #bfdbfe',
                     fontSize: '13px',
                     fontWeight: '800',
                     textDecoration: 'none'
@@ -502,7 +502,7 @@ export const UpiPaymentModal = ({
               </div>
 
               <p style={{ fontSize: '13px', color: '#475569', marginBottom: '16px', lineHeight: 1.45 }}>
-                Open any UPI app on your phone & scan this QR code to pay <strong style={{ color: '#059669' }}>₹{amount}</strong>.
+                Open any UPI app on your phone & scan this QR code to pay <strong style={{ color: '#2563eb' }}>₹{amount}</strong>.
               </p>
 
               {/* VPA Info Bar with Copy */}
@@ -530,7 +530,7 @@ export const UpiPaymentModal = ({
                     padding: '8px 14px',
                     fontSize: '12.5px',
                     fontWeight: '800',
-                    color: '#059669',
+                    color: '#2563eb',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
@@ -696,18 +696,18 @@ export const UpiPaymentModal = ({
 
               {isRequestSent && (
                 <div style={{
-                  backgroundColor: '#ecfdf5',
-                  border: '1.5px solid #a7f3d0',
+                  backgroundColor: '#eff6ff',
+                  border: '1.5px solid #bfdbfe',
                   padding: '12px 16px',
                   borderRadius: '14px',
                   marginBottom: '18px',
                   fontSize: '13px',
-                  color: '#065f46',
+                  color: '#1e40af',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px'
                 }}>
-                  <Loader2 size={16} className="animate-spin" color="#059669" />
+                  <Loader2 size={16} className="animate-spin" color="#2563eb" />
                   <span>Collect request sent! Open your UPI app and approve ₹{amount}...</span>
                 </div>
               )}
@@ -736,7 +736,7 @@ export const UpiPaymentModal = ({
           {/* NPCI Security Footer */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginTop: '18px', fontSize: '11.5px', color: '#64748b' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <ShieldCheck size={15} color="#059669" /> NPCI Verified
+              <ShieldCheck size={15} color="#2563eb" /> NPCI Verified
             </span>
             <span>•</span>
             <span>Unified Payments Interface</span>

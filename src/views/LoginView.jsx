@@ -108,7 +108,7 @@ export const LoginView = ({ params = {} }) => {
   // Vendor-Specific Fields
   const [businessName, setBusinessName] = useState('');
   const [vendorCategory, setVendorCategory] = useState('Vegetable');
-  const [operatingAreas, setOperatingAreas] = useState(['Mijar', 'Moodbidri Town']);
+  const [operatingAreas, setOperatingAreas] = useState([]);
   const [customAreaInput, setCustomAreaInput] = useState('');
   const [vehicleType, setVehicleType] = useState('None');
   const [vehicleRegNo, setVehicleRegNo] = useState('');
@@ -117,10 +117,10 @@ export const LoginView = ({ params = {} }) => {
   const [profilePreview, setProfilePreview] = useState('');
 
   // Customer-Specific Fields
-  const [primaryAddress, setPrimaryAddress] = useState('Mijar Village, Moodbidri');
+  const [primaryAddress, setPrimaryAddress] = useState('');
   const [coordinates, setCoordinates] = useState({ lat: 13.0682, lng: 74.9961 });
-  const [preferredAreas, setPreferredAreas] = useState(['Mijar', 'Moodbidri Town']);
-  const [preferredCategories, setPreferredCategories] = useState(['Vegetables', 'Fruits']);
+  const [preferredAreas, setPreferredAreas] = useState([]);
+  const [preferredCategories, setPreferredCategories] = useState([]);
   const [isLocatingGPS, setIsLocatingGPS] = useState(false);
 
   // UI & Feedback State
@@ -421,9 +421,9 @@ export const LoginView = ({ params = {} }) => {
   };
 
   const isCustomer = selectedRole === 'customer';
-  const roleColor = isCustomer ? '#059669' : '#2563eb';
-  const roleBg = isCustomer ? '#ecfdf5' : '#eff6ff';
-  const roleBorder = isCustomer ? '#a7f3d0' : '#bfdbfe';
+  const roleColor = isCustomer ? '#2563eb' : '#2563eb';
+  const roleBg = isCustomer ? '#eff6ff' : '#eff6ff';
+  const roleBorder = isCustomer ? '#bfdbfe' : '#bfdbfe';
 
   return (
     <div className="container animate-fade-in" style={{ padding: '36px 16px 80px 16px', maxWidth: '640px', margin: '0 auto' }}>
@@ -467,7 +467,7 @@ export const LoginView = ({ params = {} }) => {
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 14px auto',
-            boxShadow: `0 10px 25px -4px ${isCustomer ? 'rgba(16, 185, 129, 0.25)' : 'rgba(37, 99, 235, 0.25)'}`,
+            boxShadow: `0 10px 25px -4px ${isCustomer ? 'rgba(37, 99, 235, 0.25)' : 'rgba(37, 99, 235, 0.25)'}`,
             transition: 'all 0.3s ease'
           }}>
             {isCustomer ? <ShoppingBag size={34} /> : <Store size={34} />}
@@ -504,7 +504,7 @@ export const LoginView = ({ params = {} }) => {
               borderRadius: '14px',
               border: 'none',
               backgroundColor: selectedRole === 'customer' ? '#ffffff' : 'transparent',
-              color: selectedRole === 'customer' ? '#059669' : '#64748b',
+              color: selectedRole === 'customer' ? '#2563eb' : '#64748b',
               fontWeight: '800',
               fontSize: '13px',
               cursor: 'pointer',
@@ -711,7 +711,7 @@ export const LoginView = ({ params = {} }) => {
                 fontSize: '15px',
                 fontWeight: '800',
                 cursor: 'pointer',
-                boxShadow: `0 8px 20px -4px ${isCustomer ? 'rgba(16, 185, 129, 0.4)' : 'rgba(37, 99, 235, 0.4)'}`,
+                boxShadow: `0 8px 20px -4px ${isCustomer ? 'rgba(37, 99, 235, 0.4)' : 'rgba(37, 99, 235, 0.4)'}`,
                 marginTop: '8px',
                 display: 'flex',
                 alignItems: 'center',
@@ -1185,7 +1185,7 @@ export const LoginView = ({ params = {} }) => {
                 gap: '18px'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <MapPin size={20} color="#059669" />
+                  <MapPin size={20} color="#2563eb" />
                   <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#1e293b', margin: 0 }}>
                     Primary Location & Preferences
                   </h3>
@@ -1202,9 +1202,9 @@ export const LoginView = ({ params = {} }) => {
                       onClick={handleDetectGPS}
                       disabled={isLocatingGPS}
                       style={{
-                        background: '#ecfdf5',
-                        border: '1px solid #a7f3d0',
-                        color: '#047857',
+                        background: '#eff6ff',
+                        border: '1px solid #bfdbfe',
+                        color: '#1d4ed8',
                         padding: '4px 10px',
                         borderRadius: '10px',
                         fontSize: '11.5px',
@@ -1250,11 +1250,11 @@ export const LoginView = ({ params = {} }) => {
                     alignItems: 'center',
                     gap: '6px',
                     fontSize: '12px',
-                    color: '#065f46',
-                    backgroundColor: '#f0fdf4',
+                    color: '#1e40af',
+                    backgroundColor: '#eff6ff',
                     padding: '6px 12px',
                     borderRadius: '10px',
-                    border: '1px solid #d1fae5'
+                    border: '1px solid #dbeafe'
                   }}>
                     <Compass size={14} />
                     <span>Locked Coordinates: <strong>{coordinates.lat.toFixed(4)}° N, {coordinates.lng.toFixed(4)}° E</strong></span>
@@ -1279,9 +1279,9 @@ export const LoginView = ({ params = {} }) => {
                             fontSize: '12px',
                             fontWeight: '700',
                             cursor: 'pointer',
-                            backgroundColor: isSelected ? '#059669' : '#ffffff',
+                            backgroundColor: isSelected ? '#2563eb' : '#ffffff',
                             color: isSelected ? '#ffffff' : '#475569',
-                            border: isSelected ? '1px solid #059669' : '1px solid #cbd5e1',
+                            border: isSelected ? '1px solid #2563eb' : '1px solid #cbd5e1',
                             transition: 'all 0.15s ease'
                           }}
                         >
@@ -1310,9 +1310,9 @@ export const LoginView = ({ params = {} }) => {
                             fontSize: '12px',
                             fontWeight: '700',
                             cursor: 'pointer',
-                            backgroundColor: isSelected ? '#059669' : '#ffffff',
+                            backgroundColor: isSelected ? '#2563eb' : '#ffffff',
                             color: isSelected ? '#ffffff' : '#475569',
-                            border: isSelected ? '1px solid #059669' : '1px solid #cbd5e1',
+                            border: isSelected ? '1px solid #2563eb' : '1px solid #cbd5e1',
                             transition: 'all 0.15s ease'
                           }}
                         >
@@ -1338,7 +1338,7 @@ export const LoginView = ({ params = {} }) => {
                 fontSize: '15.5px',
                 fontWeight: '900',
                 cursor: 'pointer',
-                boxShadow: `0 10px 24px -4px ${isCustomer ? 'rgba(16, 185, 129, 0.45)' : 'rgba(37, 99, 235, 0.45)'}`,
+                boxShadow: `0 10px 24px -4px ${isCustomer ? 'rgba(37, 99, 235, 0.45)' : 'rgba(37, 99, 235, 0.45)'}`,
                 marginTop: '10px',
                 display: 'flex',
                 alignItems: 'center',
@@ -1351,17 +1351,6 @@ export const LoginView = ({ params = {} }) => {
             </button>
           </form>
         )}
-
-        {/* Back to Browse */}
-        <div style={{ marginTop: '26px', textAlign: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '18px' }}>
-          <button
-            type="button"
-            onClick={() => navigateTo('home')}
-            style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '13.5px', fontWeight: '700', cursor: 'pointer' }}
-          >
-            Continue browsing produce as Guest &rarr;
-          </button>
-        </div>
       </div>
     </div>
   );

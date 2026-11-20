@@ -78,7 +78,7 @@ export const FormField = ({
               userSelect: 'none'
             }}
           >
-            {Icon && <Icon size={14} style={{ flexShrink: 0, color: error ? '#dc2626' : '#059669' }} />}
+            {Icon && <Icon size={14} style={{ flexShrink: 0, color: error ? '#dc2626' : '#2563eb' }} />}
             <span>{label}</span>
             {required && <span style={{ color: '#ef4444', fontWeight: '900' }}>*</span>}
           </label>

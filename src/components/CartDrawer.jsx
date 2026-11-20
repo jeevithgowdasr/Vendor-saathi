@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { getLocalizedProductName, getLocalizedUnit } from '../utils/productLocalization';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, Tag, Truck, Sparkles, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -11,7 +12,9 @@ export const CartDrawer = () => {
     updateCartQuantity, 
     removeFromCart, 
     navigateTo,
-    showToast
+    showToast,
+    t,
+    selectedLanguage
   } = useApp();
 
   const [couponCode, setCouponCode] = useState('');
@@ -92,7 +95,7 @@ export const CartDrawer = () => {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ 
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
+              background: 'linear-gradient(135deg, #2563eb 0%, #2563eb 100%)', 
               color: '#ffffff', 
               padding: '8px', 
               borderRadius: '10px',
@@ -103,9 +106,9 @@ export const CartDrawer = () => {
               <ShoppingBag size={18} />
             </div>
             <div>
-              <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', lineHeight: 1.1 }}>My Cart</h3>
+              <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', lineHeight: 1.1 }}>{t('cart.title', 'My Cart')}</h3>
               <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>
-                {cart.length} {cart.length === 1 ? 'item' : 'items'} selected
+                {cart.length} {cart.length === 1 ? 'item' : 'items'}
               </span>
             </div>
           </div>
@@ -122,22 +125,22 @@ export const CartDrawer = () => {
         {/* Free Delivery Progress Bar */}
         {cart.length > 0 && (
           <div style={{
-            background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
+            background: 'linear-gradient(135deg, #eff6ff 0%, #eff6ff 100%)',
             padding: '14px 24px',
-            borderBottom: '1px solid #bbf7d0'
+            borderBottom: '1px solid #bfdbfe'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', fontWeight: '700', color: '#065f46' }}>
-                <Truck size={16} className="animate-truck" color="#059669" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', fontWeight: '700', color: '#1e40af' }}>
+                <Truck size={16} className="animate-truck" color="#2563eb" />
                 <span>
                   {isFreeDelivery ? (
-                    <strong style={{ color: '#059669' }}>🎉 You unlocked FREE Express Delivery!</strong>
+                    <strong style={{ color: '#2563eb' }}>{t('cart.unlockedFreeDelivery', '🎉 You unlocked FREE Express Delivery!')}</strong>
                   ) : (
-                    <span>Add <strong style={{ color: '#059669' }}>₹{amountToFreeDelivery}</strong> more for <strong>FREE Delivery</strong></span>
+                    <span>{t('cart.addMoreForFreePrefix', 'Add')} <strong style={{ color: '#2563eb' }}>₹{amountToFreeDelivery}</strong> {t('cart.addMoreForFreeSuffix', 'more for FREE Delivery')}</span>
                   )}
                 </span>
               </div>
-              <span style={{ fontSize: '12px', fontWeight: '800', color: '#059669' }}>
+              <span style={{ fontSize: '12px', fontWeight: '800', color: '#2563eb' }}>
                 {progressPercent}%
               </span>
             </div>
@@ -146,7 +149,7 @@ export const CartDrawer = () => {
             <div style={{
               width: '100%',
               height: '8px',
-              backgroundColor: '#d1fae5',
+              backgroundColor: '#dbeafe',
               borderRadius: '999px',
               overflow: 'hidden',
               position: 'relative'
@@ -154,7 +157,7 @@ export const CartDrawer = () => {
               <div style={{
                 height: '100%',
                 width: `${progressPercent}%`,
-                background: 'linear-gradient(90deg, #10b981, #059669)',
+                background: 'linear-gradient(90deg, #2563eb, #2563eb)',
                 borderRadius: '999px',
                 transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
               }} />
@@ -170,8 +173,8 @@ export const CartDrawer = () => {
                 width: '80px',
                 height: '80px',
                 borderRadius: '50%',
-                backgroundColor: '#f0fdf4',
-                color: '#10b981',
+                backgroundColor: '#eff6ff',
+                color: '#2563eb',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -179,21 +182,24 @@ export const CartDrawer = () => {
               }}>
                 <ShoppingBag size={40} />
               </div>
-              <h4 style={{ fontSize: '18px', fontWeight: '800', color: '#1e293b' }}>Your cart is empty</h4>
+              <h4 style={{ fontSize: '18px', fontWeight: '800', color: '#1e293b' }}>{t('cart.emptyTitle', 'Your cart is empty')}</h4>
               <p style={{ fontSize: '13.5px', marginTop: '6px', color: '#64748b', lineHeight: 1.5 }}>
-                Explore fresh vegetables, fruits, and groceries from nearby local stores.
+                {t('cart.emptySubtitle', 'Explore farm-fresh vegetables and local groceries!')}
               </p>
               <button
                 onClick={() => { setIsCartDrawerOpen(false); navigateTo('categories'); }}
                 className="btn-primary"
                 style={{ marginTop: '24px', borderRadius: '16px', padding: '12px 24px' }}
               >
-                <span>Start Shopping</span>
+                <span>{t('cart.exploreProduce', 'Explore Fresh Produce')}</span>
                 <ArrowRight size={16} />
               </button>
             </div>
           ) : (
-            cart.map(({ product, quantity }) => (
+            cart.map(({ product, quantity }) => {
+              const prodName = getLocalizedProductName(product, selectedLanguage);
+              const prodUnit = getLocalizedUnit(product.unit, selectedLanguage);
+              return (
               <div
                 key={product.id}
                 style={{
@@ -209,7 +215,7 @@ export const CartDrawer = () => {
               >
                 <img
                   src={product.image}
-                  alt={product.name}
+                  alt={prodName}
                   style={{ width: '72px', height: '72px', borderRadius: '14px', objectFit: 'cover', flexShrink: 0 }}
                 />
 
@@ -217,7 +223,7 @@ export const CartDrawer = () => {
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <h4 style={{ fontSize: '14.5px', fontWeight: '800', color: '#0f172a', lineHeight: 1.2 }}>
-                        {product.shortName || product.name}
+                        {prodName}
                       </h4>
                       <button 
                         type="button"
@@ -227,18 +233,18 @@ export const CartDrawer = () => {
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fee2e2'}
                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                         title="Remove item"
-                        aria-label={`Remove ${product.shortName || product.name} from cart`}
+                        aria-label={`Remove ${prodName} from cart`}
                       >
                         <Trash2 size={16} />
                       </button>
                     </div>
                     <span style={{ fontSize: '11.5px', color: '#475569', fontWeight: '600', display: 'block', marginTop: '2px' }}>
-                      ₹{product.price} / {product.unit} • {product.vendorName}
+                      ₹{product.price} / {prodUnit}{product.vendorName ? ` • ${product.vendorName}` : ''}
                     </span>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                    <strong style={{ fontSize: '16px', fontWeight: '900', color: '#059669' }}>
+                    <strong style={{ fontSize: '16px', fontWeight: '900', color: '#2563eb' }}>
                       ₹{product.price * quantity}
                     </strong>
 
@@ -246,8 +252,8 @@ export const CartDrawer = () => {
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
-                      backgroundColor: '#f0fdf4',
-                      border: '1.5px solid #a7f3d0',
+                      backgroundColor: '#eff6ff',
+                      border: '1.5px solid #bfdbfe',
                       borderRadius: '12px',
                       padding: '2px'
                     }}>
@@ -255,20 +261,20 @@ export const CartDrawer = () => {
                         type="button"
                         onClick={() => updateCartQuantity(product.id, quantity - 1)}
                         className="touch-target-44"
-                        style={{ color: '#059669', border: 'none', background: 'none', cursor: 'pointer' }}
-                        aria-label={`Decrease quantity of ${product.shortName || product.name}`}
+                        style={{ color: '#2563eb', border: 'none', background: 'none', cursor: 'pointer' }}
+                        aria-label={`Decrease quantity of ${prodName}`}
                       >
                         <Minus size={16} />
                       </button>
-                      <span style={{ fontSize: '14px', fontWeight: '900', color: '#065f46', minWidth: '22px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '14px', fontWeight: '900', color: '#1e40af', minWidth: '22px', textAlign: 'center' }}>
                         {quantity}
                       </span>
                       <button
                         type="button"
                         onClick={() => updateCartQuantity(product.id, quantity + 1)}
                         className="touch-target-44"
-                        style={{ color: '#059669', border: 'none', background: 'none', cursor: 'pointer' }}
-                        aria-label={`Increase quantity of ${product.shortName || product.name}`}
+                        style={{ color: '#2563eb', border: 'none', background: 'none', cursor: 'pointer' }}
+                        aria-label={`Increase quantity of ${prodName}`}
                       >
                         <Plus size={16} />
                       </button>
@@ -276,7 +282,7 @@ export const CartDrawer = () => {
                   </div>
                 </div>
               </div>
-            ))
+            );})
           )}
         </div>
 
@@ -316,15 +322,15 @@ export const CartDrawer = () => {
             {/* Pricing Breakup */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', fontSize: '13.5px', color: '#475569', marginBottom: '18px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Subtotal</span>
+                <span>{t('cart.itemsSubtotal', 'Items Subtotal')}</span>
                 <span style={{ fontWeight: '700', color: '#0f172a' }}>₹{subtotal}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Delivery Fee {subtotal >= freeDeliveryThreshold && '(FREE above ₹300)'}</span>
-                <span>{deliveryFee === 0 ? <span style={{ color: '#059669', fontWeight: '800' }}>FREE</span> : `₹${deliveryFee}`}</span>
+                <span>{t('cart.deliveryFee', 'Delivery Fee')}</span>
+                <span>{deliveryFee === 0 ? <span style={{ color: '#2563eb', fontWeight: '800' }}>{t('cart.free', 'FREE')}</span> : `₹${deliveryFee}`}</span>
               </div>
               {discountAmount > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#059669', fontWeight: '700' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2563eb', fontWeight: '700' }}>
                   <span>Discount ({couponCode.toUpperCase() || 'Coupon'})</span>
                   <span>-₹{discountAmount}</span>
                 </div>
@@ -338,8 +344,8 @@ export const CartDrawer = () => {
                 fontWeight: '900', 
                 color: '#0f172a' 
               }}>
-                <span>Total Payable</span>
-                <span style={{ color: '#059669' }}>₹{total}</span>
+                <span>{t('cart.grandTotal', 'Total Payable')}</span>
+                <span style={{ color: '#2563eb' }}>₹{total}</span>
               </div>
             </div>
 
@@ -351,7 +357,7 @@ export const CartDrawer = () => {
               className="btn-primary"
               style={{ width: '100%', padding: '14px', borderRadius: '14px', fontSize: '15px' }}
             >
-              <span>Proceed to Checkout</span>
+              <span>{t('cart.checkoutBtn', 'Proceed to Checkout')}</span>
               <ArrowRight size={18} />
             </button>
           </div>

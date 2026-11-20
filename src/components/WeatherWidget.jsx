@@ -4,7 +4,7 @@ import { getLiveWeatherForecast } from '../services/weatherService';
 import { CloudRain, Wind, Droplets, RefreshCw, AlertCircle, Sun, Cloud, Thermometer, ShieldCheck } from 'lucide-react';
 
 export const WeatherWidget = ({ compact = false, showAdvisory = true }) => {
-  const { currentLocation, selectedLanguage } = useApp();
+  const { currentLocation, selectedLanguage, t } = useApp();
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,7 +44,7 @@ export const WeatherWidget = ({ compact = false, showAdvisory = true }) => {
           gap: '12px'
         }}
       >
-        <RefreshCw size={18} className="spin" color="#059669" />
+        <RefreshCw size={18} className="spin" color="#2563eb" />
         <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>
           Calibrating live local weather telemetry...
         </span>
@@ -80,7 +80,7 @@ export const WeatherWidget = ({ compact = false, showAdvisory = true }) => {
         <span style={{ fontSize: '16px' }}>{weather?.icon || '🌤️'}</span>
         <span>{weather?.temperature}°C</span>
         <span style={{ color: '#64748b', fontWeight: '500' }}>•</span>
-        <span style={{ color: '#047857' }}>{conditionText}</span>
+        <span style={{ color: '#1d4ed8' }}>{conditionText}</span>
         {weather?.rainProbability > 30 && (
           <span style={{ color: '#2563eb', display: 'inline-flex', alignItems: 'center', gap: '2px', fontSize: '11.5px' }}>
             <Droplets size={12} /> {weather.rainProbability}%
@@ -96,9 +96,9 @@ export const WeatherWidget = ({ compact = false, showAdvisory = true }) => {
       style={{
         padding: '18px 22px',
         borderRadius: '22px',
-        background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #eff6ff 100%)',
-        border: '1.5px solid #a7f3d0',
-        boxShadow: '0 4px 16px rgba(5, 150, 105, 0.08)',
+        background: 'linear-gradient(135deg, #eff6ff 0%, #eff6ff 50%, #eff6ff 100%)',
+        border: '1.5px solid #bfdbfe',
+        boxShadow: '0 4px 16px rgba(37, 99, 235, 0.08)',
         position: 'relative',
         overflow: 'hidden'
       }}
@@ -116,27 +116,27 @@ export const WeatherWidget = ({ compact = false, showAdvisory = true }) => {
               justifyContent: 'center',
               fontSize: '28px',
               boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-              border: '1px solid #d1fae5'
+              border: '1px solid #dbeafe'
             }}
           >
             {weather?.icon || '🌤️'}
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '26px', fontWeight: '900', color: '#064e3b', lineHeight: 1 }}>
+              <span style={{ fontSize: '26px', fontWeight: '900', color: '#0f172a', lineHeight: 1 }}>
                 {weather?.temperature}°C
               </span>
               <span
                 style={{
-                  backgroundColor: '#dcfce7',
-                  color: '#15803d',
+                  backgroundColor: '#eff6ff',
+                  color: '#1d4ed8',
                   padding: '3px 8px',
                   borderRadius: '10px',
                   fontSize: '11px',
                   fontWeight: '800'
                 }}
               >
-                LIVE METEO
+                {t('weather.liveMeteo', 'LIVE METEO')}
               </span>
             </div>
             <div style={{ fontSize: '13.5px', fontWeight: '700', color: '#1e293b', marginTop: '4px' }}>
@@ -153,12 +153,12 @@ export const WeatherWidget = ({ compact = false, showAdvisory = true }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12.5px', color: '#334155', fontWeight: '600' }}>
             <Droplets size={14} color="#0284c7" />
-            <span>{weather?.humidity ?? 68}% {isKannada ? 'ತೇವಾಂಶ' : 'Humidity'}</span>
+            <span>{weather?.humidity ?? 68}% {t('weather.humidity', 'Humidity')}</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12.5px', color: '#334155', fontWeight: '600' }}>
-            <Wind size={14} color="#059669" />
-            <span>{weather?.windSpeed ?? 12} km/h {isKannada ? 'ಗಾಳಿ' : 'Wind'}</span>
+            <Wind size={14} color="#2563eb" />
+            <span>{weather?.windSpeed ?? 12} km/h {t('weather.wind', 'Wind')}</span>
           </div>
 
           <button
@@ -176,7 +176,7 @@ export const WeatherWidget = ({ compact = false, showAdvisory = true }) => {
               fontWeight: '700',
               color: '#475569'
             }}
-            title="Refresh live weather telemetry"
+            title={t('weather.refreshTip', 'Refresh live weather telemetry')}
           >
             <RefreshCw size={12} className={loading ? 'spin' : ''} />
             <span>{weather?.updatedAt || 'Now'}</span>
@@ -189,7 +189,7 @@ export const WeatherWidget = ({ compact = false, showAdvisory = true }) => {
           style={{
             marginTop: '12px',
             paddingTop: '10px',
-            borderTop: '1px dashed #bbf7d0',
+            borderTop: '1px dashed #bfdbfe',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -197,10 +197,10 @@ export const WeatherWidget = ({ compact = false, showAdvisory = true }) => {
             gap: '8px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#065f46', fontWeight: '600' }}>
-            <ShieldCheck size={14} color="#059669" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#1e40af', fontWeight: '600' }}>
+            <ShieldCheck size={14} color="#2563eb" />
             <span>
-              <strong>{isKannada ? 'ಹವಾಮಾನ ಸಲಹೆ:' : 'Delivery Advisory:'}</strong> {weather.deliveryTip}
+              <strong>{t('weather.advisory', 'Delivery Advisory:')}</strong> {weather.deliveryTip}
             </span>
           </div>
           <span style={{ fontSize: '11px', color: '#64748b' }}>

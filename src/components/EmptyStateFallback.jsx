@@ -50,14 +50,14 @@ export const EmptyStateFallback = ({
           width: compact ? '54px' : '72px',
           height: compact ? '54px' : '72px',
           borderRadius: '50%',
-          backgroundColor: '#f0fdf4',
-          color: '#059669',
-          border: '1.5px solid #a7f3d0',
+          backgroundColor: '#eff6ff',
+          color: '#2563eb',
+          border: '1.5px solid #bfdbfe',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           marginBottom: '16px',
-          boxShadow: '0 8px 20px -4px rgba(16, 185, 129, 0.2)'
+          boxShadow: '0 8px 20px -4px rgba(37, 99, 235, 0.2)'
         }}
       >
         <Icon size={compact ? 26 : 34} />

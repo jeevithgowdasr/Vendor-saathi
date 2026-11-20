@@ -7,7 +7,7 @@ export const VendorChatModal = () => {
   const { isVendorChatOpen, setIsVendorChatOpen, activeOrderId, orders, selectedVendor, user } = useApp();
   const currentOrder = (orders || []).find(o => o.id === activeOrderId) || (orders && orders[0]) || null;
   const vendorName = currentOrder?.vendorName || selectedVendor?.name || 'Local Partner Vendor';
-  const vendorId = currentOrder?.vendorId || selectedVendor?.id || 'v1';
+  const vendorId = currentOrder?.vendorId || selectedVendor?.id || '';
 
   const [messages, setMessages] = useState([
     { sender: 'vendor', text: `Namaste! We are preparing your fresh order from local Moodbidri farms.`, time: '10:36 AM' },
@@ -66,12 +66,12 @@ export const VendorChatModal = () => {
         flexDirection: 'column',
         overflow: 'hidden',
         boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)',
-        border: '1.5px solid #d1fae5'
+        border: '1.5px solid #dbeafe'
       }}>
         {/* Header */}
         <div style={{ 
           padding: '14px 20px', 
-          background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)', 
+          background: 'linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%)', 
           color: '#ffffff', 
           display: 'flex', 
           justifyContent: 'space-between', 
@@ -83,7 +83,7 @@ export const VendorChatModal = () => {
               height: '42px', 
               borderRadius: '50%', 
               backgroundColor: '#ffffff', 
-              color: '#065f46', 
+              color: '#1e40af', 
               fontWeight: '900', 
               display: 'flex', 
               alignItems: 'center', 
@@ -98,7 +98,7 @@ export const VendorChatModal = () => {
               <strong style={{ fontSize: '15.5px', display: 'block', lineHeight: 1.2, fontWeight: '800', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {vendorName}
               </strong>
-              <span style={{ fontSize: '11.5px', color: '#a7f3d0', fontWeight: '600' }}>
+              <span style={{ fontSize: '11.5px', color: '#bfdbfe', fontWeight: '600' }}>
                 🟢 Online • Direct Kirana Chat
               </span>
             </div>
@@ -121,7 +121,7 @@ export const VendorChatModal = () => {
               style={{
                 alignSelf: msg.sender === 'customer' ? 'flex-end' : 'flex-start',
                 background: msg.sender === 'customer' 
-                  ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' 
+                  ? 'linear-gradient(135deg, #2563eb 0%, #2563eb 100%)' 
                   : '#ffffff',
                 color: msg.sender === 'customer' ? '#ffffff' : '#0f172a',
                 padding: '12px 16px',
@@ -155,9 +155,9 @@ export const VendorChatModal = () => {
               alignItems: 'center',
               gap: '4px'
             }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', animation: 'typingDots 1.2s infinite 0s' }} />
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', animation: 'typingDots 1.2s infinite 0.2s' }} />
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', animation: 'typingDots 1.2s infinite 0.4s' }} />
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2563eb', animation: 'typingDots 1.2s infinite 0s' }} />
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2563eb', animation: 'typingDots 1.2s infinite 0.2s' }} />
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2563eb', animation: 'typingDots 1.2s infinite 0.4s' }} />
             </div>
           )}
         </div>

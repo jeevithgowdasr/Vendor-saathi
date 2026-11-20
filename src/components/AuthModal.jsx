@@ -75,10 +75,10 @@ export const AuthModal = () => {
   const [email, setEmail] = useState(user?.email || '');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState(user?.phone || '');
-  const [village, setVillage] = useState(user?.village || 'Mijar');
-  const [town, setTown] = useState(user?.town || 'Moodbidri');
-  const [district, setDistrict] = useState(user?.district || 'Dakshina Kannada');
-  const [pincode, setPincode] = useState(user?.pincode || '574225');
+  const [village, setVillage] = useState(user?.village || '');
+  const [town, setTown] = useState(user?.town || '');
+  const [district, setDistrict] = useState(user?.district || '');
+  const [pincode, setPincode] = useState(user?.pincode || '');
   const [streetAddress, setStreetAddress] = useState(user?.streetAddress || user?.address || '');
   const [landmark, setLandmark] = useState(user?.landmark || '');
   const [userRole, setUserRole] = useState(user?.role || 'customer');
@@ -102,10 +102,10 @@ export const AuthModal = () => {
           setGmailAddress(user.email);
         }
         setPhone(user.phone || '');
-        setVillage(user.village || 'Mijar');
-        setTown(user.town || 'Moodbidri');
-        setDistrict(user.district || 'Dakshina Kannada');
-        setPincode(user.pincode || '574225');
+        setVillage(user.village || '');
+        setTown(user.town || '');
+        setDistrict(user.district || '');
+        setPincode(user.pincode || '');
         setStreetAddress(user.streetAddress || user.address || '');
         setLandmark(user.landmark || '');
         if (user.gpsLocation) setGpsData(user.gpsLocation);
@@ -157,23 +157,8 @@ export const AuthModal = () => {
 
       showToast(`📍 GPS Locked: ${geocoded.village || geocoded.town} (±${geocoded.accuracy}m)`, 'success');
     } catch (err) {
-      console.warn("GPS detection note:", err.message);
-      const fallbackGeo = {
-        lat: 13.0682,
-        lng: 74.9961,
-        accuracy: 15,
-        village: village || 'Mijar',
-        town: town || 'Moodbidri',
-        district: 'Dakshina Kannada',
-        state: 'Karnataka',
-        pincode: pincode || '574225',
-        streetAddress: streetAddress || 'Mijar Village Main Road',
-        formattedAddress: `${village || 'Mijar'}, ${town || 'Moodbidri'}, Karnataka - ${pincode || '574225'}`,
-        source: 'GPS_COORDINATE_ESTIMATE',
-        capturedAt: new Date().toISOString()
-      };
-      setGpsData(fallbackGeo);
-      showToast('📍 Calibrated coordinates for Moodbidri / Mijar loaded', 'info');
+      console.warn("GPS detection error:", err.message);
+      showToast('⚠️ Could not obtain GPS lock. Please enable browser location permissions or enter address manually.', 'error');
     } finally {
       setIsDetectingGPS(false);
     }
@@ -374,28 +359,17 @@ export const AuthModal = () => {
       phone: formattedPhone,
       streetAddress: streetAddress.trim(),
       address: fullFormattedAddress,
-      landmark: landmark.trim() || `Near ${village || town}`,
-      village: village.trim() || 'Mijar',
-      town: town.trim() || 'Moodbidri',
-      district: district.trim() || 'Dakshina Kannada',
-      pincode: pincode.trim() || '574225',
+      landmark: landmark.trim(),
+      village: village.trim(),
+      town: town.trim(),
+      district: district.trim(),
+      pincode: pincode.trim(),
       preferredLanguage: user?.preferredLanguage || 'en',
       role: userRole || 'customer',
       authProvider: 'google',
       photoURL: photoURL || user?.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name.trim())}&backgroundColor=059669,10b981,047857`,
       registeredAt: new Date().toISOString(),
-      gpsLocation: gpsData || {
-        lat: 13.0682,
-        lng: 74.9961,
-        accuracy: 12,
-        village: village.trim() || 'Mijar',
-        town: town.trim() || 'Moodbidri',
-        district: district.trim() || 'Dakshina Kannada',
-        pincode: pincode.trim() || '574225',
-        formattedAddress: fullFormattedAddress,
-        source: 'REGISTERED_GPS_VERIFIED',
-        capturedAt: new Date().toISOString()
-      }
+      gpsLocation: gpsData || null
     };
 
     updateUserProfile(loggedUser);
@@ -473,23 +447,18 @@ export const AuthModal = () => {
         uid,
         name: userName,
         email: sanitizedData.email,
-        phone: phone || '+91 9876543210',
-        village: village || 'Mijar',
-        town: town || 'Moodbidri',
-        district: district || 'Dakshina Kannada',
-        pincode: pincode || '574225',
-        address: streetAddress || `${village || 'Mijar'} Village, Moodbidri - ${pincode || '574225'}`,
-        landmark: landmark || 'Near Town Center',
+        phone: phone || '',
+        village: village || '',
+        town: town || '',
+        district: district || '',
+        pincode: pincode || '',
+        address: streetAddress || `${village ? `${village}, ` : ''}${town ? `${town}, ` : ''}${district || ''}`,
+        landmark: landmark || '',
         preferredLanguage: user?.preferredLanguage || 'en',
         role: userRole || 'customer',
         authProvider: 'email',
         photoURL: photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(userName)}`,
-        gpsLocation: gpsData || {
-          lat: 13.0682,
-          lng: 74.9961,
-          village: 'Mijar',
-          town: 'Moodbidri'
-        }
+        gpsLocation: gpsData || null
       };
 
       updateUserProfile(loggedUser);
@@ -551,7 +520,7 @@ export const AuthModal = () => {
         borderRadius: '24px',
         backgroundColor: '#ffffff',
         boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.35)',
-        border: '1.5px solid #d1fae5',
+        border: '1.5px solid #dbeafe',
         position: 'relative',
         boxSizing: 'border-box'
       }}>
@@ -580,14 +549,14 @@ export const AuthModal = () => {
             width: '52px',
             height: '52px',
             borderRadius: '18px',
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            background: 'linear-gradient(135deg, #2563eb 0%, #2563eb 100%)',
             color: '#ffffff',
             marginBottom: '10px',
-            boxShadow: '0 6px 18px rgba(16, 185, 129, 0.35)'
+            boxShadow: '0 6px 18px rgba(37, 99, 235, 0.35)'
           }}>
             <Sparkles size={26} />
           </div>
-          <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#064e3b', margin: '0 0 4px 0' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#0f172a', margin: '0 0 4px 0' }}>
             {viewState === 'registration' 
               ? '📝 Complete Your Registration' 
               : viewState === 'gmail-input' 
@@ -606,9 +575,9 @@ export const AuthModal = () => {
         {/* Notice Alert */}
         {noticeMessage && (
           <div style={{
-            backgroundColor: '#f0fdf4',
-            border: '1.5px solid #a7f3d0',
-            color: '#065f46',
+            backgroundColor: '#eff6ff',
+            border: '1.5px solid #bfdbfe',
+            color: '#1e40af',
             borderRadius: '12px',
             padding: '10px 14px',
             fontSize: '12.5px',
@@ -618,7 +587,7 @@ export const AuthModal = () => {
             alignItems: 'center',
             gap: '8px'
           }}>
-            <CheckCircle2 size={16} color="#059669" />
+            <CheckCircle2 size={16} color="#2563eb" />
             <span>{noticeMessage}</span>
           </div>
         )}
@@ -710,8 +679,8 @@ export const AuthModal = () => {
               marginBottom: '14px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                <Mail size={15} color="#059669" />
-                <span style={{ fontSize: '12px', fontWeight: '800', color: '#065f46' }}>
+                <Mail size={15} color="#2563eb" />
+                <span style={{ fontSize: '12px', fontWeight: '800', color: '#1e40af' }}>
                   Or enter your Gmail address directly:
                 </span>
               </div>
@@ -719,7 +688,7 @@ export const AuthModal = () => {
               <div style={{ display: 'flex', gap: '8px' }}>
                 <input
                   type="text"
-                  placeholder="e.g. jeevithgowdasr@gmail.com"
+                  placeholder="e.g. name@gmail.com"
                   value={gmailAddress}
                   onChange={(e) => setGmailAddress(e.target.value)}
                   style={{
@@ -757,7 +726,7 @@ export const AuthModal = () => {
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: '#059669',
+                    color: '#2563eb',
                     fontSize: '11px',
                     fontWeight: '700',
                     cursor: 'pointer',
@@ -828,12 +797,12 @@ export const AuthModal = () => {
                   }}
                   style={{
                     backgroundColor: '#ffffff',
-                    border: '1.5px solid #a7f3d0',
+                    border: '1.5px solid #bfdbfe',
                     borderRadius: '12px',
                     padding: '10px 8px',
                     fontSize: '12.5px',
                     fontWeight: '800',
-                    color: '#047857',
+                    color: '#1d4ed8',
                     cursor: 'pointer'
                   }}
                 >
@@ -891,8 +860,8 @@ export const AuthModal = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              backgroundColor: '#f0fdf4',
-              border: '1.5px solid #a7f3d0',
+              backgroundColor: '#eff6ff',
+              border: '1.5px solid #bfdbfe',
               borderRadius: '14px',
               padding: '10px 14px',
               marginBottom: '16px'
@@ -905,15 +874,15 @@ export const AuthModal = () => {
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                 </svg>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#047857', fontWeight: '800', display: 'block' }}>Verified Gmail</span>
-                  <span style={{ fontSize: '13px', color: '#064e3b', fontWeight: '800' }}>{gmailAddress || email}</span>
+                  <span style={{ fontSize: '11px', color: '#1d4ed8', fontWeight: '800', display: 'block' }}>Verified Gmail</span>
+                  <span style={{ fontSize: '13px', color: '#0f172a', fontWeight: '800' }}>{gmailAddress || email}</span>
                 </div>
               </div>
               <span style={{
                 fontSize: '11px',
                 fontWeight: '800',
-                backgroundColor: '#dcfce7',
-                color: '#15803d',
+                backgroundColor: '#eff6ff',
+                color: '#1d4ed8',
                 padding: '3px 8px',
                 borderRadius: '8px'
               }}>
@@ -926,7 +895,7 @@ export const AuthModal = () => {
               label="Full Name"
               name="reg_name"
               required
-              placeholder="e.g. Jeevith Gowda"
+              placeholder="e.g. Full Name"
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
@@ -964,7 +933,7 @@ export const AuthModal = () => {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Crosshair size={16} color="#059669" />
+                  <Crosshair size={16} color="#2563eb" />
                   <span style={{ fontSize: '12px', fontWeight: '800', color: '#0f172a' }}>
                     Live GPS & Village Location
                   </span>
@@ -976,7 +945,7 @@ export const AuthModal = () => {
                   style={{
                     padding: '6px 10px',
                     borderRadius: '8px',
-                    backgroundColor: '#059669',
+                    backgroundColor: '#2563eb',
                     color: '#ffffff',
                     border: 'none',
                     fontSize: '11px',
@@ -995,9 +964,9 @@ export const AuthModal = () => {
               {gpsData && (
                 <div style={{
                   fontSize: '11.5px',
-                  color: '#065f46',
-                  backgroundColor: '#f0fdf4',
-                  border: '1px solid #bbf7d0',
+                  color: '#1e40af',
+                  backgroundColor: '#eff6ff',
+                  border: '1px solid #bfdbfe',
                   borderRadius: '8px',
                   padding: '6px 10px',
                   marginBottom: '10px',
@@ -1005,7 +974,7 @@ export const AuthModal = () => {
                   alignItems: 'center',
                   gap: '6px'
                 }}>
-                  <MapPin size={13} color="#059669" />
+                  <MapPin size={13} color="#2563eb" />
                   <span>
                     GPS Locked: <strong>{gpsData.village || village}, {gpsData.town || town}</strong> (±{gpsData.accuracy || 10}m)
                   </span>
@@ -1152,18 +1121,18 @@ export const AuthModal = () => {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. jeevithgowdasr@gmail.com"
+                  placeholder="e.g. name@gmail.com"
                   value={gmailAddress}
                   onChange={(e) => setGmailAddress(e.target.value)}
                   style={{
                     width: '100%',
                     padding: '12px 14px 12px 42px',
                     borderRadius: '14px',
-                    border: '2px solid #10b981',
+                    border: '2px solid #2563eb',
                     fontSize: '14px',
                     fontWeight: '700',
                     outline: 'none',
-                    backgroundColor: '#f0fdf4',
+                    backgroundColor: '#eff6ff',
                     boxSizing: 'border-box'
                   }}
                   autoFocus
@@ -1298,7 +1267,7 @@ export const AuthModal = () => {
               <button
                 type="button"
                 onClick={() => setIsEmailRegister(!isEmailRegister)}
-                style={{ fontSize: '12.5px', color: '#059669', fontWeight: '800', cursor: 'pointer', background: 'none', border: 'none' }}
+                style={{ fontSize: '12.5px', color: '#2563eb', fontWeight: '800', cursor: 'pointer', background: 'none', border: 'none' }}
               >
                 {isEmailRegister ? 'Already have an account? Sign In' : 'New here? Create Account'}
               </button>
@@ -1317,7 +1286,7 @@ export const AuthModal = () => {
           fontSize: '11px',
           fontWeight: '600'
         }}>
-          <ShieldCheck size={14} color="#059669" />
+          <ShieldCheck size={14} color="#2563eb" />
           <span>256-Bit SSL Encrypted • Privacy Protected</span>
         </div>
       </div>

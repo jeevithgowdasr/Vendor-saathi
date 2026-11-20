@@ -62,82 +62,34 @@ export const NearbyVendorsView = () => {
   // Subscribe to Live Upcoming Schedules from Firestore
   useEffect(() => {
     const unsub = subscribeToUpcomingSchedules((schedulesList) => {
-      if (schedulesList && schedulesList.length > 0) {
-        setUpcomingSchedules(schedulesList);
-      }
+      setUpcomingSchedules(schedulesList || []);
     });
-
-    // Default demo schedules if no Firestore schedules yet
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
-
-    const dayAfter = new Date();
-    dayAfter.setDate(dayAfter.getDate() + 2);
-    const dayAfterStr = dayAfter.toISOString().split('T')[0];
-
-    setUpcomingSchedules([
-      {
-        id: 'sch_demo_01',
-        scheduleId: 'sch_demo_01',
-        vendorId: 'v1',
-        vendorName: 'Green Valley Fresh Produce',
-        vendorCategory: 'Vegetable',
-        date: tomorrowStr,
-        areaName: 'Vijayanagar, Moodbidri',
-        area: { areaName: 'Vijayanagar, Moodbidri', serviceRadiusKm: 2.0 },
-        expectedArrivalTime: `${tomorrowStr}T09:30:00.000Z`,
-        expectedDepartureTime: `${tomorrowStr}T11:00:00.000Z`,
-        availableProductIds: ['p1', 'p2', 'p4'],
-        status: 'scheduled',
-        rating: 4.8,
-        ratingCount: 24
-      },
-      {
-        id: 'sch_demo_02',
-        scheduleId: 'sch_demo_02',
-        vendorId: 'v2',
-        vendorName: 'Basappa Fresh Veggies & Fruits',
-        vendorCategory: 'Fruit',
-        date: tomorrowStr,
-        areaName: 'Alva’s Campus Gate, Moodbidri',
-        area: { areaName: 'Alva’s Campus Gate, Moodbidri', serviceRadiusKm: 1.5 },
-        expectedArrivalTime: `${tomorrowStr}T16:00:00.000Z`,
-        expectedDepartureTime: `${tomorrowStr}T18:00:00.000Z`,
-        availableProductIds: ['p5', 'p6', 'p7'],
-        status: 'scheduled',
-        rating: 4.6,
-        ratingCount: 18
-      },
-      {
-        id: 'sch_demo_03',
-        scheduleId: 'sch_demo_03',
-        vendorId: 'v1',
-        vendorName: 'Green Valley Fresh Produce',
-        vendorCategory: 'Dairy',
-        date: dayAfterStr,
-        areaName: 'Mijar Central Market, Mijar',
-        area: { areaName: 'Mijar Central Market, Mijar', serviceRadiusKm: 2.5 },
-        expectedArrivalTime: `${dayAfterStr}T08:00:00.000Z`,
-        expectedDepartureTime: `${dayAfterStr}T09:30:00.000Z`,
-        availableProductIds: ['p1', 'p3'],
-        status: 'scheduled',
-        rating: 4.8,
-        ratingCount: 24
-      }
-    ]);
 
     return () => {
       if (typeof unsub === 'function') unsub();
     };
   }, []);
 
-  // Filtered Live Stores
-  const filteredVendors = (vendors || []).filter(v =>
-    v.name.toLowerCase().includes(query.toLowerCase()) ||
-    v.location.toLowerCase().includes(query.toLowerCase()) ||
-    v.owner.toLowerCase().includes(query.toLowerCase())
-  );
+  // Filtered Live Stores (Only genuine registered partners)
+  const filteredVendors = (vendors || [])
+    .filter(v =>
+      v &&
+      v.id !== 'v1' &&
+      v.id !== 'v2' &&
+      v.id !== 'v3' &&
+      v.id !== 'v4' &&
+      !v.name?.toLowerCase().includes('green valley') &&
+      !v.name?.toLowerCase().includes('basappa') &&
+      !v.name?.toLowerCase().includes('kaveri') &&
+      !v.name?.toLowerCase().includes('suresh provision') &&
+      !v.name?.toLowerCase().includes('mahesh kirana') &&
+      !v.owner?.toLowerCase().includes('suresh kumar')
+    )
+    .filter(v =>
+      (v.name || '').toLowerCase().includes(query.toLowerCase()) ||
+      (v.location || '').toLowerCase().includes(query.toLowerCase()) ||
+      (v.owner || '').toLowerCase().includes(query.toLowerCase())
+    );
 
   // Filtered Upcoming Schedules
   const filteredSchedules = upcomingSchedules.filter(s => {
@@ -237,8 +189,8 @@ export const NearbyVendorsView = () => {
         customerId: user.uid || `cust_${Date.now()}`,
         customerName: user.name || 'Customer',
         customerPhone: user.phone || '+91 98765 43210',
-        vendorId: preOrderSchedule.vendorId || 'v1',
-        vendorName: preOrderSchedule.vendorName || 'Green Valley Fresh Produce',
+        vendorId: preOrderSchedule.vendorId || '',
+        vendorName: preOrderSchedule.vendorName || 'Partner Store',
         scheduleId: preOrderSchedule.id || preOrderSchedule.scheduleId,
         items: itemsList,
         totalAmount,
@@ -273,7 +225,7 @@ export const NearbyVendorsView = () => {
           onClick={() => navigateTo('home')}
           style={{
             fontSize: '13px',
-            color: '#059669',
+            color: '#2563eb',
             fontWeight: '700',
             display: 'inline-flex',
             alignItems: 'center',
@@ -281,8 +233,8 @@ export const NearbyVendorsView = () => {
             marginBottom: '16px',
             padding: '6px 14px',
             borderRadius: '12px',
-            backgroundColor: '#ecfdf5',
-            border: '1px solid #a7f3d0',
+            backgroundColor: '#eff6ff',
+            border: '1px solid #bfdbfe',
             cursor: 'pointer'
           }}
         >
@@ -291,7 +243,7 @@ export const NearbyVendorsView = () => {
 
         <div style={{ display: 'block', marginBottom: '8px' }}>
           <span className="badge badge-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-            <Store size={13} color="#059669" /> ADVANCE VISIT SCHEDULING & PRE-ORDERS
+            <Store size={13} color="#2563eb" /> ADVANCE VISIT SCHEDULING & PRE-ORDERS
           </span>
         </div>
 
@@ -304,19 +256,19 @@ export const NearbyVendorsView = () => {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            backgroundColor: '#f0fdf4',
-            border: '1px solid #bbf7d0',
+            backgroundColor: '#eff6ff',
+            border: '1px solid #bfdbfe',
             padding: '6px 16px',
             borderRadius: '20px',
             fontSize: '13px',
             fontWeight: '700',
-            color: '#065f46',
+            color: '#1e40af',
             marginTop: '6px',
             cursor: 'pointer'
           }}
           onClick={() => setIsLocationModalOpen(true)}
         >
-          <Navigation size={14} color="#059669" />
+          <Navigation size={14} color="#2563eb" />
           <span>Showing visits scheduled for <strong>{currentLocation.name}</strong></span>
         </div>
       </div>
@@ -341,17 +293,17 @@ export const NearbyVendorsView = () => {
             gap: '8px',
             padding: '12px 24px',
             borderRadius: '20px',
-            border: activeTab === 'schedules' ? '2px solid #10b981' : '1px solid #e2e8f0',
-            backgroundColor: activeTab === 'schedules' ? '#ecfdf5' : '#ffffff',
-            color: activeTab === 'schedules' ? '#065f46' : '#64748b',
+            border: activeTab === 'schedules' ? '2px solid #2563eb' : '1px solid #e2e8f0',
+            backgroundColor: activeTab === 'schedules' ? '#eff6ff' : '#ffffff',
+            color: activeTab === 'schedules' ? '#1e40af' : '#64748b',
             fontWeight: '800',
             fontSize: '14.5px',
             cursor: 'pointer',
-            boxShadow: activeTab === 'schedules' ? '0 4px 14px rgba(16, 185, 129, 0.2)' : 'none',
+            boxShadow: activeTab === 'schedules' ? '0 4px 14px rgba(37, 99, 235, 0.2)' : 'none',
             transition: 'all 0.2s ease'
           }}
         >
-          <Calendar size={18} color={activeTab === 'schedules' ? '#059669' : '#64748b'} />
+          <Calendar size={18} color={activeTab === 'schedules' ? '#2563eb' : '#64748b'} />
           <span>📅 Upcoming Scheduled Visits ({upcomingSchedules.length})</span>
         </button>
 
@@ -363,17 +315,17 @@ export const NearbyVendorsView = () => {
             gap: '8px',
             padding: '12px 24px',
             borderRadius: '20px',
-            border: activeTab === 'stores' ? '2px solid #10b981' : '1px solid #e2e8f0',
-            backgroundColor: activeTab === 'stores' ? '#ecfdf5' : '#ffffff',
-            color: activeTab === 'stores' ? '#065f46' : '#64748b',
+            border: activeTab === 'stores' ? '2px solid #2563eb' : '1px solid #e2e8f0',
+            backgroundColor: activeTab === 'stores' ? '#eff6ff' : '#ffffff',
+            color: activeTab === 'stores' ? '#1e40af' : '#64748b',
             fontWeight: '800',
             fontSize: '14.5px',
             cursor: 'pointer',
-            boxShadow: activeTab === 'stores' ? '0 4px 14px rgba(16, 185, 129, 0.2)' : 'none',
+            boxShadow: activeTab === 'stores' ? '0 4px 14px rgba(37, 99, 235, 0.2)' : 'none',
             transition: 'all 0.2s ease'
           }}
         >
-          <Store size={18} color={activeTab === 'stores' ? '#059669' : '#64748b'} />
+          <Store size={18} color={activeTab === 'stores' ? '#2563eb' : '#64748b'} />
           <span>🏪 Live Open Stores ({filteredVendors.length})</span>
         </button>
       </div>
@@ -499,8 +451,8 @@ export const NearbyVendorsView = () => {
                       {/* Top Header Card Info */}
                       <div style={{
                         padding: '20px 24px',
-                        background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
-                        borderBottom: '1px solid #d1fae5'
+                        background: 'linear-gradient(135deg, #eff6ff 0%, #eff6ff 100%)',
+                        borderBottom: '1px solid #dbeafe'
                       }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                           <div>
@@ -531,12 +483,12 @@ export const NearbyVendorsView = () => {
 
                         {/* Visit Timing & Area Pill */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: '#065f46', fontWeight: '700' }}>
-                            <MapPin size={15} color="#059669" />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: '#1e40af', fontWeight: '700' }}>
+                            <MapPin size={15} color="#2563eb" />
                             <span>Visiting <strong>{schedule.areaName || schedule.area?.areaName}</strong></span>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: '#065f46', fontWeight: '700' }}>
-                            <Clock size={15} color="#059669" />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '13px', color: '#1e40af', fontWeight: '700' }}>
+                            <Clock size={15} color="#2563eb" />
                             <span>Arrival Window: <strong>{arrivalFormatted} – {departureFormatted}</strong> ({schedule.date})</span>
                           </div>
                         </div>
@@ -574,7 +526,7 @@ export const NearbyVendorsView = () => {
                                 </div>
                               </div>
 
-                              <span style={{ fontSize: '11px', color: '#059669', fontWeight: '700', backgroundColor: '#ecfdf5', padding: '2px 8px', borderRadius: '8px' }}>
+                              <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: '700', backgroundColor: '#eff6ff', padding: '2px 8px', borderRadius: '8px' }}>
                                 Fresh Farm Stock
                               </span>
                             </div>
@@ -595,13 +547,13 @@ export const NearbyVendorsView = () => {
                           gap: '8px',
                           padding: '13px',
                           borderRadius: '16px',
-                          backgroundColor: '#059669',
+                          backgroundColor: '#2563eb',
                           color: '#ffffff',
                           fontWeight: '800',
                           fontSize: '14px',
                           border: 'none',
                           cursor: 'pointer',
-                          boxShadow: '0 4px 14px rgba(5, 150, 105, 0.3)',
+                          boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
                           transition: 'all 0.2s ease'
                         }}
                       >
@@ -621,12 +573,21 @@ export const NearbyVendorsView = () => {
           VIEW 2: LIVE OPEN STORES
           ============================================================ */}
       {activeTab === 'stores' && (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '24px'
-        }}>
-          {filteredVendors.map(vendor => {
+        filteredVendors.length === 0 ? (
+          <div className="vs-card" style={{ padding: '60px 20px', textAlign: 'center', backgroundColor: '#ffffff', borderRadius: '24px' }}>
+            <Store size={48} color="#94a3b8" style={{ margin: '0 auto 12px auto' }} />
+            <strong style={{ fontSize: '18px', color: '#334155', display: 'block' }}>No Registered Partners Found</strong>
+            <p style={{ fontSize: '13.5px', color: '#64748b', marginTop: '6px' }}>
+              Only verified and registered partner stores appear here. When new partners register, they will be listed automatically.
+            </p>
+          </div>
+        ) : (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gap: '24px'
+          }}>
+            {filteredVendors.map(vendor => {
             const distInfo = getFormattedDistanceAndETA(currentLocation, vendor.coordinates || vendor);
             return (
               <div
@@ -653,7 +614,7 @@ export const NearbyVendorsView = () => {
                       borderRadius: '16px',
                       fontSize: '12px',
                       fontWeight: '800',
-                      color: vendor.status === 'offline' ? '#b91c1c' : '#065f46',
+                      color: vendor.status === 'offline' ? '#b91c1c' : '#1e40af',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px'
@@ -662,7 +623,7 @@ export const NearbyVendorsView = () => {
                         width: '7px',
                         height: '7px',
                         borderRadius: '50%',
-                        backgroundColor: vendor.status === 'offline' ? '#ef4444' : vendor.status === 'busy' ? '#f59e0b' : '#10b981'
+                        backgroundColor: vendor.status === 'offline' ? '#ef4444' : vendor.status === 'busy' ? '#f59e0b' : '#2563eb'
                       }} />
                       <span>{vendor.statusLabel || (vendor.isOpen ? 'Open Now' : 'Closed')}</span>
                     </div>
@@ -676,12 +637,12 @@ export const NearbyVendorsView = () => {
                       borderRadius: '16px',
                       fontSize: '12px',
                       fontWeight: '700',
-                      color: '#34d399',
+                      color: '#38bdf8',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '5px'
                     }}>
-                      <Clock size={13} color="#34d399" /> {distInfo.formattedETA}
+                      <Clock size={13} color="#38bdf8" /> {distInfo.formattedETA}
                     </span>
                   </div>
 
@@ -718,8 +679,8 @@ export const NearbyVendorsView = () => {
                       <span
                         key={i}
                         style={{
-                          backgroundColor: '#ecfdf5',
-                          color: '#059669',
+                          backgroundColor: '#eff6ff',
+                          color: '#2563eb',
                           fontSize: '11.5px',
                           fontWeight: '700',
                           padding: '4px 10px',
@@ -754,6 +715,7 @@ export const NearbyVendorsView = () => {
             );
           })}
         </div>
+        )
       )}
 
       {/* ============================================================
@@ -837,8 +799,8 @@ export const NearbyVendorsView = () => {
                         justifyContent: 'space-between',
                         padding: '12px 14px',
                         borderRadius: '16px',
-                        border: qty > 0 ? '1.5px solid #10b981' : '1px solid #e2e8f0',
-                        backgroundColor: qty > 0 ? '#f0fdf4' : '#ffffff'
+                        border: qty > 0 ? '1.5px solid #2563eb' : '1px solid #e2e8f0',
+                        backgroundColor: qty > 0 ? '#eff6ff' : '#ffffff'
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -849,7 +811,7 @@ export const NearbyVendorsView = () => {
                         />
                         <div>
                           <strong style={{ fontSize: '14px', color: '#0f172a', display: 'block' }}>{product.name}</strong>
-                          <span style={{ fontSize: '12px', color: '#059669', fontWeight: '800' }}>
+                          <span style={{ fontSize: '12px', color: '#2563eb', fontWeight: '800' }}>
                             ₹{product.price} <span style={{ color: '#64748b', fontWeight: '500' }}>/ {product.unit}</span>
                           </span>
                         </div>
@@ -885,7 +847,7 @@ export const NearbyVendorsView = () => {
                             width: '30px',
                             height: '30px',
                             borderRadius: '8px',
-                            backgroundColor: '#10b981',
+                            backgroundColor: '#2563eb',
                             border: 'none',
                             display: 'flex',
                             alignItems: 'center',
@@ -917,11 +879,11 @@ export const NearbyVendorsView = () => {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: '#64748b', marginBottom: '6px' }}>
                 <span>Payment</span>
-                <span style={{ fontWeight: '700', color: '#059669' }}>UPI or Pay on Arrival</span>
+                <span style={{ fontWeight: '700', color: '#2563eb' }}>UPI or Pay on Arrival</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #e2e8f0', paddingTop: '10px', marginTop: '10px' }}>
                 <strong style={{ fontSize: '15px', color: '#0f172a' }}>Pre-Order Total</strong>
-                <strong style={{ fontSize: '20px', color: '#059669', fontWeight: '900' }}>₹{calculatePreOrderTotal()}</strong>
+                <strong style={{ fontSize: '20px', color: '#2563eb', fontWeight: '900' }}>₹{calculatePreOrderTotal()}</strong>
               </div>
             </div>
 
@@ -933,13 +895,13 @@ export const NearbyVendorsView = () => {
                 width: '100%',
                 padding: '14px',
                 borderRadius: '16px',
-                backgroundColor: calculatePreOrderTotal() > 0 ? '#059669' : '#cbd5e1',
+                backgroundColor: calculatePreOrderTotal() > 0 ? '#2563eb' : '#cbd5e1',
                 color: '#ffffff',
                 fontWeight: '900',
                 fontSize: '15px',
                 border: 'none',
                 cursor: calculatePreOrderTotal() > 0 ? 'pointer' : 'not-allowed',
-                boxShadow: calculatePreOrderTotal() > 0 ? '0 6px 20px rgba(5, 150, 105, 0.35)' : 'none',
+                boxShadow: calculatePreOrderTotal() > 0 ? '0 6px 20px rgba(37, 99, 235, 0.35)' : 'none',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { getLocalizedProductName, getLocalizedUnit } from '../utils/productLocalization';
 import { ShoppingBag, Trash2, Plus, Minus, ArrowRight, Tag, ArrowLeft, Truck, Sparkles, ShieldCheck } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export const CartView = () => {
-  const { cart, updateCartQuantity, removeFromCart, navigateTo, showToast } = useApp();
+  const { cart, updateCartQuantity, removeFromCart, navigateTo, showToast, t, selectedLanguage } = useApp();
   const [couponCode, setCouponCode] = useState('');
   const [discountAmount, setDiscountAmount] = useState(0);
 
@@ -56,27 +57,27 @@ export const CartView = () => {
         onClick={() => navigateTo('home')}
         style={{ 
           fontSize: '13.5px', 
-          color: '#059669', 
+          color: '#2563eb', 
           fontWeight: '800', 
           display: 'inline-flex', 
           alignItems: 'center', 
           gap: '6px', 
           marginBottom: '20px',
-          backgroundColor: '#ecfdf5',
+          backgroundColor: '#eff6ff',
           padding: '6px 14px',
           borderRadius: '12px',
-          border: '1px solid #a7f3d0'
+          border: '1px solid #bfdbfe'
         }}
       >
-        <ArrowLeft size={16} /> Continue Shopping
+        <ArrowLeft size={16} /> {t('checkout.backToCart', 'Continue Shopping')}
       </button>
 
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a', letterSpacing: '-0.025em' }}>
-          🛍️ My Shopping Cart ({cart.length} {cart.length === 1 ? 'item' : 'items'})
+          🛍️ {t('cart.title', 'My Shopping Cart')} ({cart.length} {cart.length === 1 ? 'item' : 'items'})
         </h1>
         <p style={{ fontSize: '14px', color: '#64748b', marginTop: '4px' }}>
-          Review your handpicked local village items before express delivery.
+          {t('cart.emptySubtitle', 'Review your handpicked local village items before express delivery.')}
         </p>
       </div>
 
@@ -86,8 +87,8 @@ export const CartView = () => {
             width: '80px',
             height: '80px',
             borderRadius: '50%',
-            backgroundColor: '#f0fdf4',
-            color: '#10b981',
+            backgroundColor: '#eff6ff',
+            color: '#2563eb',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -95,16 +96,16 @@ export const CartView = () => {
           }}>
             <ShoppingBag size={40} />
           </div>
-          <h2 style={{ fontSize: '22px', fontWeight: '900', color: '#0f172a' }}>Your cart is empty</h2>
+          <h2 style={{ fontSize: '22px', fontWeight: '900', color: '#0f172a' }}>{t('cart.emptyTitle', 'Your cart is empty')}</h2>
           <p style={{ fontSize: '14px', color: '#64748b', marginTop: '6px', maxWidth: '420px', margin: '6px auto 0 auto' }}>
-            Add fresh vegetables, fruits, and daily essentials from nearby trusted local stores.
+            {t('cart.emptySubtitle', 'Add fresh vegetables, fruits, and daily essentials from nearby trusted local stores.')}
           </p>
           <button 
             onClick={() => navigateTo('categories')}
             className="btn-primary"
             style={{ marginTop: '24px', borderRadius: '16px', padding: '12px 28px', fontSize: '15px' }}
           >
-            <span>Start Shopping Now</span>
+            <span>{t('cart.exploreProduce', 'Start Shopping Now')}</span>
             <ArrowRight size={16} />
           </button>
         </div>
@@ -114,23 +115,23 @@ export const CartView = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* Free Delivery Meter Card */}
             <div className="vs-card" style={{
-              background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
+              background: 'linear-gradient(135deg, #eff6ff 0%, #eff6ff 100%)',
               padding: '16px 20px',
               borderRadius: '20px',
-              border: '1.5px solid #bbf7d0'
+              border: '1.5px solid #bfdbfe'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700', color: '#065f46' }}>
-                  <Truck size={18} className="animate-truck" color="#059669" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '700', color: '#1e40af' }}>
+                  <Truck size={18} className="animate-truck" color="#2563eb" />
                   <span>
                     {isFreeDelivery ? (
-                      <strong style={{ color: '#059669' }}>🎉 You unlocked FREE Express Delivery!</strong>
+                      <strong style={{ color: '#2563eb' }}>{t('cart.unlockedFreeDelivery', '🎉 You unlocked FREE Express Delivery!')}</strong>
                     ) : (
-                      <span>Add <strong style={{ color: '#059669' }}>₹{amountToFreeDelivery}</strong> more for <strong>FREE Delivery</strong></span>
+                      <span>{t('cart.addMoreForFreePrefix', 'Add')} <strong style={{ color: '#2563eb' }}>₹{amountToFreeDelivery}</strong> {t('cart.addMoreForFreeSuffix', 'more for FREE Delivery')}</span>
                     )}
                   </span>
                 </div>
-                <span style={{ fontSize: '12px', fontWeight: '800', color: '#059669' }}>
+                <span style={{ fontSize: '12px', fontWeight: '800', color: '#2563eb' }}>
                   {progressPercent}%
                 </span>
               </div>
@@ -138,21 +139,24 @@ export const CartView = () => {
               <div style={{
                 width: '100%',
                 height: '8px',
-                backgroundColor: '#d1fae5',
+                backgroundColor: '#dbeafe',
                 borderRadius: '999px',
                 overflow: 'hidden'
               }}>
                 <div style={{
                   height: '100%',
                   width: `${progressPercent}%`,
-                  background: 'linear-gradient(90deg, #10b981, #059669)',
+                  background: 'linear-gradient(90deg, #2563eb, #2563eb)',
                   borderRadius: '999px',
                   transition: 'width 0.4s ease'
                 }} />
               </div>
             </div>
 
-            {cart.map(({ product, quantity }) => (
+            {cart.map(({ product, quantity }) => {
+              const prodName = getLocalizedProductName(product, selectedLanguage);
+              const prodUnit = getLocalizedUnit(product.unit, selectedLanguage);
+              return (
               <div
                 key={product.id}
                 className="vs-card"
@@ -167,7 +171,7 @@ export const CartView = () => {
               >
                 <img 
                   src={product.image} 
-                  alt={product.name} 
+                  alt={prodName} 
                   onClick={() => navigateTo('product-detail', { product })}
                   style={{ width: '84px', height: '84px', borderRadius: '16px', objectFit: 'cover', flexShrink: 0, cursor: 'pointer' }} 
                 />
@@ -177,7 +181,7 @@ export const CartView = () => {
                       onClick={() => navigateTo('product-detail', { product })}
                       style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', lineHeight: 1.2, cursor: 'pointer' }}
                     >
-                      {product.name}
+                      {prodName}
                     </h3>
                     <button 
                       onClick={() => removeFromCart(product.id)} 
@@ -190,11 +194,11 @@ export const CartView = () => {
                     </button>
                   </div>
                   <span style={{ fontSize: '12px', color: '#64748b', display: 'block', marginTop: '2px' }}>
-                    ₹{product.price} / {product.unit} • Store: <strong>{product.vendorName}</strong>
+                    ₹{product.price} / {prodUnit}{product.vendorName ? <> • Store: <strong>{product.vendorName}</strong></> : null}
                   </span>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px' }}>
-                    <strong style={{ fontSize: '17px', fontWeight: '900', color: '#059669' }}>
+                    <strong style={{ fontSize: '17px', fontWeight: '900', color: '#2563eb' }}>
                       ₹{product.price * quantity}
                     </strong>
                     
@@ -202,32 +206,32 @@ export const CartView = () => {
                       display: 'flex', 
                       alignItems: 'center', 
                       gap: '10px', 
-                      backgroundColor: '#f0fdf4', 
-                      border: '1.5px solid #a7f3d0', 
+                      backgroundColor: '#eff6ff', 
+                      border: '1.5px solid #bfdbfe', 
                       padding: '4px 10px', 
                       borderRadius: '10px' 
                     }}>
-                      <button onClick={() => updateCartQuantity(product.id, quantity - 1)} style={{ color: '#059669', display: 'flex', alignItems: 'center' }}>
+                      <button onClick={() => updateCartQuantity(product.id, quantity - 1)} style={{ color: '#2563eb', display: 'flex', alignItems: 'center' }}>
                         <Minus size={15} />
                       </button>
-                      <span style={{ fontWeight: '800', color: '#065f46', fontSize: '14px', minWidth: '18px', textAlign: 'center' }}>
+                      <span style={{ fontWeight: '800', color: '#1e40af', fontSize: '14px', minWidth: '18px', textAlign: 'center' }}>
                         {quantity}
                       </span>
-                      <button onClick={() => updateCartQuantity(product.id, quantity + 1)} style={{ color: '#059669', display: 'flex', alignItems: 'center' }}>
+                      <button onClick={() => updateCartQuantity(product.id, quantity + 1)} style={{ color: '#2563eb', display: 'flex', alignItems: 'center' }}>
                         <Plus size={15} />
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
-            ))}
+            );})}
           </div>
 
           {/* Pricing Order Summary */}
           <div>
             <div className="vs-card" style={{ padding: '26px', borderRadius: '24px', backgroundColor: '#ffffff', position: 'sticky', top: '90px' }}>
               <h3 style={{ fontSize: '18px', fontWeight: '900', color: '#0f172a', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #e2e8f0' }}>
-                Order Summary
+                {t('checkout.orderSummary', 'Order Summary')}
               </h3>
 
               <form onSubmit={handleApplyCoupon} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
@@ -257,7 +261,7 @@ export const CartView = () => {
                   type="button"
                   onClick={() => navigateTo('offers')}
                   style={{
-                    color: '#059669',
+                    color: '#2563eb',
                     fontSize: '12px',
                     fontWeight: '800',
                     background: 'none',
@@ -274,15 +278,15 @@ export const CartView = () => {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '14px', color: '#475569', marginBottom: '22px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Subtotal</span>
+                  <span>{t('cart.itemsSubtotal', 'Subtotal')}</span>
                   <span style={{ fontWeight: '700', color: '#0f172a' }}>₹{subtotal}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Delivery Fee {subtotal >= freeDeliveryThreshold && '(FREE above ₹300)'}</span>
-                  <span>{deliveryFee === 0 ? <strong style={{ color: '#059669' }}>FREE</strong> : `₹${deliveryFee}`}</span>
+                  <span>{t('cart.deliveryFee', 'Delivery Fee')} {subtotal >= freeDeliveryThreshold && '(FREE above ₹300)'}</span>
+                  <span>{deliveryFee === 0 ? <strong style={{ color: '#2563eb' }}>{t('cart.free', 'FREE')}</strong> : `₹${deliveryFee}`}</span>
                 </div>
                 {discountAmount > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#059669', fontWeight: '700' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2563eb', fontWeight: '700' }}>
                     <span>Discount ({couponCode.toUpperCase() || 'Coupon'})</span>
                     <span>-₹{discountAmount}</span>
                   </div>
@@ -294,10 +298,10 @@ export const CartView = () => {
                   borderTop: '1px solid #e2e8f0', 
                   fontSize: '20px', 
                   fontWeight: '900', 
-                  color: '#064e3b' 
+                  color: '#0f172a' 
                 }}>
-                  <span>Total Amount</span>
-                  <span style={{ color: '#059669' }}>₹{total}</span>
+                  <span>{t('cart.grandTotal', 'Total Amount')}</span>
+                  <span style={{ color: '#2563eb' }}>₹{total}</span>
                 </div>
               </div>
 
@@ -306,13 +310,13 @@ export const CartView = () => {
                 className="btn-primary"
                 style={{ width: '100%', padding: '15px', borderRadius: '16px', fontSize: '16px', letterSpacing: '0.01em' }}
               >
-                <span>Proceed to Checkout</span>
+                <span>{t('cart.checkoutBtn', 'Proceed to Checkout')}</span>
                 <ArrowRight size={18} />
               </button>
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px', color: '#64748b', marginTop: '14px' }}>
-                <ShieldCheck size={16} color="#059669" />
-                <span>Express 20-Min Rural Delivery Guaranteed</span>
+                <ShieldCheck size={16} color="#2563eb" />
+                <span>{t('checkout.secureGuarantee', 'Express 20-Min Rural Delivery Guaranteed')}</span>
               </div>
             </div>
           </div>

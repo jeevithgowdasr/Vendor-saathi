@@ -254,8 +254,8 @@ export const ProfileView = () => {
           width: '72px',
           height: '72px',
           borderRadius: '50%',
-          backgroundColor: '#ecfdf5',
-          color: '#059669',
+          backgroundColor: '#eff6ff',
+          color: '#2563eb',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -317,8 +317,8 @@ export const ProfileView = () => {
                       height: '76px',
                       borderRadius: '50%',
                       objectFit: 'cover',
-                      border: '3.5px solid #10b981',
-                      boxShadow: '0 8px 20px rgba(16, 185, 129, 0.25)'
+                      border: '3.5px solid #2563eb',
+                      boxShadow: '0 8px 20px rgba(37, 99, 235, 0.25)'
                     }}
                   />
                 ) : (
@@ -326,14 +326,14 @@ export const ProfileView = () => {
                     width: '76px',
                     height: '76px',
                     borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    background: 'linear-gradient(135deg, #2563eb 0%, #2563eb 100%)',
                     color: '#ffffff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '32px',
                     fontWeight: '900',
-                    boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)'
+                    boxShadow: '0 8px 24px rgba(37, 99, 235, 0.35)'
                   }}>
                     {user.name ? user.name.charAt(0).toUpperCase() : 'B'}
                   </div>
@@ -351,7 +351,7 @@ export const ProfileView = () => {
                   <span style={{ fontSize: '13.5px', color: '#64748b', display: 'block', marginTop: '3px' }}>
                     {user.email || (user.phone ? `${user.phone}@vendorsaathi.com` : 'No email linked')}
                   </span>
-                  <span style={{ fontSize: '13.5px', color: '#059669', fontWeight: '800', display: 'block', marginTop: '2px' }}>
+                  <span style={{ fontSize: '13.5px', color: '#2563eb', fontWeight: '800', display: 'block', marginTop: '2px' }}>
                     📞 {user.phone || 'No phone registered'}
                   </span>
                 </div>
@@ -369,8 +369,8 @@ export const ProfileView = () => {
             {/* LIVE GPS VERIFIED TELEMETRY CARD */}
             {user.gpsLocation && (
               <div style={{
-                background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
-                border: '1.5px solid #a7f3d0',
+                background: 'linear-gradient(135deg, #eff6ff 0%, #eff6ff 100%)',
+                border: '1.5px solid #bfdbfe',
                 borderRadius: '20px',
                 padding: '16px 20px',
                 marginBottom: '18px',
@@ -385,25 +385,25 @@ export const ProfileView = () => {
                     width: '38px',
                     height: '38px',
                     borderRadius: '12px',
-                    backgroundColor: '#10b981',
+                    backgroundColor: '#2563eb',
                     color: '#ffffff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
                   }}>
                     <Crosshair size={20} />
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <strong style={{ fontSize: '14px', color: '#064e3b' }}>
+                      <strong style={{ fontSize: '14px', color: '#0f172a' }}>
                         Live GPS Coordinates Saved
                       </strong>
                       <span className="badge badge-success" style={{ fontSize: '10px', padding: '2px 7px' }}>
                         Locked
                       </span>
                     </div>
-                    <span style={{ fontSize: '12px', color: '#047857', fontWeight: '700', display: 'block', marginTop: '2px' }}>
+                    <span style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: '700', display: 'block', marginTop: '2px' }}>
                       🛰️ {user.gpsLocation.lat || '13.0682'}° N, {user.gpsLocation.lng || '74.9961'}° E • Radius: ±{user.gpsLocation.accuracy || 10}m
                     </span>
                   </div>
@@ -413,8 +413,8 @@ export const ProfileView = () => {
                   onClick={handleOpenEdit}
                   style={{
                     backgroundColor: '#ffffff',
-                    border: '1px solid #a7f3d0',
-                    color: '#065f46',
+                    border: '1px solid #bfdbfe',
+                    color: '#1e40af',
                     padding: '6px 12px',
                     borderRadius: '10px',
                     fontSize: '11.5px',
@@ -450,7 +450,7 @@ export const ProfileView = () => {
               <div>
                 <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Account Role & Status</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                  <strong style={{ color: user.role === 'vendor' ? '#2563eb' : '#059669', fontSize: '14px' }}>
+                  <strong style={{ color: user.role === 'vendor' ? '#2563eb' : '#2563eb', fontSize: '14px' }}>
                     {user.role === 'vendor' ? '🏪 Vendor Partner' : '🛒 Customer'}
                   </strong>
                   <span className="badge badge-success" style={{ fontSize: '10px', padding: '2px 6px' }}>
@@ -507,7 +507,7 @@ export const ProfileView = () => {
                       <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Preferred Localities</span>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
                         {user.preferredAreas.map(area => (
-                          <span key={area} style={{ backgroundColor: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '3px 8px', borderRadius: '12px', fontSize: '11.5px', fontWeight: '700' }}>
+                          <span key={area} style={{ backgroundColor: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', padding: '3px 8px', borderRadius: '12px', fontSize: '11.5px', fontWeight: '700' }}>
                             📍 {area}
                           </span>
                         ))}
@@ -525,7 +525,7 @@ export const ProfileView = () => {
                   {user.address || 'Near Alva’s Campus Entrance, Mijar Village, Moodbidri - 574225'}
                 </strong>
                 {user.landmark && (
-                  <span style={{ fontSize: '12px', color: '#059669', display: 'block', marginTop: '2px', fontWeight: '600' }}>
+                  <span style={{ fontSize: '12px', color: '#2563eb', display: 'block', marginTop: '2px', fontWeight: '600' }}>
                     Landmark: {user.landmark}
                   </span>
                 )}
@@ -538,23 +538,23 @@ export const ProfileView = () => {
               gridTemplateColumns: '1fr 1fr 1fr',
               gap: '12px',
               marginTop: '18px',
-              backgroundColor: '#f0fdf4',
+              backgroundColor: '#eff6ff',
               padding: '16px',
               borderRadius: '18px',
-              border: '1px solid #d1fae5',
+              border: '1px solid #dbeafe',
               textAlign: 'center'
             }}>
               <div>
-                <strong style={{ fontSize: '20px', fontWeight: '900', color: '#059669', display: 'block' }}>
+                <strong style={{ fontSize: '20px', fontWeight: '900', color: '#2563eb', display: 'block' }}>
                   {orders.length}
                 </strong>
-                <span style={{ fontSize: '11.5px', color: '#065f46', fontWeight: '700' }}>Orders</span>
+                <span style={{ fontSize: '11.5px', color: '#1e40af', fontWeight: '700' }}>Orders</span>
               </div>
-              <div style={{ borderLeft: '1px solid #a7f3d0', borderRight: '1px solid #a7f3d0' }}>
-                <strong style={{ fontSize: '20px', fontWeight: '900', color: '#059669', display: 'block' }}>
+              <div style={{ borderLeft: '1px solid #bfdbfe', borderRight: '1px solid #bfdbfe' }}>
+                <strong style={{ fontSize: '20px', fontWeight: '900', color: '#2563eb', display: 'block' }}>
                   ₹420
                 </strong>
-                <span style={{ fontSize: '11.5px', color: '#065f46', fontWeight: '700' }}>Saved</span>
+                <span style={{ fontSize: '11.5px', color: '#1e40af', fontWeight: '700' }}>Saved</span>
               </div>
               <div>
                 <strong style={{ fontSize: '20px', fontWeight: '900', color: '#f59e0b', display: 'block' }}>
@@ -567,14 +567,14 @@ export const ProfileView = () => {
 
           {/* Quick Village Direct Connect Card */}
           <div style={{
-            background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
+            background: 'linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%)',
             color: '#ffffff',
             borderRadius: '24px',
             padding: '24px',
             display: 'flex',
             alignItems: 'center',
             gap: '16px',
-            boxShadow: '0 10px 24px -4px rgba(6, 95, 70, 0.3)'
+            boxShadow: '0 10px 24px -4px rgba(30, 64, 175, 0.3)'
           }}>
             <div style={{
               backgroundColor: 'rgba(255, 255, 255, 0.15)',
@@ -584,13 +584,13 @@ export const ProfileView = () => {
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <ShieldCheck size={28} color="#a7f3d0" />
+              <ShieldCheck size={28} color="#bfdbfe" />
             </div>
             <div>
               <strong style={{ fontSize: '15.5px', display: 'block', marginBottom: '2px' }}>
                 Direct Farm-to-Kitchen Connection
               </strong>
-              <p style={{ fontSize: '12.5px', color: '#d1fae5', margin: 0, lineHeight: 1.4 }}>
+              <p style={{ fontSize: '12.5px', color: '#dbeafe', margin: 0, lineHeight: 1.4 }}>
                 100% of your payment directly supports local village farmers and kirana merchants across Moodbidri.
               </p>
             </div>
@@ -648,11 +648,11 @@ export const ProfileView = () => {
                   transition: 'all 0.2s ease',
                   textAlign: 'left'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ecfdf5'; e.currentTarget.style.borderColor = '#a7f3d0'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; e.currentTarget.style.borderColor = '#bfdbfe'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f8fafc'; e.currentTarget.style.borderColor = 'transparent'; }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Package size={18} color="#059669" />
+                  <Package size={18} color="#2563eb" />
                   <div>
                     <strong style={{ fontSize: '14px', color: '#0f172a', display: 'block' }}>My Orders & Deliveries</strong>
                     <span style={{ fontSize: '12px', color: '#64748b' }}>Track active delivery scooters & past history</span>
@@ -675,11 +675,11 @@ export const ProfileView = () => {
                   transition: 'all 0.2s ease',
                   textAlign: 'left'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ecfdf5'; e.currentTarget.style.borderColor = '#a7f3d0'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; e.currentTarget.style.borderColor = '#bfdbfe'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f8fafc'; e.currentTarget.style.borderColor = 'transparent'; }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <MapPin size={18} color="#059669" />
+                  <MapPin size={18} color="#2563eb" />
                   <div>
                     <strong style={{ fontSize: '14px', color: '#0f172a', display: 'block' }}>Saved Village Addresses</strong>
                     <span style={{ fontSize: '12px', color: '#64748b' }}>Manage delivery pins, homes, and farms</span>
@@ -702,7 +702,7 @@ export const ProfileView = () => {
                   transition: 'all 0.2s ease',
                   textAlign: 'left'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ecfdf5'; e.currentTarget.style.borderColor = '#a7f3d0'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; e.currentTarget.style.borderColor = '#bfdbfe'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f8fafc'; e.currentTarget.style.borderColor = 'transparent'; }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -729,7 +729,7 @@ export const ProfileView = () => {
                   transition: 'all 0.2s ease',
                   textAlign: 'left'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ecfdf5'; e.currentTarget.style.borderColor = '#a7f3d0'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; e.currentTarget.style.borderColor = '#bfdbfe'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f8fafc'; e.currentTarget.style.borderColor = 'transparent'; }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -756,7 +756,7 @@ export const ProfileView = () => {
                   transition: 'all 0.2s ease',
                   textAlign: 'left'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ecfdf5'; e.currentTarget.style.borderColor = '#a7f3d0'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; e.currentTarget.style.borderColor = '#bfdbfe'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f8fafc'; e.currentTarget.style.borderColor = 'transparent'; }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -783,11 +783,11 @@ export const ProfileView = () => {
                   transition: 'all 0.2s ease',
                   textAlign: 'left'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ecfdf5'; e.currentTarget.style.borderColor = '#a7f3d0'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; e.currentTarget.style.borderColor = '#bfdbfe'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f8fafc'; e.currentTarget.style.borderColor = 'transparent'; }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Store size={18} color="#059669" />
+                  <Store size={18} color="#2563eb" />
                   <div>
                     <strong style={{ fontSize: '14px', color: '#0f172a', display: 'block' }}>Explore Nearby Kirana Stores</strong>
                     <span style={{ fontSize: '12px', color: '#64748b' }}>Find and chat with local village merchants</span>
@@ -806,26 +806,26 @@ export const ProfileView = () => {
                   justifyContent: 'space-between',
                   padding: '14px 16px',
                   borderRadius: '14px',
-                  backgroundColor: '#ecfdf5',
-                  border: '1.5px solid #a7f3d0',
+                  backgroundColor: '#eff6ff',
+                  border: '1.5px solid #bfdbfe',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                   textAlign: 'left'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#d1fae5'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ecfdf5'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#dbeafe'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Smartphone size={18} color="#059669" />
+                  <Smartphone size={18} color="#2563eb" />
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <strong style={{ fontSize: '14px', color: '#064e3b', display: 'block' }}>Install Mobile PWA App</strong>
-                      <span className="badge" style={{ backgroundColor: '#059669', color: '#fff', fontSize: '9.5px', padding: '1px 6px', fontWeight: '900' }}>PWA 2.0</span>
+                      <strong style={{ fontSize: '14px', color: '#0f172a', display: 'block' }}>Install Mobile PWA App</strong>
+                      <span className="badge" style={{ backgroundColor: '#2563eb', color: '#fff', fontSize: '9.5px', padding: '1px 6px', fontWeight: '900' }}>PWA 2.0</span>
                     </div>
-                    <span style={{ fontSize: '12px', color: '#047857' }}>Install on your home screen for instant offline access</span>
+                    <span style={{ fontSize: '12px', color: '#1d4ed8' }}>Install on your home screen for instant offline access</span>
                   </div>
                 </div>
-                <Download size={16} color="#059669" />
+                <Download size={16} color="#2563eb" />
               </button>
 
               {/* Session Security & Logout Card */}
@@ -849,9 +849,9 @@ export const ProfileView = () => {
                     fontWeight: '800',
                     padding: '3px 8px',
                     borderRadius: '10px',
-                    backgroundColor: user?.role === 'vendor' ? '#eff6ff' : '#ecfdf5',
-                    color: user?.role === 'vendor' ? '#2563eb' : '#059669',
-                    border: `1px solid ${user?.role === 'vendor' ? '#bfdbfe' : '#a7f3d0'}`
+                    backgroundColor: user?.role === 'vendor' ? '#eff6ff' : '#eff6ff',
+                    color: user?.role === 'vendor' ? '#2563eb' : '#2563eb',
+                    border: `1px solid ${user?.role === 'vendor' ? '#bfdbfe' : '#bfdbfe'}`
                   }}>
                     ROLE: {(user?.role || 'customer').toUpperCase()}
                   </span>
@@ -914,12 +914,12 @@ export const ProfileView = () => {
             borderRadius: '28px',
             backgroundColor: '#ffffff',
             boxShadow: '0 25px 60px -15px rgba(0,0,0,0.4)',
-            border: '1.5px solid #d1fae5',
+            border: '1.5px solid #dbeafe',
             position: 'relative'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Edit3 size={20} color="#059669" />
+                <Edit3 size={20} color="#2563eb" />
                 <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0f172a', margin: 0 }}>
                   Edit Profile & GPS Details
                 </h3>
@@ -938,8 +938,8 @@ export const ProfileView = () => {
               
               {/* GPS Auto-Detect Button in Edit Modal */}
               <div style={{
-                backgroundColor: '#f0fdf4',
-                border: '1.5px solid #a7f3d0',
+                backgroundColor: '#eff6ff',
+                border: '1.5px solid #bfdbfe',
                 borderRadius: '16px',
                 padding: '14px',
                 display: 'flex',
@@ -949,10 +949,10 @@ export const ProfileView = () => {
                 marginBottom: '14px'
               }}>
                 <div>
-                  <strong style={{ fontSize: '13px', color: '#064e3b', display: 'block' }}>
+                  <strong style={{ fontSize: '13px', color: '#0f172a', display: 'block' }}>
                     Live GPS Telemetry Lock
                   </strong>
-                  <span style={{ fontSize: '11px', color: '#059669' }}>
+                  <span style={{ fontSize: '11px', color: '#2563eb' }}>
                     {editGps ? `Lat: ${editGps.lat}°, Lng: ${editGps.lng}° (±${editGps.accuracy || 10}m)` : 'Click to fetch exact satellite coordinates'}
                   </span>
                 </div>
@@ -962,7 +962,7 @@ export const ProfileView = () => {
                   onClick={handleDetectGPSInEdit}
                   disabled={isDetectingGPS}
                   style={{
-                    backgroundColor: '#10b981',
+                    backgroundColor: '#2563eb',
                     color: '#ffffff',
                     border: 'none',
                     padding: '8px 14px',

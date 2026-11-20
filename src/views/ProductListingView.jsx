@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { CATEGORIES } from '../data/categories';
+import { CATEGORIES, getLocalizedCategory } from '../data/categories';
+import { getLocalizedProductName, getLocalizedUnit } from '../utils/productLocalization';
 import { MapPin, Star, Plus, Minus, Heart, Filter, Store, Clock, ArrowLeft, Sparkles, Check, MessageSquare, ChevronLeft, ChevronRight, RefreshCw, Search } from 'lucide-react';
 import { useDebounce } from '../hooks/useDebounce';
 import { usePagination } from '../hooks/usePagination';
@@ -25,7 +26,9 @@ export const ProductListingView = () => {
     wishlist,
     toggleWishlist,
     setIsVendorChatOpen,
-    currentLocation
+    currentLocation,
+    t,
+    selectedLanguage
   } = useApp();
 
   const [sortBy, setSortBy] = useState('popular'); // popular, price-low, price-high, rating
@@ -124,12 +127,12 @@ export const ProductListingView = () => {
           padding: '24px', 
           borderRadius: '24px', 
           marginBottom: '28px', 
-          background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)', 
-          border: '1.5px solid #a7f3d0' 
+          background: 'linear-gradient(135deg, #eff6ff 0%, #eff6ff 100%)', 
+          border: '1.5px solid #bfdbfe' 
         }}>
           <button 
             onClick={() => setSelectedVendor(null)} 
-            style={{ fontSize: '13px', color: '#059669', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '14px', background: 'none', border: 'none', cursor: 'pointer' }}
+            style={{ fontSize: '13px', color: '#2563eb', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '14px', background: 'none', border: 'none', cursor: 'pointer' }}
           >
             <ArrowLeft size={16} /> Back to all vendors
           </button>
@@ -142,7 +145,7 @@ export const ProductListingView = () => {
             />
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                <h2 style={{ fontSize: '22px', fontWeight: '900', color: '#064e3b', margin: 0 }}>{selectedVendor.name}</h2>
+                <h2 style={{ fontSize: '22px', fontWeight: '900', color: '#0f172a', margin: 0 }}>{selectedVendor.name}</h2>
                 <span className="badge badge-success">🟢 Open & Delivering</span>
               </div>
               {(() => {
@@ -156,9 +159,9 @@ export const ProductListingView = () => {
             </div>
             
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-              <div style={{ backgroundColor: '#ffffff', padding: '10px 18px', borderRadius: '16px', border: '1px solid #bbf7d0', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                <span style={{ fontSize: '17px', fontWeight: '900', color: '#059669', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
-                  <Star size={16} fill="#059669" /> {selectedVendor.rating}
+              <div style={{ backgroundColor: '#ffffff', padding: '10px 18px', borderRadius: '16px', border: '1px solid #bfdbfe', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                <span style={{ fontSize: '17px', fontWeight: '900', color: '#2563eb', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
+                  <Star size={16} fill="#2563eb" /> {selectedVendor.rating}
                 </span>
                 <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600' }}>{selectedVendor.reviewCount} Ratings</span>
               </div>
@@ -192,18 +195,20 @@ export const ProductListingView = () => {
             fontSize: '13px',
             fontWeight: '800',
             whiteSpace: 'nowrap',
-            backgroundColor: selectedCategory === null ? '#10b981' : '#ffffff',
+            backgroundColor: selectedCategory === null ? '#2563eb' : '#ffffff',
             color: selectedCategory === null ? '#ffffff' : '#475569',
-            border: selectedCategory === null ? '1.5px solid #059669' : '1px solid #cbd5e1',
-            boxShadow: selectedCategory === null ? '0 4px 14px rgba(16, 185, 129, 0.35)' : 'none',
+            border: selectedCategory === null ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
+            boxShadow: selectedCategory === null ? '0 4px 14px rgba(37, 99, 235, 0.35)' : 'none',
             cursor: 'pointer',
             transition: 'all 0.2s ease'
           }}
         >
-          All Produce ({(products || []).length})
+          {t('productListing.filterAll', 'All Produce')} ({(products || []).length})
         </button>
 
-        {CATEGORIES.map(cat => (
+        {CATEGORIES.map(cat => {
+          const locCat = getLocalizedCategory(cat, selectedLanguage);
+          return (
           <button
             key={cat.id}
             onClick={() => setSelectedCategory(cat.id === selectedCategory ? null : cat.id)}
@@ -216,18 +221,18 @@ export const ProductListingView = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              backgroundColor: selectedCategory === cat.id ? '#10b981' : '#ffffff',
+              backgroundColor: selectedCategory === cat.id ? '#2563eb' : '#ffffff',
               color: selectedCategory === cat.id ? '#ffffff' : '#475569',
-              border: selectedCategory === cat.id ? '1.5px solid #059669' : '1px solid #cbd5e1',
-              boxShadow: selectedCategory === cat.id ? '0 4px 14px rgba(16, 185, 129, 0.35)' : 'none',
+              border: selectedCategory === cat.id ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
+              boxShadow: selectedCategory === cat.id ? '0 4px 14px rgba(37, 99, 235, 0.35)' : 'none',
               cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
           >
             <span>{cat.icon}</span>
-            <span>{cat.name}</span>
+            <span>{locCat.shortName || locCat.name}</span>
           </button>
-        ))}
+        );})}
       </div>
 
       {/* Control Bar: Items Count & Sort Filters */}
@@ -246,7 +251,7 @@ export const ProductListingView = () => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a' }}>
-            Showing {filteredProducts.length} Items
+            {t('productListing.showing', 'Showing')} {filteredProducts.length} {t('productListing.itemsFound', 'items')}
           </span>
           {searchQuery && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -279,14 +284,14 @@ export const ProductListingView = () => {
               type="checkbox" 
               checked={inStockOnly} 
               onChange={(e) => setInStockOnly(e.target.checked)}
-              style={{ accentColor: '#10b981', width: '16px', height: '16px' }}
+              style={{ accentColor: '#2563eb', width: '16px', height: '16px' }}
             />
-            <span>In Stock Only</span>
+            <span>{t('productListing.filterInStock', 'In Stock Only')}</span>
           </label>
 
           {/* Sort By Dropdown */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Filter size={15} color="#059669" />
+            <Filter size={15} color="#2563eb" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -302,10 +307,10 @@ export const ProductListingView = () => {
                 cursor: 'pointer'
               }}
             >
-              <option value="popular">🔥 Most Popular</option>
-              <option value="rating">⭐ Highest Rated</option>
-              <option value="price-low">💵 Price: Low to High</option>
-              <option value="price-high">💎 Price: High to Low</option>
+              <option value="popular">🔥 {t('productListing.sortPopular', 'Most Popular')}</option>
+              <option value="rating">⭐ {t('productListing.sortRating', 'Customer Rating')}</option>
+              <option value="price-low">💵 {t('productListing.sortPriceLow', 'Price: Low to High')}</option>
+              <option value="price-high">💎 {t('productListing.sortPriceHigh', 'Price: High to Low')}</option>
             </select>
           </div>
         </div>
@@ -349,6 +354,8 @@ export const ProductListingView = () => {
               const inCart = cart.find(item => item.product.id === prod.id);
               const isWish = wishlist.includes(prod.id);
               const isOutOfStock = prod.stockStatus === 'out-of-stock';
+              const prodName = getLocalizedProductName(prod, selectedLanguage);
+              const prodUnit = getLocalizedUnit(prod.unit, selectedLanguage);
 
               return (
                 <div
@@ -392,7 +399,7 @@ export const ProductListingView = () => {
                       cursor: 'pointer',
                       transition: 'transform 0.2s ease'
                     }}
-                    aria-label={`Add ${prod.name} to wishlist`}
+                    aria-label={`Add ${prodName} to wishlist`}
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
                     onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                   >
@@ -413,7 +420,7 @@ export const ProductListingView = () => {
                       borderRadius: '8px',
                       zIndex: 2
                     }}>
-                      🔴 Out of Stock
+                      🔴 {t('productDetail.outOfStock', 'Out of Stock')}
                     </span>
                   ) : prod.isPopular && (
                     <span style={{
@@ -440,7 +447,7 @@ export const ProductListingView = () => {
                     <div style={{ height: '180px', borderRadius: '16px', overflow: 'hidden', marginBottom: '14px' }}>
                       <img
                         src={prod.image}
-                        alt={prod.name}
+                        alt={prodName}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
                       />
                     </div>
@@ -452,7 +459,7 @@ export const ProductListingView = () => {
                     </div>
 
                     <h4 style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a', lineHeight: 1.3, minHeight: '38px', margin: 0 }}>
-                      {prod.name}
+                      {prodName}
                     </h4>
 
                     <span style={{ fontSize: '12px', color: '#64748b', display: 'block', marginTop: '2px' }}>
@@ -460,11 +467,11 @@ export const ProductListingView = () => {
                     </span>
 
                     <div style={{ margin: '12px 0 6px 0', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                      <span style={{ fontSize: '18px', fontWeight: '900', color: '#059669' }}>
+                      <span style={{ fontSize: '18px', fontWeight: '900', color: '#2563eb' }}>
                         ₹{prod.price}
                       </span>
                       <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>
-                        / {prod.unit}
+                        / {prodUnit}
                       </span>
                     </div>
                   </div>
@@ -476,30 +483,30 @@ export const ProductListingView = () => {
                         disabled
                         style={{ width: '100%', padding: '9px 14px', fontSize: '12.5px', borderRadius: '12px', backgroundColor: '#f1f5f9', color: '#94a3b8', border: '1px solid #cbd5e1', cursor: 'not-allowed', fontWeight: '700' }}
                       >
-                        Currently Out of Stock
+                        {t('productDetail.outOfStock', 'Currently Out of Stock')}
                       </button>
                     ) : inCart ? (
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        backgroundColor: '#ecfdf5',
-                        border: '1.5px solid #a7f3d0',
+                        backgroundColor: '#eff6ff',
+                        border: '1.5px solid #bfdbfe',
                         borderRadius: '12px',
                         padding: '5px 10px'
                       }}>
                         <button
                           onClick={() => updateCartQuantity(prod.id, inCart.quantity - 1)}
-                          style={{ color: '#059669', padding: '4px', display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer' }}
+                          style={{ color: '#2563eb', padding: '4px', display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer' }}
                         >
                           <Minus size={16} />
                         </button>
-                        <span style={{ fontWeight: '800', color: '#064e3b', fontSize: '14px' }}>
+                        <span style={{ fontWeight: '800', color: '#0f172a', fontSize: '14px' }}>
                           {inCart.quantity}
                         </span>
                         <button
                           onClick={() => updateCartQuantity(prod.id, inCart.quantity + 1)}
-                          style={{ color: '#059669', padding: '4px', display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer' }}
+                          style={{ color: '#2563eb', padding: '4px', display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer' }}
                         >
                           <Plus size={16} />
                         </button>
@@ -511,7 +518,7 @@ export const ProductListingView = () => {
                         style={{ width: '100%', padding: '9px 14px', fontSize: '13px', borderRadius: '12px' }}
                       >
                         <Plus size={16} />
-                        <span>Add to Cart</span>
+                        <span>{t('popular.addToCart', 'Add to Cart')}</span>
                       </button>
                     )}
                   </div>
@@ -572,8 +579,8 @@ export const ProductListingView = () => {
                       borderRadius: '12px',
                       fontSize: '14px',
                       fontWeight: '800',
-                      border: currentPage === pageNum ? '1.5px solid #059669' : '1px solid #e2e8f0',
-                      backgroundColor: currentPage === pageNum ? '#059669' : '#ffffff',
+                      border: currentPage === pageNum ? '1.5px solid #2563eb' : '1px solid #e2e8f0',
+                      backgroundColor: currentPage === pageNum ? '#2563eb' : '#ffffff',
                       color: currentPage === pageNum ? '#ffffff' : '#0f172a',
                       cursor: 'pointer',
                       transition: 'all 0.15s ease'

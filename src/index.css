@@ -44,25 +44,25 @@
   --leading-relaxed: 1.68;
 
   /* ============================================================
-     COLOR PALETTE
+     COLOR PALETTE - Cool Sapphire, Ocean Blue & Ice Slate
      ============================================================ */
-  /* Primary Emerald Green */
-  --primary-50: #ecfdf5;
-  --primary-100: #d1fae5;
-  --primary-200: #a7f3d0;
-  --primary-300: #6ee7b7;
-  --primary-400: #34d399;
-  --primary-500: #10b981;
-  --primary-600: #059669;
-  --primary-700: #047857;
-  --primary-800: #065f46;
-  --primary-900: #064e3b;
-  --primary-950: #022c22;
+  /* Primary Cool Sapphire Blue Scale */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-200: #bfdbfe;
+  --primary-300: #93c5fd;
+  --primary-400: #60a5fa;
+  --primary-500: #3b82f6;
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  --primary-800: #1e40af;
+  --primary-900: #1e3a8a;
+  --primary-950: #0f172a;
   
-  --primary: #10b981;
-  --primary-dark: #059669;
-  --primary-light: #ecfdf5;
-  --primary-border: #a7f3d0;
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #eff6ff;
+  --primary-border: #bfdbfe;
   
   /* Solar Gold / Warm Amber */
   --amber-50: #fffbeb;
@@ -81,7 +81,7 @@
   --accent-cyan: #06b6d4;
   --accent-rose: #f43f5e;
   --accent-purple: #8b5cf6;
-  --accent-emerald: #10b981;
+  --accent-emerald: #2563eb;
 
   /* Neutrals & Surfaces */
   --text-dark: #0f172a;
@@ -102,7 +102,7 @@
   --shadow-md: 0 8px 18px -3px rgba(15, 23, 42, 0.08), 0 3px 6px -3px rgba(15, 23, 42, 0.04);
   --shadow-lg: 0 16px 36px -4px rgba(15, 23, 42, 0.1), 0 8px 16px -4px rgba(15, 23, 42, 0.04);
   --shadow-xl: 0 24px 52px -8px rgba(15, 23, 42, 0.14);
-  --shadow-glow-green: 0 10px 28px -5px rgba(16, 185, 129, 0.38), 0 4px 12px -2px rgba(16, 185, 129, 0.2);
+  --shadow-glow-green: 0 10px 28px -5px rgba(37, 99, 235, 0.38), 0 4px 12px -2px rgba(37, 99, 235, 0.2);
   --shadow-glow-amber: 0 10px 28px -5px rgba(245, 158, 11, 0.38);
   --shadow-glow-indigo: 0 10px 28px -5px rgba(99, 102, 241, 0.38);
 
@@ -269,8 +269,9 @@ img {
 /* ============================================================
    GRADIENT TEXT & DISPLAY UTILITIES
    ============================================================ */
-.text-gradient-emerald {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+.text-gradient-emerald,
+.text-gradient-sapphire {
+  background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -286,7 +287,7 @@ img {
 }
 
 .text-gradient-aurora {
-  background: linear-gradient(135deg, #34d399 0%, #a7f3d0 50%, #fbbf24 100%);
+  background: linear-gradient(135deg, #38bdf8 0%, #60a5fa 50%, #93c5fd 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -333,9 +334,9 @@ img {
 }
 
 @keyframes pulseGlowRing {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 14px rgba(37, 99, 235, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
 }
 
 @keyframes pulseBeacon {
@@ -675,9 +676,9 @@ img {
 }
 
 .badge-success {
-  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-  color: #15803d;
-  border: 1px solid #86efac;
+  background: linear-gradient(135deg, #eff6ff 0%, #bfdbfe 100%);
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
 }
 
 .badge-warning {
@@ -723,7 +724,7 @@ img {
 /* Voice Equalizer Bar */
 .equalizer-bar {
   width: 4px;
-  background: linear-gradient(to top, #10b981, #34d399, #6ee7b7);
+  background: linear-gradient(to top, #2563eb, #38bdf8, #93c5fd);
   border-radius: 3px;
   display: inline-block;
 }
@@ -739,8 +740,8 @@ img {
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #6ee7b7, #10b981 40%, #047857 85%);
-  box-shadow: 0 0 35px rgba(16, 185, 129, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.6);
+  background: radial-gradient(circle at 35% 35%, #93c5fd, #2563eb 40%, #1d4ed8 85%);
+  box-shadow: 0 0 35px rgba(37, 99, 235, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.6);
   position: relative;
   display: flex;
   align-items: center;
@@ -751,7 +752,7 @@ img {
   position: absolute;
   inset: -12px;
   border-radius: 50%;
-  border: 2px dashed rgba(52, 211, 153, 0.5);
+  border: 2px dashed rgba(56, 189, 248, 0.5);
   animation: spin 8s linear infinite;
 }
 

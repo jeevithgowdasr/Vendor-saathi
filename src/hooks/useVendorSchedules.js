@@ -32,8 +32,8 @@ export const SCHEDULE_STATUSES = [
 
 export const STATUS_NEXT_STEP = {
   scheduled: { next: 'in_transit', label: 'Start Trip (In Transit)', color: '#0284c7' },
-  in_transit: { next: 'arrived', label: 'Mark Arrived at Location', color: '#059669' },
-  arrived: { next: 'completed', label: 'Complete Visit', color: '#064e3b' }
+  in_transit: { next: 'arrived', label: 'Mark Arrived at Location', color: '#2563eb' },
+  arrived: { next: 'completed', label: 'Complete Visit', color: '#0f172a' }
 };
 
 export const DEFAULT_SCHEDULE_FORM = {
@@ -47,7 +47,7 @@ export const DEFAULT_SCHEDULE_FORM = {
   availableProductIds: []
 };
 
-export function useVendorSchedules({ vendorId = 'v1', vendorName = 'Local Fresh Store', vendorCategory = 'Produce & Groceries', onToast } = {}) {
+export function useVendorSchedules({ vendorId = '', vendorName = '', vendorCategory = 'Produce & Groceries', onToast } = {}) {
   const [schedules, setSchedules] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);

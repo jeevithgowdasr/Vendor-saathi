@@ -161,11 +161,11 @@ export const StripePaymentModal = ({
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        border: '1.5px solid #d1fae5'
+        border: '1.5px solid #dbeafe'
       }}>
         {/* Modal Header */}
         <div style={{
-          background: 'linear-gradient(135deg, #065f46 0%, #047857 50%, #064e3b 100%)',
+          background: 'linear-gradient(135deg, #1e40af 0%, #1d4ed8 50%, #0f172a 100%)',
           color: '#ffffff',
           padding: '20px 24px',
           display: 'flex',
@@ -175,7 +175,7 @@ export const StripePaymentModal = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
               backgroundColor: '#ffffff',
-              color: '#065f46',
+              color: '#1e40af',
               width: '42px',
               height: '42px',
               borderRadius: '14px',
@@ -195,7 +195,7 @@ export const StripePaymentModal = ({
                   STRIPE LIVE
                 </span>
               </div>
-              <span style={{ fontSize: '12px', color: '#a7f3d0', fontWeight: '600' }}>
+              <span style={{ fontSize: '12px', color: '#bfdbfe', fontWeight: '600' }}>
                 256-Bit SSL Encrypted • PCI DSS Level 1 Certified
               </span>
             </div>
@@ -217,8 +217,8 @@ export const StripePaymentModal = ({
           
           {/* Payable Total Header Box */}
           <div style={{
-            backgroundColor: '#f0fdf4',
-            border: '1.5px solid #bbf7d0',
+            backgroundColor: '#eff6ff',
+            border: '1.5px solid #bfdbfe',
             borderRadius: '20px',
             padding: '16px 20px',
             display: 'flex',
@@ -227,10 +227,10 @@ export const StripePaymentModal = ({
             marginBottom: '20px'
           }}>
             <div>
-              <span style={{ fontSize: '12px', color: '#047857', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <span style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Amount to Pay
               </span>
-              <strong style={{ fontSize: '26px', fontWeight: '900', color: '#064e3b', display: 'block', lineHeight: 1.1 }}>
+              <strong style={{ fontSize: '26px', fontWeight: '900', color: '#0f172a', display: 'block', lineHeight: 1.1 }}>
                 ₹{amount}
               </strong>
             </div>
@@ -240,17 +240,17 @@ export const StripePaymentModal = ({
               onClick={fillTestCard}
               style={{
                 backgroundColor: '#ffffff',
-                border: '1.5px solid #10b981',
+                border: '1.5px solid #2563eb',
                 borderRadius: '12px',
                 padding: '8px 14px',
                 fontSize: '12px',
                 fontWeight: '800',
-                color: '#059669',
+                color: '#2563eb',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
                 cursor: 'pointer',
-                boxShadow: '0 2px 6px rgba(16, 185, 129, 0.15)',
+                boxShadow: '0 2px 6px rgba(37, 99, 235, 0.15)',
                 transition: 'all 0.2s ease'
               }}
             >
@@ -440,7 +440,7 @@ export const StripePaymentModal = ({
                 fontWeight: '900',
                 letterSpacing: '0.3px',
                 marginTop: '10px',
-                backgroundColor: isProcessing ? '#047857' : undefined
+                backgroundColor: isProcessing ? '#1d4ed8' : undefined
               }}
             >
               {isProcessing ? (
@@ -460,11 +460,11 @@ export const StripePaymentModal = ({
           {/* Security Badges */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px', marginTop: '20px', fontSize: '11.5px', color: '#64748b' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <ShieldCheck size={16} color="#059669" /> Stripe Certified
+              <ShieldCheck size={16} color="#2563eb" /> Stripe Certified
             </span>
             <span>•</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Lock size={14} color="#059669" /> 256-Bit SSL
+              <Lock size={14} color="#2563eb" /> 256-Bit SSL
             </span>
             <span>•</span>
             <span>Zero Gateway Surcharge</span>

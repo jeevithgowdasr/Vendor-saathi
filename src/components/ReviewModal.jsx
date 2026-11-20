@@ -29,7 +29,7 @@ export const ReviewModal = () => {
     // Save review to Firebase
     saveReviewToFirebase({
       orderId: reviewOrder.id,
-      vendorId: reviewOrder.vendorId || 'v1',
+      vendorId: reviewOrder.vendorId || '',
       vendorName: reviewOrder.vendorName || 'Local Vendor',
       productRating,
       vendorRating,
@@ -67,7 +67,7 @@ export const ReviewModal = () => {
         borderRadius: '28px',
         backgroundColor: '#ffffff',
         boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)',
-        border: '1.5px solid #d1fae5',
+        border: '1.5px solid #dbeafe',
         position: 'relative'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
@@ -94,7 +94,7 @@ export const ReviewModal = () => {
 
         {isSubmitted ? (
           <div style={{ textAlign: 'center', padding: '36px 0' }}>
-            <CheckCircle2 size={54} color="#10b981" style={{ margin: '0 auto 14px auto' }} />
+            <CheckCircle2 size={54} color="#2563eb" style={{ margin: '0 auto 14px auto' }} />
             <h4 style={{ fontSize: '18px', fontWeight: '900', color: '#0f172a' }}>Thank You!</h4>
             <p style={{ fontSize: '13.5px', color: '#64748b', marginTop: '4px' }}>
               Your rating empowers your local village vendor & helps other villagers discover fresh produce.

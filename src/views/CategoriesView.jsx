@@ -1,10 +1,10 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { CATEGORIES } from '../data/categories';
+import { CATEGORIES, getLocalizedCategory } from '../data/categories';
 import { ArrowRight, ShoppingBag, Sparkles, ArrowLeft } from 'lucide-react';
 
 export const CategoriesView = () => {
-  const { navigateTo } = useApp();
+  const { navigateTo, t, selectedLanguage } = useApp();
 
   return (
     <div className="container animate-fade-in" style={{ padding: '32px 0 60px 0', width: '100%' }}>
@@ -14,7 +14,7 @@ export const CategoriesView = () => {
           onClick={() => navigateTo('home')}
           style={{
             fontSize: '13.5px',
-            color: '#059669',
+            color: '#2563eb',
             fontWeight: '800',
             display: 'inline-flex',
             alignItems: 'center',
@@ -22,22 +22,22 @@ export const CategoriesView = () => {
             marginBottom: '16px',
             padding: '7px 16px',
             borderRadius: '12px',
-            backgroundColor: '#ecfdf5',
-            border: '1px solid #a7f3d0'
+            backgroundColor: '#eff6ff',
+            border: '1px solid #bfdbfe'
           }}
         >
-          <ArrowLeft size={16} /> Back to Home
+          <ArrowLeft size={16} /> {t('productListing.back', 'Back to Home')}
         </button>
 
         <div>
           <span className="badge badge-success" style={{ marginBottom: '8px', fontSize: '12px' }}>
-            <Sparkles size={14} color="#f59e0b" /> FRESH CATALOG
+            <Sparkles size={14} color="#f59e0b" /> {t('categories.tag', 'FRESH CATALOG')}
           </span>
           <h1 style={{ fontSize: '36px', fontWeight: '900', color: '#0f172a', letterSpacing: '-0.025em' }}>
-            Produce & Flower Categories
+            {t('categories.title', 'Produce & Flower Categories')}
           </h1>
           <p style={{ fontSize: '15.5px', color: '#64748b', maxWidth: '640px', margin: '8px auto 0 auto', lineHeight: 1.55 }}>
-            Select a category to browse farm-fresh vegetables, coastal fruits, nutrient-rich green vegetables (Greens / Soppu), and fragrant Pooja flowers delivered directly to your doorstep.
+            {t('categories.subtitle', 'Select a category to browse farm-fresh vegetables, coastal fruits, nutrient-rich green vegetables (Greens / Soppu), and fragrant Pooja flowers delivered directly to your doorstep.')}
           </p>
         </div>
       </div>
@@ -48,7 +48,9 @@ export const CategoriesView = () => {
         gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
         gap: '28px'
       }}>
-        {CATEGORIES.map(cat => (
+        {CATEGORIES.map(cat => {
+          const locCat = getLocalizedCategory(cat, selectedLanguage);
+          return (
           <div
             key={cat.id}
             onClick={() => navigateTo('product-listing', { category: cat.id })}
@@ -64,7 +66,7 @@ export const CategoriesView = () => {
             <div style={{ position: 'relative', height: '190px', overflow: 'hidden' }}>
               <img
                 src={cat.image}
-                alt={cat.name}
+                alt={locCat.name}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s ease' }}
                 onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.08)'}
                 onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -100,16 +102,16 @@ export const CategoriesView = () => {
                 fontSize: '11px',
                 fontWeight: '700'
               }}>
-                {cat.itemCount}+ Items
+                {cat.itemCount}+ {t('categories.productsAvailable', 'Items')}
               </div>
             </div>
 
             <div style={{ padding: '20px' }}>
               <h3 style={{ fontSize: '19px', fontWeight: '800', color: '#0f172a', marginBottom: '6px' }}>
-                {cat.name}
+                {locCat.name}
               </h3>
               <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '20px', lineHeight: 1.5 }}>
-                {cat.description}
+                {locCat.description}
               </p>
 
               <div style={{ 
@@ -122,28 +124,28 @@ export const CategoriesView = () => {
                 <span style={{ 
                   fontSize: '12px', 
                   fontWeight: '800', 
-                  color: '#059669', 
-                  backgroundColor: '#ecfdf5', 
+                  color: '#2563eb', 
+                  backgroundColor: '#eff6ff', 
                   padding: '4px 12px', 
                   borderRadius: '14px',
-                  border: '1px solid #a7f3d0'
+                  border: '1px solid #bfdbfe'
                 }}>
-                  Farm Direct
+                  {t('trust.freshFarmTitle', 'Farm Direct')}
                 </span>
                 <span style={{ 
-                  color: '#059669', 
+                  color: '#2563eb', 
                   display: 'flex', 
                   alignItems: 'center', 
                   gap: '4px', 
                   fontSize: '13.5px', 
                   fontWeight: '800' 
                 }}>
-                  Explore <ArrowRight size={15} />
+                  {t('categories.viewAll', 'Explore')} <ArrowRight size={15} />
                 </span>
               </div>
             </div>
           </div>
-        ))}
+        );})}
       </div>
     </div>
   );

@@ -52,16 +52,16 @@ export const OffersView = () => {
         onClick={() => navigateTo('home')}
         style={{ 
           fontSize: '13.5px', 
-          color: '#059669', 
+          color: '#2563eb', 
           fontWeight: '800', 
           display: 'inline-flex', 
           alignItems: 'center', 
           gap: '6px', 
           marginBottom: '20px',
-          backgroundColor: '#ecfdf5',
+          backgroundColor: '#eff6ff',
           padding: '6px 14px',
           borderRadius: '12px',
-          border: '1px solid #a7f3d0'
+          border: '1px solid #bfdbfe'
         }}
       >
         <ArrowLeft size={16} /> Back to Home
@@ -81,14 +81,14 @@ export const OffersView = () => {
 
       {/* Interactive Scratch-Card Widget */}
       <div className="vs-card animate-fade-scale" style={{
-        background: 'linear-gradient(135deg, #064e3b 0%, #047857 50%, #065f46 100%)',
+        background: 'linear-gradient(135deg, #0f172a 0%, #1d4ed8 50%, #1e40af 100%)',
         color: '#ffffff',
         borderRadius: '24px',
         padding: '24px',
         marginBottom: '32px',
         position: 'relative',
         overflow: 'hidden',
-        boxShadow: '0 16px 32px -8px rgba(6, 78, 59, 0.4)'
+        boxShadow: '0 16px 32px -8px rgba(15, 23, 42, 0.4)'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div>
@@ -98,7 +98,7 @@ export const OffersView = () => {
             <h3 style={{ fontSize: '22px', fontWeight: '900', color: '#ffffff', lineHeight: 1.2 }}>
               Mystery Village Reward
             </h3>
-            <p style={{ fontSize: '13px', color: '#a7f3d0', marginTop: '4px', maxWidth: '380px' }}>
+            <p style={{ fontSize: '13px', color: '#bfdbfe', marginTop: '4px', maxWidth: '380px' }}>
               Tap below to unlock today's secret farm-fresh discount voucher!
             </p>
           </div>
@@ -133,7 +133,7 @@ export const OffersView = () => {
               <div>
                 <Gift size={28} color="#fbbf24" style={{ margin: '0 auto 4px auto', display: 'block' }} />
                 <strong style={{ fontSize: '14px', color: '#ffffff' }}>Tap to Scratch & Reveal</strong>
-                <span style={{ display: 'block', fontSize: '11px', color: '#6ee7b7' }}>1 Tap Instant Prize</span>
+                <span style={{ display: 'block', fontSize: '11px', color: '#93c5fd' }}>1 Tap Instant Prize</span>
               </div>
             )}
           </div>
@@ -161,17 +161,17 @@ export const OffersView = () => {
           >
             <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
               <div style={{ 
-                background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)', 
-                color: '#059669', 
+                background: 'linear-gradient(135deg, #eff6ff 0%, #eff6ff 100%)', 
+                color: '#2563eb', 
                 padding: '14px', 
                 borderRadius: '16px',
-                border: '1px solid #a7f3d0'
+                border: '1px solid #bfdbfe'
               }}>
                 <Tag size={24} />
               </div>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <strong style={{ fontSize: '17px', color: '#064e3b', fontWeight: '900', letterSpacing: '0.3px' }}>
+                  <strong style={{ fontSize: '17px', color: '#0f172a', fontWeight: '900', letterSpacing: '0.3px' }}>
                     {c.code}
                   </strong>
                   <span className="badge badge-success" style={{ fontSize: '10px' }}>

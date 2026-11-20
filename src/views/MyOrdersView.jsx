@@ -83,8 +83,8 @@ export const MyOrdersView = () => {
               padding: '12px 20px',
               fontWeight: '800',
               fontSize: '14.5px',
-              color: tab === t.key ? '#059669' : '#64748b',
-              borderBottom: tab === t.key ? '3.5px solid #10b981' : '3.5px solid transparent',
+              color: tab === t.key ? '#2563eb' : '#64748b',
+              borderBottom: tab === t.key ? '3.5px solid #2563eb' : '3.5px solid transparent',
               whiteSpace: 'nowrap',
               transition: 'all 0.2s ease'
             }}
@@ -118,9 +118,9 @@ export const MyOrdersView = () => {
                 <div key={order.id} className="vs-card" style={{ padding: '24px', borderRadius: '24px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <img src={vendor.avatar} alt={vendor.name} style={{ width: '54px', height: '54px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #a7f3d0' }} />
+                      <img src={vendor.avatar} alt={vendor.name} style={{ width: '54px', height: '54px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #bfdbfe' }} />
                       <div>
-                        <strong style={{ fontSize: '17px', color: '#064e3b', fontWeight: '900' }}>#{order.id}</strong>
+                        <strong style={{ fontSize: '17px', color: '#0f172a', fontWeight: '900' }}>#{order.id}</strong>
                         <span style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a', display: 'block', marginTop: '1px' }}>{order.vendorName}</span>
                         <span style={{ fontSize: '12px', color: '#64748b' }}>📅 {order.date}</span>
                       </div>
@@ -130,7 +130,7 @@ export const MyOrdersView = () => {
                       <span className={`badge ${isDelivered ? 'badge-success' : isCancelled ? 'badge-danger' : 'badge-warning'}`} style={{ fontSize: '12.5px', marginBottom: '6px', padding: '6px 14px' }}>
                         {order.status}
                       </span>
-                      <strong style={{ fontSize: '20px', color: '#059669', display: 'block', fontWeight: '900' }}>₹{order.total}</strong>
+                      <strong style={{ fontSize: '20px', color: '#2563eb', display: 'block', fontWeight: '900' }}>₹{order.total}</strong>
                     </div>
                   </div>
 
@@ -150,7 +150,7 @@ export const MyOrdersView = () => {
                               width: '24px',
                               height: '24px',
                               borderRadius: '50%',
-                              backgroundColor: step.completed ? '#10b981' : '#cbd5e1',
+                              backgroundColor: step.completed ? '#2563eb' : '#cbd5e1',
                               color: '#ffffff',
                               fontSize: '11px',
                               fontWeight: '800',
@@ -161,7 +161,7 @@ export const MyOrdersView = () => {
                             }}>
                               {step.completed ? '✓' : sIdx + 1}
                             </div>
-                            <span style={{ fontSize: '11px', fontWeight: '700', color: step.completed ? '#059669' : '#94a3b8' }}>
+                            <span style={{ fontSize: '11px', fontWeight: '700', color: step.completed ? '#2563eb' : '#94a3b8' }}>
                               {step.status}
                             </span>
                           </div>
@@ -291,8 +291,8 @@ export const MyOrdersView = () => {
                       borderRadius: '12px',
                       fontSize: '14px',
                       fontWeight: '800',
-                      border: currentPage === pageNum ? '1.5px solid #059669' : '1px solid #e2e8f0',
-                      backgroundColor: currentPage === pageNum ? '#059669' : '#ffffff',
+                      border: currentPage === pageNum ? '1.5px solid #2563eb' : '1px solid #e2e8f0',
+                      backgroundColor: currentPage === pageNum ? '#2563eb' : '#ffffff',
                       color: currentPage === pageNum ? '#ffffff' : '#0f172a',
                       cursor: 'pointer',
                       transition: 'all 0.15s ease'

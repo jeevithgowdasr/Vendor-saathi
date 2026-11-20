@@ -34,8 +34,8 @@ import { FormField } from './FormField';
 import { ConflictResolutionModal } from './ConflictResolutionModal';
 
 export const VendorPlanVisitTab = ({
-  vendorId = 'v1',
-  vendorName = 'Local Fresh Store',
+  vendorId = '',
+  vendorName = '',
   vendorCategory = 'Vegetables & Produce',
   vendorProducts = [],
   onToast
@@ -146,9 +146,9 @@ export const VendorPlanVisitTab = ({
             <span
               className="badge"
               style={{
-                backgroundColor: '#ecfdf5',
-                color: '#065f46',
-                border: '1px solid #a7f3d0',
+                backgroundColor: '#eff6ff',
+                color: '#1e40af',
+                border: '1px solid #bfdbfe',
                 fontSize: '11.5px',
                 fontWeight: '800'
               }}
@@ -193,7 +193,7 @@ export const VendorPlanVisitTab = ({
             style={{
               padding: '11px 20px',
               borderRadius: '14px',
-              background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+              background: 'linear-gradient(135deg, #2563eb 0%, #2563eb 100%)',
               color: '#ffffff',
               border: 'none',
               fontSize: '13.5px',
@@ -202,7 +202,7 @@ export const VendorPlanVisitTab = ({
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              boxShadow: '0 6px 18px -4px rgba(16, 185, 129, 0.45)',
+              boxShadow: '0 6px 18px -4px rgba(37, 99, 235, 0.45)',
               transition: 'transform 0.15s ease'
             }}
             onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.98)')}
@@ -276,8 +276,8 @@ export const VendorPlanVisitTab = ({
               width: '42px',
               height: '42px',
               borderRadius: '12px',
-              backgroundColor: '#ecfdf5',
-              color: '#059669',
+              backgroundColor: '#eff6ff',
+              color: '#2563eb',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -289,7 +289,7 @@ export const VendorPlanVisitTab = ({
             <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>
               Upcoming Trips
             </span>
-            <div style={{ fontSize: '22px', fontWeight: '900', color: '#059669', lineHeight: 1.1 }}>
+            <div style={{ fontSize: '22px', fontWeight: '900', color: '#2563eb', lineHeight: 1.1 }}>
               {metrics.upcoming}
             </div>
           </div>
@@ -501,7 +501,7 @@ export const VendorPlanVisitTab = ({
             borderRadius: '20px'
           }}
         >
-          <RefreshCw size={36} color="#10b981" className="animate-spin" style={{ margin: '0 auto 12px auto' }} />
+          <RefreshCw size={36} color="#2563eb" className="animate-spin" style={{ margin: '0 auto 12px auto' }} />
           <strong style={{ fontSize: '16px', color: '#0f172a', display: 'block' }}>
             Loading Planned Schedules...
           </strong>
@@ -526,13 +526,13 @@ export const VendorPlanVisitTab = ({
               width: '72px',
               height: '72px',
               borderRadius: '50%',
-              backgroundColor: '#ecfdf5',
-              color: '#059669',
+              backgroundColor: '#eff6ff',
+              color: '#2563eb',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 16px auto',
-              boxShadow: '0 8px 24px rgba(16, 185, 129, 0.15)'
+              boxShadow: '0 8px 24px rgba(37, 99, 235, 0.15)'
             }}
           >
             <Calendar size={36} />
@@ -588,7 +588,7 @@ export const VendorPlanVisitTab = ({
                   border: schedule.status === 'in_transit'
                     ? '2px solid #0284c7'
                     : schedule.status === 'arrived'
-                    ? '2px solid #059669'
+                    ? '2px solid #2563eb'
                     : '1.5px solid #e2e8f0',
                   padding: '24px',
                   boxShadow: '0 6px 20px -4px rgba(15, 23, 42, 0.05)',
@@ -613,19 +613,19 @@ export const VendorPlanVisitTab = ({
                       style={{
                         padding: '10px 14px',
                         borderRadius: '16px',
-                        backgroundColor: '#f0fdf4',
-                        border: '1.5px solid #a7f3d0',
+                        backgroundColor: '#eff6ff',
+                        border: '1.5px solid #bfdbfe',
                         textAlign: 'center',
                         minWidth: '68px'
                       }}
                     >
-                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#065f46', textTransform: 'uppercase', display: 'block' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#1e40af', textTransform: 'uppercase', display: 'block' }}>
                         {formatDateDisplay(schedule.date).split(' ')[0]}
                       </span>
-                      <strong style={{ fontSize: '18px', fontWeight: '900', color: '#064e3b', lineHeight: 1.1, display: 'block' }}>
+                      <strong style={{ fontSize: '18px', fontWeight: '900', color: '#0f172a', lineHeight: 1.1, display: 'block' }}>
                         {formatDateDisplay(schedule.date).split(' ')[1] || '—'}
                       </strong>
-                      <span style={{ fontSize: '11px', color: '#059669', fontWeight: '700' }}>
+                      <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: '700' }}>
                         {formatDateDisplay(schedule.date).split(' ')[2] || ''}
                       </span>
                     </div>
@@ -699,9 +699,9 @@ export const VendorPlanVisitTab = ({
                         {schedule.conflictResolution === 'area_adjusted' && (
                           <span
                             style={{
-                              backgroundColor: '#f0fdf4',
-                              color: '#15803d',
-                              border: '1px solid #bbf7d0',
+                              backgroundColor: '#eff6ff',
+                              color: '#1d4ed8',
+                              border: '1px solid #bfdbfe',
                               fontSize: '11px',
                               fontWeight: '800',
                               padding: '3px 8px',
@@ -718,7 +718,7 @@ export const VendorPlanVisitTab = ({
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '6px', fontSize: '13px', color: '#64748b', flexWrap: 'wrap' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Clock size={15} color="#10b981" />
+                          <Clock size={15} color="#2563eb" />
                           <strong>
                             {formatTimeDisplay(schedule.expectedArrivalDate || schedule.expectedArrivalTime)}
                             {' – '}
@@ -849,10 +849,10 @@ export const VendorPlanVisitTab = ({
                               fontSize: '12.5px'
                             }}
                           >
-                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981' }} />
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2563eb' }} />
                             <strong style={{ color: '#0f172a' }}>{prod.name}</strong>
                             {prod.price && prod.price !== '—' && (
-                              <span style={{ color: '#059669', fontWeight: '800', fontSize: '11.5px' }}>
+                              <span style={{ color: '#2563eb', fontWeight: '800', fontSize: '11.5px' }}>
                                 (₹{prod.price}/{prod.unit || 'kg'})
                               </span>
                             )}
@@ -1076,7 +1076,7 @@ export const VendorPlanVisitTab = ({
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <label style={{ fontSize: '12.5px', fontWeight: '800', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <MapPin size={16} color="#059669" />
+                    <MapPin size={16} color="#2563eb" />
                     <span>Target Area & Neighborhood <span style={{ color: '#ef4444' }}>*</span></span>
                   </label>
                   <button
@@ -1109,18 +1109,18 @@ export const VendorPlanVisitTab = ({
                             borderRadius: '12px',
                             fontSize: '12px',
                             fontWeight: isSelected ? '800' : '600',
-                            border: isSelected ? '1.5px solid #10b981' : '1px solid #cbd5e1',
-                            backgroundColor: isSelected ? '#ecfdf5' : '#ffffff',
-                            color: isSelected ? '#065f46' : '#334155',
+                            border: isSelected ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
+                            backgroundColor: isSelected ? '#eff6ff' : '#ffffff',
+                            color: isSelected ? '#1e40af' : '#334155',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '4px',
-                            boxShadow: isSelected ? '0 2px 8px rgba(16, 185, 129, 0.15)' : 'none',
+                            boxShadow: isSelected ? '0 2px 8px rgba(37, 99, 235, 0.15)' : 'none',
                             transition: 'all 0.15s ease'
                           }}
                         >
-                          {isSelected && <Check size={13} color="#059669" />}
+                          {isSelected && <Check size={13} color="#2563eb" />}
                           <span>{preset.areaName}</span>
                         </button>
                       );
@@ -1144,7 +1144,7 @@ export const VendorPlanVisitTab = ({
                     <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748b' }}>
                       Delivery Service Radius:
                     </span>
-                    <strong style={{ fontSize: '13px', color: '#059669' }}>
+                    <strong style={{ fontSize: '13px', color: '#2563eb' }}>
                       {formData.serviceRadiusKm} km
                     </strong>
                   </div>
@@ -1155,7 +1155,7 @@ export const VendorPlanVisitTab = ({
                     step="0.5"
                     value={formData.serviceRadiusKm}
                     onChange={(e) => handleFormChange('serviceRadiusKm', Number(e.target.value))}
-                    style={{ width: '100%', accentColor: '#10b981', cursor: 'pointer' }}
+                    style={{ width: '100%', accentColor: '#2563eb', cursor: 'pointer' }}
                   />
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
                     <span>0.5 km (Close vicinity)</span>
@@ -1291,8 +1291,8 @@ export const VendorPlanVisitTab = ({
                           gap: '10px',
                           padding: '8px 12px',
                           borderRadius: '12px',
-                          border: isChecked ? '1.5px solid #10b981' : '1px solid #e2e8f0',
-                          backgroundColor: isChecked ? '#f0fdf4' : '#ffffff',
+                          border: isChecked ? '1.5px solid #2563eb' : '1px solid #e2e8f0',
+                          backgroundColor: isChecked ? '#eff6ff' : '#ffffff',
                           cursor: 'pointer',
                           transition: 'all 0.15s ease'
                         }}
@@ -1301,7 +1301,7 @@ export const VendorPlanVisitTab = ({
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => {}} // Handled by container onClick
-                          style={{ accentColor: '#10b981', width: '16px', height: '16px', cursor: 'pointer' }}
+                          style={{ accentColor: '#2563eb', width: '16px', height: '16px', cursor: 'pointer' }}
                         />
                         <img
                           src={prod.image_url || prod.image || 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=500&q=80'}
@@ -1316,7 +1316,7 @@ export const VendorPlanVisitTab = ({
                           <strong style={{ fontSize: '12.5px', color: '#0f172a', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {prod.name}
                           </strong>
-                          <span style={{ fontSize: '11px', color: '#059669', fontWeight: '800' }}>
+                          <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: '800' }}>
                             ₹{prod.price}/{prod.unit || 'kg'}
                           </span>
                         </div>

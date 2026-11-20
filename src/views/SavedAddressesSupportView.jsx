@@ -85,16 +85,16 @@ export const SavedAddressesSupportView = () => {
         onClick={() => navigateTo('profile')}
         style={{ 
           fontSize: '13.5px', 
-          color: '#059669', 
+          color: '#2563eb', 
           fontWeight: '800', 
           display: 'inline-flex', 
           alignItems: 'center', 
           gap: '6px', 
           marginBottom: '20px',
-          backgroundColor: '#ecfdf5',
+          backgroundColor: '#eff6ff',
           padding: '6px 14px',
           borderRadius: '12px',
-          border: '1px solid #a7f3d0'
+          border: '1px solid #bfdbfe'
         }}
       >
         <ArrowLeft size={16} /> Back to Profile
@@ -133,8 +133,8 @@ export const SavedAddressesSupportView = () => {
                 style={{
                   padding: '18px 20px',
                   borderRadius: '20px',
-                  border: selectedAddrId === addr.id ? '2px solid #10b981' : '1.5px solid #e2e8f0',
-                  backgroundColor: selectedAddrId === addr.id ? '#f0fdf4' : '#ffffff',
+                  border: selectedAddrId === addr.id ? '2px solid #2563eb' : '1.5px solid #e2e8f0',
+                  backgroundColor: selectedAddrId === addr.id ? '#eff6ff' : '#ffffff',
                   cursor: 'pointer',
                   position: 'relative',
                   transition: 'all 0.2s ease'
@@ -146,7 +146,7 @@ export const SavedAddressesSupportView = () => {
                       width: '24px',
                       height: '24px',
                       borderRadius: '50%',
-                      border: selectedAddrId === addr.id ? '6px solid #10b981' : '2px solid #cbd5e1',
+                      border: selectedAddrId === addr.id ? '6px solid #2563eb' : '2px solid #cbd5e1',
                       backgroundColor: '#ffffff',
                       marginTop: '3px',
                       flexShrink: 0
@@ -214,27 +214,27 @@ export const SavedAddressesSupportView = () => {
 
             {/* Need Help Callout Banner */}
             <div style={{
-              background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
+              background: 'linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%)',
               color: '#ffffff',
               borderRadius: '22px',
               padding: '24px',
               textAlign: 'center'
             }}>
-              <Headphones size={32} color="#a7f3d0" style={{ margin: '0 auto 8px auto' }} />
+              <Headphones size={32} color="#bfdbfe" style={{ margin: '0 auto 8px auto' }} />
               <strong style={{ fontSize: '18px', display: 'block', marginBottom: '4px', fontWeight: '900' }}>
                 Need Help with your Order?
               </strong>
-              <p style={{ fontSize: '13px', color: '#d1fae5', marginBottom: '18px' }}>
+              <p style={{ fontSize: '13px', color: '#dbeafe', marginBottom: '18px' }}>
                 Our local support team & Kirana coordinators are active 7 days a week.
               </p>
               <button
                 onClick={() => setIsVendorChatOpen(true)}
                 className="btn-primary"
-                style={{ backgroundColor: '#ffffff', color: '#065f46', fontWeight: '900', width: '100%', padding: '14px', borderRadius: '16px', fontSize: '15px' }}
+                style={{ backgroundColor: '#ffffff', color: '#1e40af', fontWeight: '900', width: '100%', padding: '14px', borderRadius: '16px', fontSize: '15px' }}
               >
                 💬 Chat with Support / Vendor
               </button>
-              <span style={{ fontSize: '11px', color: '#a7f3d0', display: 'block', marginTop: '10px' }}>
+              <span style={{ fontSize: '11px', color: '#bfdbfe', display: 'block', marginTop: '10px' }}>
                 Monday to Sunday: 7:00 AM - 10:00 PM
               </span>
             </div>
@@ -261,10 +261,10 @@ export const SavedAddressesSupportView = () => {
             padding: '28px',
             borderRadius: '24px',
             backgroundColor: '#ffffff',
-            border: '1.5px solid #d1fae5'
+            border: '1.5px solid #dbeafe'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#064e3b' }}>
+              <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0f172a' }}>
                 Add New Delivery Address
               </h3>
               <button 
@@ -292,9 +292,9 @@ export const SavedAddressesSupportView = () => {
                         borderRadius: '12px',
                         fontSize: '13px',
                         fontWeight: '700',
-                        border: newTag === tag ? '2px solid #10b981' : '1px solid #cbd5e1',
-                        backgroundColor: newTag === tag ? '#ecfdf5' : '#ffffff',
-                        color: newTag === tag ? '#059669' : '#475569'
+                        border: newTag === tag ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                        backgroundColor: newTag === tag ? '#eff6ff' : '#ffffff',
+                        color: newTag === tag ? '#2563eb' : '#475569'
                       }}
                     >
                       {tag}
@@ -327,7 +327,7 @@ export const SavedAddressesSupportView = () => {
                   type="checkbox"
                   checked={isNewDefault}
                   onChange={(e) => setIsNewDefault(e.target.checked)}
-                  style={{ accentColor: '#10b981', width: '16px', height: '16px' }}
+                  style={{ accentColor: '#2563eb', width: '16px', height: '16px' }}
                 />
                 <span>Set as primary default delivery address</span>
               </label>

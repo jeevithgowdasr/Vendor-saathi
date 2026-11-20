@@ -101,9 +101,9 @@ export const UnauthorizedView = ({ params = {} }) => {
               borderRadius: '12px',
               fontSize: '12px',
               fontWeight: '800',
-              backgroundColor: isCurrentVendor ? '#eff6ff' : '#ecfdf5',
-              color: isCurrentVendor ? '#2563eb' : '#059669',
-              border: `1px solid ${isCurrentVendor ? '#bfdbfe' : '#a7f3d0'}`
+              backgroundColor: isCurrentVendor ? '#eff6ff' : '#eff6ff',
+              color: isCurrentVendor ? '#2563eb' : '#2563eb',
+              border: `1px solid ${isCurrentVendor ? '#bfdbfe' : '#bfdbfe'}`
             }}>
               {isCurrentVendor ? <Store size={13} /> : <ShoppingBag size={13} />}
               {user?.name || user?.fullName || 'Logged In User'} ({currentRole.toUpperCase()})

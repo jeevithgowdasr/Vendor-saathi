@@ -169,7 +169,7 @@ export const VoiceSearchModal = () => {
         textAlign: 'center',
         position: 'relative',
         boxShadow: '0 25px 50px -12px rgba(0,0,0,0.35)',
-        border: '1.5px solid #d1fae5'
+        border: '1.5px solid #dbeafe'
       }}>
         <button
           type="button"
@@ -190,9 +190,9 @@ export const VoiceSearchModal = () => {
           display: 'inline-flex', 
           alignItems: 'center', 
           gap: '6px', 
-          backgroundColor: '#ecfdf5', 
-          border: '1px solid #a7f3d0',
-          color: '#065f46', 
+          backgroundColor: '#eff6ff', 
+          border: '1px solid #bfdbfe',
+          color: '#1e40af', 
           padding: '5px 14px', 
           borderRadius: '20px', 
           fontSize: '12px', 
@@ -216,7 +216,7 @@ export const VoiceSearchModal = () => {
               position: 'absolute',
               inset: '-12px',
               borderRadius: '50%',
-              backgroundColor: 'rgba(16, 185, 129, 0.25)',
+              backgroundColor: 'rgba(37, 99, 235, 0.25)',
               animation: 'pulseGlowRing 1.8s infinite'
             }} />
           )}
@@ -229,13 +229,13 @@ export const VoiceSearchModal = () => {
               borderRadius: '50%',
               border: 'none',
               background: isListening 
-                ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' 
+                ? 'linear-gradient(135deg, #2563eb 0%, #2563eb 100%)' 
                 : '#f1f5f9',
               color: isListening ? '#ffffff' : '#64748b',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: isListening ? '0 10px 30px rgba(16, 185, 129, 0.5)' : 'none',
+              boxShadow: isListening ? '0 10px 30px rgba(37, 99, 235, 0.5)' : 'none',
               transition: 'all 0.3s ease',
               cursor: 'pointer',
               position: 'relative',
@@ -264,7 +264,7 @@ export const VoiceSearchModal = () => {
           lineHeight: 1.4
         }}>
           {detectedItem ? (
-            <span style={{ color: '#059669', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: '#2563eb', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <CheckCircle2 size={20} /> Detected: <strong>{detectedItem.qty} {detectedItem.product.unit || 'kg'} {detectedItem.product.name}</strong>! Adding...
             </span>
           ) : speechError ? (
@@ -272,7 +272,7 @@ export const VoiceSearchModal = () => {
               <AlertCircle size={16} /> {speechError}
             </span>
           ) : (
-            <span style={{ color: isListening ? '#059669' : '#64748b' }}>
+            <span style={{ color: isListening ? '#2563eb' : '#64748b' }}>
               {transcript || (isListening ? 'ಕೇಳಿಸಿಕೊಳ್ಳುತ್ತಿದ್ದೇವೆ... (Listening)' : 'ಮೈಕ್ ಒತ್ತಿ ಮತ್ತು ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಿ (Tap mic to speak)')}
             </span>
           )}
@@ -302,12 +302,12 @@ export const VoiceSearchModal = () => {
                 }}
               >
                 <span>
-                  <strong style={{ color: '#064e3b' }}>🗣️ {sample.kannada}</strong>
+                  <strong style={{ color: '#0f172a' }}>🗣️ {sample.kannada}</strong>
                   <span style={{ display: 'block', fontSize: '11.5px', color: '#64748b', marginTop: '2px' }}>
                     {sample.english}
                   </span>
                 </span>
-                <span style={{ fontSize: '11px', color: '#059669', fontWeight: '700', backgroundColor: '#ecfdf5', padding: '2px 8px', borderRadius: '8px' }}>
+                <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: '700', backgroundColor: '#eff6ff', padding: '2px 8px', borderRadius: '8px' }}>
                   Try
                 </span>
               </button>
